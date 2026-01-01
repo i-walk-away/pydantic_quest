@@ -19,3 +19,9 @@ class LessonRepository(BaseRepository):
         result = await self.session.scalar(statement)
 
         return result
+
+    async def delete(self, id: str) -> bool:
+        statement = select(Lesson).where(Lesson.id == id)
+        result = await self.session.delete(statement)
+
+        return result
