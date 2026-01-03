@@ -1,10 +1,11 @@
 from datetime import datetime
+from uuid import UUID
 
 from pydantic import BaseModel
 
 
 class LessonDTO(BaseModel):
-    id: str
+    id: UUID
     slug: str
     name: str
     body_markdown: str

@@ -1,3 +1,5 @@
+from uuid import UUID
+
 from fastapi import APIRouter, Depends
 
 from src.app.backend.core.dependencies.services.lesson import get_lesson_service
@@ -60,7 +62,7 @@ def build_lesson_router(
 
     @router.get(path='/get_by_id', summary='Get lesson by id')
     async def get_lesson_by_id(
-            lesson_id: str,
+            lesson_id: UUID,
             lesson_service: LessonService = Depends(
                 dependency=get_lesson_service
             )
@@ -77,4 +79,3 @@ def build_lesson_router(
         return lesson
 
     return router
-

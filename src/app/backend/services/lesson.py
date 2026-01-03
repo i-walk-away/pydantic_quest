@@ -1,4 +1,5 @@
 from datetime import datetime
+from uuid import UUID
 
 from src.app.backend.models.db.lesson import Lesson
 from src.app.backend.models.dto.lesson import LessonDTO, CreateLessonDTO, UpdateLessonDTO
@@ -9,7 +10,7 @@ class LessonService:
     def __init__(self, lesson_repository: LessonRepository):
         self.repository = lesson_repository
 
-    async def get_by_id(self, id: str) -> LessonDTO:
+    async def get_by_id(self, id: UUID) -> LessonDTO:
         result = await self.repository.get(id=id)
         return result.to_dto()
 
@@ -54,7 +55,7 @@ class LessonService:
 
         return result.to_dto()
 
-    async def delete(self, id: str) -> None:
+    async def delete(self, id: UUID) -> None:
         """
         Delete lesson from the database.
 

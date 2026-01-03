@@ -37,6 +37,9 @@ class BaseRepository[Model]:
 
         return list(result.unique())
 
+    async def add(self, model: Model) -> None:
+        self.session.add(model)
+
     async def delete(self, id: UUID) -> None:
         item = await self.get(id=id)
         await self.session.delete(item)
