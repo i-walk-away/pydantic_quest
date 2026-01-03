@@ -1,7 +1,7 @@
 from typing import TypeVar
 from uuid import UUID
 
-from sqlalchemy import select, update as sql_update
+from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from src.app.backend.core.exceptions.repositories.repository_exc import NotFoundError
@@ -47,9 +47,21 @@ class BaseRepository[Model]:
         return
 
     async def update(self, id: UUID, data: dict) -> Model | None:
+        """
+        Update an existing object.
+
+        :param id: Object's id.
+        :param data: Dictionary contining updated fields.
+        
+        :return: Updated object.
+        """
+        if not data:
+            return await self.get(id=id)
+
         item = await self.get(id=id)
 
-        stmt = sql_update(item).values(**data)
-        await self.session.execute(stmt)
+        for key, value in data.items():
+            if hasattr(item, key):
+                setattr(item, key, value)
 
-        return await self.get(id=id)
+        return item
