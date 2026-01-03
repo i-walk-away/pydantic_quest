@@ -1,7 +1,7 @@
 from datetime import datetime
 
 from src.app.backend.models.db.lesson import Lesson
-from src.app.backend.models.dto.lesson import LessonDTO, CreateLessonDTO
+from src.app.backend.models.dto.lesson import LessonDTO, CreateLessonDTO, UpdateLessonDTO
 from src.app.backend.repositories.lesson import LessonRepository
 
 
@@ -10,7 +10,7 @@ class LessonService:
         self.repository = lesson_repository
 
     async def get_by_id(self, id: str) -> LessonDTO:
-        result = await self.repository.get_by_id(id=id)
+        result = await self.repository.get(id=id)
         return result.to_dto()
 
     async def get_all(self) -> list[LessonDTO]:
@@ -39,3 +39,28 @@ class LessonService:
         await self.repository.session.refresh(lesson)
 
         return lesson.to_dto()
+
+    async def update(self, schema: UpdateLessonDTO) -> LessonDTO:
+        """
+        Update existing lesson.
+
+        :param schema:
+        :return:
+        """
+        result = await self.repository.update(
+            id=schema.id,
+            data=schema.model_dump(exclude_none=True)
+        )
+
+        return result.to_dto()
+
+    async def delete(self, id: str) -> None:
+        """
+        Delete lesson from the database.
+
+        :param id:
+        :return:
+        """
+        await self.repository.delete(id=id)
+
+        return

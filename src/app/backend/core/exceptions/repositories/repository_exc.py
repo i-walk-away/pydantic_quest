@@ -1,3 +1,6 @@
+from uuid import UUID
+
+
 class RepositoryError(Exception):
     """
     Base repository exception class.
@@ -7,7 +10,7 @@ class NotFoundError(RepositoryError):
     def __init__(
             self,
             entity_type: str,
-            id: str
+            id: UUID
     ):
         self.entity_type = entity_type
         self.id = id

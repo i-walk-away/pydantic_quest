@@ -1,7 +1,8 @@
 from typing import ClassVar, Type, TypeVar
+from uuid import UUID, uuid4
 
 from pydantic import BaseModel
-from sqlalchemy.orm import DeclarativeBase
+from sqlalchemy.orm import DeclarativeBase, mapped_column, Mapped
 
 TDTO = TypeVar("TDTO", bound=BaseModel)
 
@@ -10,6 +11,7 @@ class Base(DeclarativeBase):
     # when inheriting from base,
     # populate this field with a corresponding DTO class.
     dto_class: ClassVar[Type[TDTO] | None] = None
+    id: Mapped[UUID] = mapped_column(primary_key=True, default=uuid4)
 
     def to_dto(self) -> TDTO:
         """
