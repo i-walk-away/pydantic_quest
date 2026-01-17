@@ -63,5 +63,3 @@ class LessonService:
         :return:
         """
         await self.repository.delete(id=id)
-
-        return

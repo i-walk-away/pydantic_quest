@@ -18,42 +18,64 @@ class BaseRepository[Model]:
     ):
         self.session = session
         self.model = model
-        self.model_name = self.model.__name__
+        self.model_name_str = self.model.__name__
 
     async def get(self, id: UUID) -> Model | None:
+        """
+        Get object from database by id.
+
+        :param id: Object id
+        :return: Object
+        """
         stmt = select(self.model).where(self.model.id == id)  # type: ignore
         result = await self.session.scalar(stmt)
 
         if result is None:
             raise NotFoundError(
-                entity_type=self.model_name,
+                entity_type_str=self.model_name_str,
                 id=id
             )
+
         return result
 
     async def get_all(self) -> list[Model]:
+        """
+        Get all objects from the database
+
+        :return: List of all objects from the database
+        """
         stmt = select(self.model)
         result = await self.session.scalars(stmt)
 
         return list(result.unique())
 
     async def add(self, model: Model) -> None:
+        """
+
+        :param model:
+        :return:
+        """
         self.session.add(model)
 
     async def delete(self, id: UUID) -> None:
+        """
+
+        :param id:
+        :return:
+        """
         item = await self.get(id=id)
         await self.session.delete(item)
 
-        return
+        return None
 
     async def update(self, id: UUID, data: dict) -> Model | None:
         """
-        Update an existing object.
+        Update an existing object
 
-        :param id: Object's id.
-        :param data: Dictionary contining updated fields.
+        :param id: Object's id
+        :param data: Dictionary contining updated fields
         
-        :return: Updated object.
+        :return: Updated object
         """
         if not data:
             return await self.get(id=id)

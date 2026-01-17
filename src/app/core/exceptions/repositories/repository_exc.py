@@ -10,10 +10,10 @@ class RepositoryError(Exception):
 class NotFoundError(RepositoryError):
     def __init__(
             self,
-            entity_type: str,
+            entity_type_str: str,
             id: UUID
     ):
-        self.entity_type = entity_type
+        self.entity_type_str = entity_type_str
         self.id = id
 
-        super().__init__(f'{entity_type} with id {id} not found in the database.')
+        super().__init__(f'{entity_type_str} with id {id} not found in the database.')
