@@ -1,9 +1,9 @@
 from datetime import datetime
 from uuid import UUID
 
-from src.app.backend.models.db.lesson import Lesson
-from src.app.backend.models.dto.lesson import LessonDTO, CreateLessonDTO, UpdateLessonDTO
-from src.app.backend.repositories.lesson import LessonRepository
+from src.app.domain.models.db.lesson import Lesson
+from src.app.domain.models.dto.lesson import LessonDTO, CreateLessonDTO, UpdateLessonDTO
+from src.app.domain.repositories.lesson import LessonRepository
 
 
 class LessonService:

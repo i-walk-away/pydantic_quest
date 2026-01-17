@@ -1,8 +1,8 @@
 from fastapi import Depends
 
-from src.app.backend.core.dependencies.repositories.lesson import get_lesson_repository
-from src.app.backend.repositories.lesson import LessonRepository
-from src.app.backend.services.lesson import LessonService
+from src.app.core.dependencies.repositories.lesson import get_lesson_repository
+from src.app.domain.repositories.lesson import LessonRepository
+from src.app.domain.services.lesson import LessonService
 
 
 def get_lesson_service(

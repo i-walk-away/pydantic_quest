@@ -2,8 +2,8 @@ from datetime import datetime
 
 from sqlalchemy.orm import Mapped, mapped_column
 
-from src.app.backend.models.db import Base
-from src.app.backend.models.dto.lesson import LessonDTO
+from src.app.domain.models.db import Base
+from src.app.domain.models.dto.lesson import LessonDTO
 
 
 class Lesson(Base):

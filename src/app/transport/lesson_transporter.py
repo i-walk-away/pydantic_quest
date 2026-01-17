@@ -2,9 +2,9 @@ from uuid import UUID
 
 from fastapi import APIRouter, Depends
 
-from src.app.backend.core.dependencies.services.lesson import get_lesson_service
-from src.app.backend.models.dto.lesson import LessonDTO, CreateLessonDTO
-from src.app.backend.services.lesson import LessonService
+from src.app.core.dependencies.services.lesson import get_lesson_service
+from src.app.domain.models.dto.lesson import LessonDTO, CreateLessonDTO
+from src.app.domain.services.lesson import LessonService
 
 
 def build_lesson_router(
