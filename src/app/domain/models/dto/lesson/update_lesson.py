@@ -4,6 +4,7 @@ from pydantic import BaseModel
 
 
 class UpdateLessonDTO(BaseModel):
+    order: int | None = None
     slug: str | None = None
     name: str | None = None
     body_markdown: str | None = None

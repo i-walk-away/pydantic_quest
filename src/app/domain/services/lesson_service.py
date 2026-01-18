@@ -35,7 +35,9 @@ class LessonService:
         """
         lessons = await self.repository.get_all()
 
-        return [lesson.to_dto() for lesson in lessons]
+        ordered_lessons = sorted(lessons, key=lambda lesson: lesson.order)
+
+        return [lesson.to_dto() for lesson in ordered_lessons]
 
     async def create(self, schema: CreateLessonDTO) -> LessonDTO:
         """

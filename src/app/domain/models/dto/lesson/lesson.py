@@ -6,6 +6,7 @@ from pydantic import BaseModel
 
 class LessonDTO(BaseModel):
     id: UUID
+    order: int
     slug: str
     name: str
     body_markdown: str

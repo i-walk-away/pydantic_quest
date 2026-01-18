@@ -1,0 +1,178 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8"/>
+    <meta content="width=device-width, initial-scale=1" name="viewport"/>
+    <title>Pydantic Quest UI Mock</title>
+    <link href="https://fonts.googleapis.com" rel="preconnect"/>
+    <link crossorigin href="https://fonts.gstatic.com" rel="preconnect"/>
+    <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap"
+          rel="stylesheet"/>
+    <link href="styles.css" rel="stylesheet"/>
+</head>
+<body>
+<div class="scene">
+    <div class="glow glow--top"></div>
+    <div class="glow glow--bottom"></div>
+
+    <header class="topbar">
+        <div class="logo">
+            <span class="logo__mark">P</span>
+            <span class="logo__text">pydantic.quest</span>
+        </div>
+        <div class="topbar__meta">
+            <span class="pill">admin</span>
+            <span class="pill pill--ghost">draft</span>
+        </div>
+    </header>
+
+    <main class="layout">
+        <section class="panel panel--lesson">
+            <div class="panel__header">
+                <div>
+                    <p class="eyebrow">lesson 03</p>
+                    <h1>Validation with model_config</h1>
+                </div>
+                <button class="btn btn--ghost">preview</button>
+            </div>
+
+            <article class="markdown">
+                <p><strong>Goal:</strong> build a strict model that rejects extra fields and explains why.</p>
+                <p>
+                    In this lesson you will explore how Pydantic v2 handles extra input data, why it
+                    matters for security, and how to keep your validation errors deterministic.
+                </p>
+                <ul>
+                    <li>define <code>ConfigDict(extra="forbid")</code></li>
+                    <li>return a readable error message</li>
+                    <li>keep output stable for tests</li>
+                    <li>avoid implicit coercion for business-critical fields</li>
+                </ul>
+                <div class="callout">
+                    <p>Expected output:</p>
+                    <pre><code>extra fields not permitted: foo, bar</code></pre>
+                </div>
+                <h3>Hints</h3>
+                <p>
+                    Consider whether you want to expose raw error objects or a simplified message.
+                    The goal is to teach a clear mental model, not overwhelm with noise.
+                </p>
+                <p>
+                    If you want strict behavior for nested models too, make sure the config is applied
+                    to each model. Pydantic does not automatically propagate settings.
+                </p>
+                <h3>Why it matters</h3>
+                <p>
+                    In production APIs, extra fields can mask mistakes in client payloads, or silently
+                    change behavior in unexpected ways. Explicitly forbidding extra fields keeps your
+                    system predictable.
+                </p>
+                <p>
+                    This also improves test reliability: error messages stay stable across refactors,
+                    and you can assert exact outputs when teaching or grading.
+                </p>
+                <p>
+                    Bonus: add a helper function that accepts a dictionary, validates it, and returns a
+                    custom error string when invalid. This keeps view code clean and focused.
+                </p>
+            </article>
+
+            <div class="panel__footer">
+                <button class="btn btn--accent push-right">next lesson</button>
+            </div>
+        </section>
+
+        <section class="panel panel--code">
+            <div class="panel__header">
+                <div>
+                    <p class="eyebrow">python 3.14</p>
+                    <h2>Code editor</h2>
+                </div>
+            </div>
+
+            <div class="editor" id="editor"></div>
+
+            <div class="panel__footer">
+                <div class="status">
+                    <span class="status__dot"></span>
+                    waiting for run
+                </div>
+                <button class="btn btn--ghost push-right">run</button>
+            </div>
+        </section>
+    </main>
+</div>
+<script type="module">
+    import { EditorState } from "https://esm.sh/@codemirror/state";
+    import { EditorView, keymap, lineNumbers, highlightActiveLineGutter } from "https://esm.sh/@codemirror/view";
+    import { defaultKeymap, history, historyKeymap } from "https://esm.sh/@codemirror/commands";
+    import { python } from "https://esm.sh/@codemirror/lang-python";
+    import { syntaxHighlighting, HighlightStyle } from "https://esm.sh/@codemirror/language";
+    import { tags } from "https://esm.sh/@lezer/highlight";
+
+    const highlightTheme = HighlightStyle.define([
+      { tag: tags.keyword, color: "#cf8e6d", fontWeight: "600" },
+      { tag: [tags.string], color: "#6aab73" },
+      { tag: [tags.comment], color: "#7a7e85", fontStyle: "italic" },
+      { tag: [tags.number], color: "#2aacb8" },
+      { tag: [tags.typeName], color: "#ff4d8d" },
+    ]);
+
+    const doc = `from pydantic import BaseModel, ConfigDict
+
+class User(BaseModel):
+  model_config = ConfigDict(extra="forbid")
+
+  name: str
+  age: int
+`;
+
+    const editor = new EditorView({
+      state: EditorState.create({
+        doc,
+        extensions: [
+          lineNumbers(),
+          highlightActiveLineGutter(),
+          history(),
+          keymap.of([...defaultKeymap, ...historyKeymap]),
+          python(),
+          syntaxHighlighting(highlightTheme),
+          EditorView.theme(
+            {
+              "&": {
+                backgroundColor: "transparent",
+                color: "var(--text-strong)",
+                height: "100%",
+              },
+              ".cm-content": {
+                fontFamily: "\"IBM Plex Mono\", monospace",
+                fontSize: "0.92rem",
+                lineHeight: "1.6",
+              },
+              ".cm-gutters": {
+                backgroundColor: "rgba(0, 0, 0, 0.35)",
+                color: "var(--text-muted)",
+                borderRight: "none",
+              },
+              ".cm-activeLineGutter": {
+                backgroundColor: "#26282E",
+              },
+              ".cm-activeLine": {
+                backgroundColor: "#26282E",
+              },
+              ".cm-selectionBackground": {
+                backgroundColor: "#3E3E3E",
+              },
+              ".cm-cursor": {
+                borderLeftColor: "#CED0D6",
+              },
+            },
+            { dark: true }
+          ),
+        ],
+      }),
+      parent: document.getElementById("editor"),
+    });
+</script>
+</body>
+</html>
