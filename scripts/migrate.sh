@@ -3,6 +3,8 @@ set -euo pipefail
 
 compose_cmd="docker compose"
 reset_db="false"
+versions_dir="migrations/versions"
+started_db="false"
 
 if [ "${1:-}" = "--reset-db" ]; then
   reset_db="true"
@@ -13,12 +15,12 @@ migration_message="${*:-auto migration}"
 
 if [ "${reset_db}" = "true" ]; then
   ${compose_cmd} down -v
-  rm -f migrations/versions/*.py
+  rm -f "${versions_dir}"/*.py
+  mkdir -p "${versions_dir}"
 fi
 
 db_container_id="$(${compose_cmd} ps -q db)"
 db_running="false"
-started_db="false"
 
 if [ -n "${db_container_id}" ]; then
   db_status="$(docker inspect -f '{{.State.Status}}' "${db_container_id}")"
@@ -47,9 +49,54 @@ if [ "${db_health}" != "healthy" ]; then
   exit 1
 fi
 
-${compose_cmd} run --rm migrator alembic upgrade head
+if [ "${reset_db}" != "true" ]; then
+  ${compose_cmd} run --rm migrator alembic upgrade head
+fi
+
+latest_before=""
+latest_after=""
+revision_created="false"
+
+if [ -d "${versions_dir}" ]; then
+  latest_before="$(ls -t "${versions_dir}"/*.py 2>/dev/null | head -n 1 || true)"
+fi
+
 ${compose_cmd} run --rm migrator alembic revision --autogenerate -m "${migration_message}"
-${compose_cmd} run --rm migrator alembic upgrade head
+
+if [ -d "${versions_dir}" ]; then
+  latest_after="$(ls -t "${versions_dir}"/*.py 2>/dev/null | head -n 1 || true)"
+fi
+
+if [ -n "${latest_after}" ] && [ "${latest_after}" != "${latest_before}" ]; then
+  is_empty_revision="$(
+    python - "${latest_after}" <<'PY'
+import ast
+import pathlib
+import sys
+
+path = pathlib.Path(sys.argv[1])
+tree = ast.parse(path.read_text(encoding="utf-8"))
+
+def is_pass(func_name: str) -> bool:
+    for node in tree.body:
+        if isinstance(node, ast.FunctionDef) and node.name == func_name:
+            return len(node.body) == 1 and isinstance(node.body[0], ast.Pass)
+    return False
+
+print("true" if is_pass(func_name="upgrade") and is_pass(func_name="downgrade") else "false")
+PY
+  )"
+
+  if [ "${is_empty_revision}" = "true" ]; then
+    rm -f "${latest_after}"
+  else
+    revision_created="true"
+  fi
+fi
+
+if [ "${revision_created}" = "true" ]; then
+  ${compose_cmd} run --rm migrator alembic upgrade head
+fi
 
 if [ "${started_db}" = "true" ]; then
   ${compose_cmd} stop db
