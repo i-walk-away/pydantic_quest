@@ -29,6 +29,7 @@ target_metadata = Base.metadata
 # can be acquired:
 # my_important_option = config.get_main_option("my_important_option")
 # ... etc.
+# noinspection PyTypeChecker
 def _build_sync_url(async_url: str) -> str:
     """
     Build a sync SQLAlchemy URL for Alembic migrations.

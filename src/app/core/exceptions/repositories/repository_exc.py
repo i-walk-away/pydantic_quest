@@ -1,7 +1,9 @@
 from uuid import UUID
 
+from fastapi import HTTPException
 
-class RepositoryError(Exception):
+
+class RepositoryError(HTTPException):
     """
     Base repository exception class.
     """
@@ -21,7 +23,11 @@ class NotFoundError(RepositoryError):
 
         :return: None
         """
+        self.status_code = 404
         self.entity_type_str = entity_type_str
         self.id = id
 
-        super().__init__(f'{entity_type_str} with id {id} not found in the database.')
+        super().__init__(
+            status_code=self.status_code,
+            detail=f'{entity_type_str} with id {id} not found in the database.'
+        )

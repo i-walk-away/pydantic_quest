@@ -65,7 +65,7 @@ def build_lesson_router(
 
         return lessons
 
-    @router.get(path='/get_by_id', summary='Get lesson by id')
+    @router.get(path='/{lesson_id}', summary='Get lesson by id')
     async def get_lesson_by_id(
             lesson_id: UUID,
             lesson_service: LessonService = Depends(dependency=get_lesson_service)
@@ -82,36 +82,38 @@ def build_lesson_router(
 
         return lesson
 
-    @router.put(path='/update', summary='Update lesson')
+    @router.put(path='/{lesson_id}', summary='Update lesson')
     async def update_lesson(
+            lesson_id: UUID,
             data: UpdateLessonDTO,
             lesson_service: LessonService = Depends(dependency=get_lesson_service)
     ) -> LessonDTO:
         """
         Update lesson.
 
+        :param lesson_id: lesson id
         :param data: lesson update data
         :param lesson_service: lesson service
 
         :return: updated lesson
         """
-        lesson = await lesson_service.update(schema=data)
+        lesson = await lesson_service.update(id=lesson_id, schema=data)
 
         return lesson
 
-    @router.delete(path='/delete', summary='Delete lesson')
+    @router.delete(path='/{lesson_id}', summary='Delete lesson')
     async def delete_lesson(
             lesson_id: UUID,
             lesson_service: LessonService = Depends(dependency=get_lesson_service)
-    ) -> None:
+    ) -> bool:
         """
         Delete lesson.
 
         :param lesson_id: lesson id
         :param lesson_service: lesson service
 
-        :return: None
+        :return: ``True`` if lesson was deleted
         """
-        await lesson_service.delete(id=lesson_id)
+        return await lesson_service.delete(id=lesson_id)
 
     return router

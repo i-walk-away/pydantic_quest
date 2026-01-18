@@ -68,18 +68,18 @@ class BaseRepository[Model]:
         """
         self.session.add(model)
 
-    async def delete(self, id: UUID) -> None:
+    async def delete(self, id: UUID) -> bool:
         """
         Delete an object by id.
 
         :param id: object id
 
-        :return: None
+        :return: ``True`` if object was found and deleted
         """
         item = await self.get(id=id)
         await self.session.delete(item)
 
-        return None
+        return True
 
     async def update(self, id: UUID, data: dict) -> Model | None:
         """

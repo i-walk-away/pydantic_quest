@@ -1,4 +1,3 @@
-from datetime import datetime
 from uuid import UUID
 
 from src.app.domain.models.db.lesson import Lesson
@@ -49,11 +48,8 @@ class LessonService:
         """
         data = schema.model_dump()
 
-        created_now = datetime.now()
-
         lesson = Lesson(
-            **data,
-            created_at=created_now
+            **data
         )
 
         await self.repository.add(lesson)
@@ -62,27 +58,31 @@ class LessonService:
 
         return lesson.to_dto()
 
-    async def update(self, schema: UpdateLessonDTO) -> LessonDTO:
+    async def update(self, id: UUID, schema: UpdateLessonDTO) -> LessonDTO:
         """
         Update existing lesson.
 
+        :param id: lesson id
         :param schema: lesson update data
 
         :return: updated lesson
         """
         result = await self.repository.update(
-            id=schema.id,
+            id=id,
             data=schema.model_dump(exclude_none=True)
         )
 
         return result.to_dto()
 
-    async def delete(self, id: UUID) -> None:
+    async def delete(self, id: UUID) -> bool:
         """
         Delete lesson from the database.
 
         :param id: lesson id
 
-        :return: None
+        :return: ``True`` if lesson was deleted
         """
-        await self.repository.delete(id=id)
+        deleted = await self.repository.delete(id=id)
+        await self.repository.session.commit()
+
+        return deleted
