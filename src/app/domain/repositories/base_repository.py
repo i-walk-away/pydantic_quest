@@ -16,6 +16,14 @@ class BaseRepository[Model]:
             session: AsyncSession,
             model: type[Model]
     ):
+        """
+        Initialize repository with session and model.
+
+        :param session: database session
+        :param model: model class
+
+        :return: None
+        """
         self.session = session
         self.model = model
         self.model_name_str = self.model.__name__
@@ -25,6 +33,7 @@ class BaseRepository[Model]:
         Get object from database by id.
 
         :param id: Object id
+
         :return: Object
         """
         stmt = select(self.model).where(self.model.id == id)  # type: ignore
@@ -51,17 +60,21 @@ class BaseRepository[Model]:
 
     async def add(self, model: Model) -> None:
         """
+        Add a model instance to the session.
 
-        :param model:
-        :return:
+        :param model: model instance
+
+        :return: None
         """
         self.session.add(model)
 
     async def delete(self, id: UUID) -> None:
         """
+        Delete an object by id.
 
-        :param id:
-        :return:
+        :param id: object id
+
+        :return: None
         """
         item = await self.get(id=id)
         await self.session.delete(item)
@@ -73,8 +86,8 @@ class BaseRepository[Model]:
         Update an existing object
 
         :param id: Object's id
-        :param data: Dictionary contining updated fields
-        
+        :param data: Dictionary containing updated fields
+
         :return: Updated object
         """
         if not data:

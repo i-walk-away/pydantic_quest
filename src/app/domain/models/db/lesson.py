@@ -18,4 +18,9 @@ class Lesson(Base):
     updated_at: Mapped[datetime] = mapped_column(nullable=True)
 
     def to_dto(self) -> LessonDTO:
+        """
+        Convert model to DTO.
+
+        :return: lesson dto
+        """
         return LessonDTO.model_validate(obj=self, from_attributes=True)

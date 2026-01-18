@@ -1,20 +1,40 @@
 from datetime import datetime
 from uuid import UUID
 
+from src.app.domain.repositories.lesson import LessonRepository
+
 from src.app.domain.models.db.lesson import Lesson
 from src.app.domain.models.dto.lesson import LessonDTO, CreateLessonDTO, UpdateLessonDTO
-from src.app.domain.repositories.lesson import LessonRepository
 
 
 class LessonService:
     def __init__(self, lesson_repository: LessonRepository):
+        """
+        Initialize lesson service.
+
+        :param lesson_repository: lesson repository
+
+        :return: None
+        """
         self.repository = lesson_repository
 
     async def get_by_id(self, id: UUID) -> LessonDTO:
+        """
+        Get lesson by id.
+
+        :param id: lesson id
+
+        :return: lesson dto
+        """
         result = await self.repository.get(id=id)
         return result.to_dto()
 
     async def get_all(self) -> list[LessonDTO]:
+        """
+        Get all lessons.
+
+        :return: lesson list
+        """
         lessons = await self.repository.get_all()
 
         return [lesson.to_dto() for lesson in lessons]
@@ -23,7 +43,9 @@ class LessonService:
         """
         Create new lesson.
 
-        :param schema: DTO object containing fields needed to contstruct new Lesson.
+        :param schema: DTO object containing fields needed to construct new
+            Lesson
+
         :return: DTO representation of created Lesson
         """
         data = schema.model_dump()
@@ -45,8 +67,9 @@ class LessonService:
         """
         Update existing lesson.
 
-        :param schema:
-        :return:
+        :param schema: lesson update data
+
+        :return: updated lesson
         """
         result = await self.repository.update(
             id=schema.id,
@@ -59,7 +82,8 @@ class LessonService:
         """
         Delete lesson from the database.
 
-        :param id:
-        :return:
+        :param id: lesson id
+
+        :return: None
         """
         await self.repository.delete(id=id)

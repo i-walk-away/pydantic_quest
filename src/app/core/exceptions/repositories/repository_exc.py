@@ -13,6 +13,14 @@ class NotFoundError(RepositoryError):
             entity_type_str: str,
             id: UUID
     ):
+        """
+        Initialize not found error.
+
+        :param entity_type_str: entity type name
+        :param id: entity id
+
+        :return: None
+        """
         self.entity_type_str = entity_type_str
         self.id = id
 

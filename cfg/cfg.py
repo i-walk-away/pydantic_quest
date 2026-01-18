@@ -16,6 +16,11 @@ class Database(BaseSettings):
     @computed_field
     @property
     def url(self) -> str:
+        """
+        Build database connection URL.
+
+        :return: database connection URL
+        """
         return f"mysql+aiomysql://{self.username}:{self.password}@{self.host}:{self.port}/{self.database}"
 
 
