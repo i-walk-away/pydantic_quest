@@ -3,82 +3,16 @@
 <head>
     <meta charset="utf-8"/>
     <meta content="width=device-width, initial-scale=1" name="viewport"/>
-    <title>Pydantic Quest Admin Panel</title>
+    <title>Pydantic Quest Admin UI</title>
     <link href="https://fonts.googleapis.com" rel="preconnect"/>
     <link crossorigin href="https://fonts.gstatic.com" rel="preconnect"/>
     <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap"
           rel="stylesheet"/>
     <link href="../mock/styles.css" rel="stylesheet"/>
-    <style>
-        .admin-layout {
-          display: grid;
-          grid-template-columns: minmax(220px, 0.35fr) minmax(0, 1fr);
-          gap: 12px;
-          flex: 1;
-          min-height: 0;
-        }
-
-        .sidebar {
-          background: linear-gradient(160deg, rgba(255, 255, 255, 0.04), rgba(255, 255, 255, 0.015));
-          border-radius: 18px;
-          padding: 16px;
-          display: flex;
-          flex-direction: column;
-          gap: 14px;
-          min-height: 0;
-        }
-
-        .nav-item {
-          padding: 10px 12px;
-          border-radius: 10px;
-          color: var(--text-muted);
-          background: rgba(255, 255, 255, 0.02);
-        }
-
-        .nav-item.is-active {
-          color: var(--text-strong);
-          background: rgba(233, 32, 99, 0.12);
-        }
-
-        .table {
-          width: 100%;
-          border-collapse: collapse;
-          font-size: 0.95rem;
-        }
-
-        .table th,
-        .table td {
-          text-align: left;
-          padding: 10px 0;
-          border-bottom: 1px solid rgba(255, 255, 255, 0.06);
-        }
-
-        .table th {
-          color: var(--text-muted);
-          font-weight: 500;
-          text-transform: uppercase;
-          font-size: 0.7rem;
-          letter-spacing: 0.2em;
-        }
-
-        .tag {
-          display: inline-flex;
-          align-items: center;
-          gap: 6px;
-          padding: 4px 10px;
-          border-radius: 999px;
-          background: rgba(195, 66, 255, 0.15);
-          color: var(--text-strong);
-          font-size: 0.8rem;
-        }
-
-        .actions {
-          display: flex;
-          gap: 10px;
-        }
-    </style>
+    <link href="./styles.css" rel="stylesheet"/>
+    <script defer src="./admin.js"></script>
 </head>
-<body>
+<body class="admin-body">
 <div class="scene">
     <header class="topbar">
         <div class="logo">
@@ -91,81 +25,59 @@
         </div>
     </header>
 
-    <main class="admin-layout">
+    <main class="admin-layout admin-layout--list">
         <aside class="sidebar">
             <div>
                 <p class="eyebrow">workspace</p>
                 <h2>Control</h2>
             </div>
-            <div class="nav-item is-active">Lessons</div>
+            <a class="nav-item is-active" href="./index.html">Lessons</a>
             <div class="nav-item">Submissions</div>
             <div class="nav-item">Users</div>
-            <div class="nav-item">Settings</div>
+            <a class="nav-item" href="./settings.html">Settings</a>
             <div class="nav-item">Audit log</div>
         </aside>
 
-        <section class="panel">
+        <section class="panel admin-panel">
             <div class="panel__header">
                 <div>
                     <p class="eyebrow">library</p>
                     <h1>Lessons</h1>
                 </div>
                 <div class="actions">
-                    <button class="btn btn--ghost">import</button>
-                    <button class="btn btn--accent">new lesson</button>
+                    <button class="btn btn--ghost" data-action="refresh">refresh</button>
+                    <a class="btn btn--accent" href="./lesson.html">new lesson</a>
                 </div>
             </div>
 
-            <div class="markdown" style="flex: 1;">
-                <table class="table">
-                    <thead>
-                    <tr>
-                        <th>Order</th>
-                        <th>Slug</th>
-                        <th>Title</th>
-                        <th>Status</th>
-                        <th>Updated</th>
-                    </tr>
-                    </thead>
-                    <tbody>
-                    <tr>
-                        <td>1</td>
-                        <td>intro-models</td>
-                        <td>Intro to BaseModel</td>
-                        <td><span class="tag">published</span></td>
-                        <td>2 hours ago</td>
-                    </tr>
-                    <tr>
-                        <td>2</td>
-                        <td>field-validators</td>
-                        <td>Field validation basics</td>
-                        <td><span class="tag">draft</span></td>
-                        <td>yesterday</td>
-                    </tr>
-                    <tr>
-                        <td>3</td>
-                        <td>config-model</td>
-                        <td>ConfigDict and strictness</td>
-                        <td><span class="tag">published</span></td>
-                        <td>3 days ago</td>
-                    </tr>
-                    <tr>
-                        <td>4</td>
-                        <td>serialization</td>
-                        <td>Dumping and export</td>
-                        <td><span class="tag">draft</span></td>
-                        <td>1 week ago</td>
-                    </tr>
-                    </tbody>
-                </table>
+            <div class="admin-content">
+                <section class="list-panel">
+                    <div class="list-header"></div>
+                    <div class="table-wrap">
+                        <table class="table">
+                            <thead>
+                            <tr>
+                                <th>Order</th>
+                                <th>Slug</th>
+                                <th>Title</th>
+                                <th>Updated</th>
+                                <th>Actions</th>
+                            </tr>
+                            </thead>
+                            <tbody data-role="lesson-table">
+                            </tbody>
+                        </table>
+                    </div>
+                </section>
             </div>
 
             <div class="panel__footer">
-                <div class="status">
+                <div class="status muted" data-role="count">0 lessons</div>
+                <div class="status" data-role="message">
                     <span class="status__dot"></span>
-                    12 lessons total
+                    <span data-role="message-text">ready</span>
                 </div>
-                <button class="btn btn--ghost push-right">export</button>
+                <div class="status muted">FastAPI admin UI</div>
             </div>
         </section>
     </main>
