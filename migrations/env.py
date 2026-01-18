@@ -1,8 +1,17 @@
+import sys
 from logging.config import fileConfig
+from pathlib import Path
+from urllib.parse import urlparse, urlunparse
 
 from alembic import context
 from sqlalchemy import engine_from_config
 from sqlalchemy import pool
+
+project_root = Path(__file__).resolve().parents[1]
+sys.path.append(str(project_root))
+
+from cfg.cfg import settings
+from src.app.domain.models.db import Base
 
 # this is the Alembic Config object, which provides
 # access to the values within the .ini file in use.
@@ -13,17 +22,27 @@ config = context.config
 if config.config_file_name is not None:
     fileConfig(config.config_file_name)
 
-# add your model's MetaData object here
-# for 'autogenerate' support
-# from myapp import mymodel
-# target_metadata = mymodel.Base.metadata
-target_metadata = None
+target_metadata = Base.metadata
 
 
 # other values from the config, defined by the needs of env.py,
 # can be acquired:
 # my_important_option = config.get_main_option("my_important_option")
 # ... etc.
+def _build_sync_url(async_url: str) -> str:
+    """
+    Build a sync SQLAlchemy URL for Alembic migrations.
+
+    :param async_url: async SQLAlchemy URL
+
+    :return: sync SQLAlchemy URL
+    """
+    parsed = urlparse(async_url)
+    scheme = parsed.scheme.replace("+aiomysql", "+pymysql")
+    return urlunparse(parsed._replace(scheme=scheme))
+
+
+config.set_main_option("sqlalchemy.url", _build_sync_url(async_url=settings.database.url))
 
 
 def run_migrations_offline() -> None:

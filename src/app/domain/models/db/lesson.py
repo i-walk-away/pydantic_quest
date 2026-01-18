@@ -1,5 +1,6 @@
 from datetime import datetime
 
+from sqlalchemy import DateTime, String, Text
 from sqlalchemy.orm import Mapped, mapped_column
 
 from src.app.domain.models.db import Base
@@ -9,13 +10,13 @@ from src.app.domain.models.dto.lesson import LessonDTO
 class Lesson(Base):
     __tablename__ = "lessons"
 
-    slug: Mapped[str] = mapped_column()
-    name: Mapped[str] = mapped_column(default="Lesson name")
-    body_markdown: Mapped[str] = mapped_column(default="body")
-    expected_output: Mapped[str] = mapped_column()
+    slug: Mapped[str] = mapped_column(String(255), unique=True)
+    name: Mapped[str] = mapped_column(String(255), default="Lesson name")
+    body_markdown: Mapped[str] = mapped_column(Text(), default="body")
+    expected_output: Mapped[str] = mapped_column(Text())
 
-    created_at: Mapped[datetime] = mapped_column()
-    updated_at: Mapped[datetime] = mapped_column(nullable=True)
+    created_at: Mapped[datetime] = mapped_column(DateTime())
+    updated_at: Mapped[datetime] = mapped_column(DateTime(), nullable=True)
 
     def to_dto(self) -> LessonDTO:
         """

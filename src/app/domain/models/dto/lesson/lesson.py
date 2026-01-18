@@ -11,4 +11,4 @@ class LessonDTO(BaseModel):
     body_markdown: str
     expected_output: str
     created_at: datetime
-    updated_at: datetime
+    updated_at: datetime | None
