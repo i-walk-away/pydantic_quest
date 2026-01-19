@@ -7,11 +7,11 @@ from alembic import context
 from sqlalchemy import engine_from_config
 from sqlalchemy import pool
 
-project_root = Path(__file__).resolve().parents[1]
-sys.path.append(str(project_root))
-
 from cfg.cfg import settings
 from src.app.domain.models.db import Base
+
+project_root = Path(__file__).resolve().parents[1]
+sys.path.append(str(project_root))
 
 # this is the Alembic Config object, which provides
 # access to the values within the .ini file in use.
