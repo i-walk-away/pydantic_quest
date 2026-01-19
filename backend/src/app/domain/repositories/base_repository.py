@@ -4,8 +4,8 @@ from uuid import UUID
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from src.app.core.exceptions.repositories.repository_exc import IDNotFoundError
-from src.app.domain.models.db import Base
+from backend.src.app.core.exceptions.repositories.repository_exc import IDNotFoundError
+from backend.src.app.domain.models.db import Base
 
 Model = TypeVar("Model", bound=Base)
 

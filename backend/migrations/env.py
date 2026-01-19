@@ -7,8 +7,8 @@ from alembic import context
 from sqlalchemy import engine_from_config
 from sqlalchemy import pool
 
-from cfg.cfg import settings
-from src.app.domain.models.db import Base
+from backend.cfg.cfg import settings
+from backend.src.app.domain.models.db import Base
 
 project_root = Path(__file__).resolve().parents[1]
 sys.path.append(str(project_root))

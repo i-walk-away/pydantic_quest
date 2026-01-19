@@ -2,7 +2,7 @@
 line-length = 100
 target-version = "py312"
 src = ["src"]
-exclude = ["migrations"]
+exclude = ["migrations", "scripts"]
 
 [tool.ruff.lint]
 select = ["E", "F"]
