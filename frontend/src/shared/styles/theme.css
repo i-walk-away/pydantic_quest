@@ -1,0 +1,32 @@
+:root {
+  --md-typeset-a-color: #e92063;
+  --md-hue: 230;
+  --md-default-bg-color: hsl(232.5, 13.3%, 11.8%);
+  --md-typeset-color: hsl(298.6, 73.9%, 46.7%);
+  --surface-1: hsl(232.5, 14%, 16%);
+  --surface-2: hsl(232.5, 14%, 20%);
+  --surface-3: hsl(232.5, 14%, 26%);
+  --text-strong: hsl(0, 0%, 96%);
+  --text-muted: hsl(0, 0%, 78%);
+  --shadow: 0 20px 50px rgba(0, 0, 0, 0.35);
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  background: var(--md-default-bg-color);
+  color: var(--text-strong);
+  font-family: "Space Grotesk", "Segoe UI", sans-serif;
+  min-height: 100vh;
+}
+
+a {
+  color: inherit;
+}
+
+#root {
+  min-height: 100vh;
+}

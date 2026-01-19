@@ -18,5 +18,5 @@ jobs:
       - name: Run ruff check
         uses: astral-sh/ruff-action@v3
         with:
-          src: "./src"
-          args: "check"
+          src: "./backend/src"
+          args: "check --config backend/pyproject.toml"
