@@ -3,8 +3,6 @@ name: ruff
 on:
   pull_request:
     branches: [ "main" ]
-  push:
-    branches: [ "main" ]
 
 permissions:
   contents: read
@@ -12,6 +10,7 @@ permissions:
 jobs:
   lint:
     runs-on: ubuntu-latest
+    environment: lint
     steps:
       - name: Checkout
         uses: actions/checkout@v4
