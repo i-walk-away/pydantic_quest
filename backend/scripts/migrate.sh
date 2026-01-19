@@ -2,12 +2,23 @@
 set -euo pipefail
 
 script_dir="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-project_root="$(cd "${script_dir}/.." && pwd)"
+project_root="$(cd "${script_dir}/../.." && pwd)"
 backend_root="${project_root}/backend"
 compose_cmd="docker compose --project-directory ${project_root}"
 reset_db="false"
 versions_dir="${backend_root}/migrations/versions"
 started_db="false"
+env_file="${project_root}/.env"
+
+if [ ! -f "${env_file}" ]; then
+  echo "env file ${env_file} not found"
+  exit 1
+fi
+
+set -a
+# shellcheck disable=SC1090
+. "${env_file}"
+set +a
 
 if [ "${1:-}" = "--reset-db" ]; then
   reset_db="true"
