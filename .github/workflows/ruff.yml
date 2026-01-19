@@ -1,10 +1,8 @@
 name: ruff
 
 on:
-  pull_request:
-    branches: [ "main" ]
-  push:
-    branches: [ "main" ]
+  pull_request_review:
+    types: [ submitted ]
 
 permissions:
   contents: read
@@ -12,9 +10,13 @@ permissions:
 jobs:
   lint:
     runs-on: ubuntu-latest
+    environment: lint
+    if: github.event.review.state == 'approved'
     steps:
       - name: Checkout
         uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.pull_request.head.sha }}
 
       - name: Run ruff check
         uses: astral-sh/ruff-action@v3
