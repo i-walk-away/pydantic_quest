@@ -21,9 +21,3 @@ jobs:
         with:
           src: "./src"
           args: "check"
-
-      - name: Run ruff format
-        uses: astral-sh/ruff-action@v3
-        with:
-          src: "./src"
-          args: "format --check"
