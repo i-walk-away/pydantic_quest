@@ -4,7 +4,7 @@ from uuid import UUID
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from src.app.core.exceptions.repositories.repository_exc import NotFoundError
+from src.app.core.exceptions.repositories.repository_exc import IDNotFoundError
 from src.app.domain.models.db import Base
 
 Model = TypeVar("Model", bound=Base)
@@ -40,7 +40,7 @@ class BaseRepository[Model]:
         result = await self.session.scalar(stmt)
 
         if result is None:
-            raise NotFoundError(
+            raise IDNotFoundError(
                 entity_type_str=self.model_name_str,
                 id=id
             )

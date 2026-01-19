@@ -9,14 +9,14 @@ class RepositoryError(HTTPException):
     """
 
 
-class NotFoundError(RepositoryError):
+class IDNotFoundError(RepositoryError):
     def __init__(
             self,
             entity_type_str: str,
             id: UUID
     ):
         """
-        Initialize not found error.
+        Initialize not found by id error.
 
         :param entity_type_str: entity type name
         :param id: entity id
@@ -24,10 +24,28 @@ class NotFoundError(RepositoryError):
         :return: None
         """
         self.status_code = 404
-        self.entity_type_str = entity_type_str
-        self.id = id
 
         super().__init__(
             status_code=self.status_code,
             detail=f'{entity_type_str} with id {id} not found in the database.'
+        )
+
+
+class NameNotFound(RepositoryError):
+    def __init__(
+            self,
+            entity_type_str: str,
+            name: str
+    ):
+        """
+        Initialize not found by name error.
+
+        :param entity_type_str:
+        :param name:
+        """
+        self.status_code = 404
+
+        super().__init__(
+            status_code=self.status_code,
+            detail=f'{entity_type_str} with name {name} not found in the database.'
         )
