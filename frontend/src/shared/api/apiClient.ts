@@ -1,0 +1,49 @@
+export type HttpMethod = "GET" | "POST" | "PUT" | "DELETE";
+
+export interface ApiRequestOptions {
+  path: string;
+  method: HttpMethod;
+  body?: unknown;
+  signal?: AbortSignal;
+}
+
+export interface ApiErrorPayload {
+  message: string;
+  status: number;
+}
+
+export class ApiError extends Error {
+  status: number;
+
+  constructor(payload: ApiErrorPayload) {
+    super(payload.message);
+    this.status = payload.status;
+  }
+}
+
+const buildUrl = (path: string): string => {
+  const trimmed = path.startsWith("/") ? path : `/${path}`;
+  const base = import.meta.env.VITE_API_BASE_URL || "";
+  return `${base}${trimmed}`;
+};
+
+export const apiRequest = async <T>({ path, method, body, signal }: ApiRequestOptions): Promise<T> => {
+  const response = await fetch(buildUrl(path), {
+    method: method,
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: body ? JSON.stringify(body) : undefined,
+    signal: signal,
+  });
+
+  if (!response.ok) {
+    throw new ApiError({ message: response.statusText, status: response.status });
+  }
+
+  if (response.status === 204) {
+    return undefined as T;
+  }
+
+  return (await response.json()) as T;
+};

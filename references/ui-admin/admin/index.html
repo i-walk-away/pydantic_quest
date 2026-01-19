@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8"/>
+    <meta content="width=device-width, initial-scale=1" name="viewport"/>
+    <title>Pydantic Quest Admin UI</title>
+    <link href="https://fonts.googleapis.com" rel="preconnect"/>
+    <link crossorigin href="https://fonts.gstatic.com" rel="preconnect"/>
+    <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap"
+          rel="stylesheet"/>
+    <link href="../mock/styles.css" rel="stylesheet"/>
+    <link href="./styles.css" rel="stylesheet"/>
+    <script defer src="./admin.js"></script>
+</head>
+<body class="admin-body">
+<div class="scene">
+    <header class="topbar">
+        <div class="logo">
+            <span class="logo__mark">P</span>
+            <span class="logo__text">pydantic.quest</span>
+        </div>
+        <div class="topbar__meta">
+            <span class="pill">admin</span>
+            <span class="pill pill--ghost">lessons</span>
+        </div>
+    </header>
+
+    <main class="admin-layout admin-layout--list">
+        <aside class="sidebar">
+            <div>
+                <p class="eyebrow">workspace</p>
+                <h2>Control</h2>
+            </div>
+            <a class="nav-item is-active" href="./index.html">Lessons</a>
+            <div class="nav-item">Submissions</div>
+            <div class="nav-item">Users</div>
+            <a class="nav-item" href="./settings.html">Settings</a>
+            <div class="nav-item">Audit log</div>
+        </aside>
+
+        <section class="panel admin-panel">
+            <div class="panel__header">
+                <div>
+                    <p class="eyebrow">library</p>
+                    <h1>Lessons</h1>
+                </div>
+                <div class="actions">
+                    <button class="btn btn--ghost" data-action="refresh">refresh</button>
+                    <a class="btn btn--accent" href="./lesson.html">new lesson</a>
+                </div>
+            </div>
+
+            <div class="admin-content">
+                <section class="list-panel">
+                    <div class="list-header"></div>
+                    <div class="table-wrap">
+                        <table class="table">
+                            <thead>
+                            <tr>
+                                <th>Order</th>
+                                <th>Slug</th>
+                                <th>Title</th>
+                                <th>Updated</th>
+                                <th>Actions</th>
+                            </tr>
+                            </thead>
+                            <tbody data-role="lesson-table">
+                            </tbody>
+                        </table>
+                    </div>
+                </section>
+            </div>
+
+            <div class="panel__footer">
+                <div class="status muted" data-role="count">0 lessons</div>
+                <div class="status" data-role="message">
+                    <span class="status__dot"></span>
+                    <span data-role="message-text">ready</span>
+                </div>
+                <div class="status muted">FastAPI admin UI</div>
+            </div>
+        </section>
+    </main>
+</div>
+</body>
+</html>

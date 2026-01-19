@@ -1,0 +1,16 @@
+{
+  "pythonVersion": "3.12",
+  "typeCheckingMode": "basic",
+  "include": [
+    "backend/src"
+  ],
+  "exclude": [
+    "**/migrations",
+    "**/scripts",
+    "**/.venv",
+    "**/__pycache__"
+  ],
+  "extraPaths": [
+    "backend"
+  ]
+}

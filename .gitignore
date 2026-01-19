@@ -1,3 +1,10 @@
 .env
+backend/.env
+frontend/.env
 .idea
 .venv
+.ruff_cache
+backend/.ruff_cache
+frontend/node_modules
+frontend/dist
+frontend/.vite

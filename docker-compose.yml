@@ -2,7 +2,7 @@ services:
   db:
     image: mysql:8.0
     env_file:
-      - .env
+      - ./backend/.env
     environment:
       MYSQL_DATABASE: ${DB_NAME}
       MYSQL_USER: ${DB_USERNAME}
@@ -20,9 +20,9 @@ services:
       start_period: 40s
 
   app:
-    build: .
+    build: ./backend
     env_file:
-      - .env
+      - ./backend/.env
     environment:
       DB_HOST: db
     ports:
@@ -38,12 +38,27 @@ services:
       start_period: 10s
     restart: unless-stopped
 
+  frontend:
+    build: ./frontend
+    env_file:
+      - ./frontend/.env
+    environment:
+      VITE_API_TARGET: http://app:8000
+    ports:
+      - "5173:5173"
+    volumes:
+      - ./frontend:/app
+      - /app/node_modules
+    depends_on:
+      app:
+        condition: service_healthy
+
   migrator:
-    build: .
+    build: ./backend
     profiles:
       - migrations
     env_file:
-      - .env
+      - ./backend/.env
     environment:
       DB_HOST: db
     depends_on:
@@ -51,7 +66,7 @@ services:
         condition: service_healthy
     command: alembic upgrade head
     volumes:
-      - ./:/app
+      - ./backend:/app
 
 volumes:
   db_data:
