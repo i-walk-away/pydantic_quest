@@ -49,6 +49,3 @@ class NameNotFound(RepositoryError):
             status_code=self.status_code,
             detail=f'{entity_type_str} with name {name} not found in the database.'
         )
-
-
-linter_testing = govnosral
