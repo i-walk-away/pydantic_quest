@@ -1,8 +1,8 @@
 {
   "pythonVersion": "3.12",
-  "typeCheckingMode": "basic",
+  "typeCheckingMode": "strict",
   "include": [
-    "backend/src"
+    "src"
   ],
   "exclude": [
     "**/migrations",
@@ -11,6 +11,6 @@
     "**/__pycache__"
   ],
   "extraPaths": [
-    "backend"
+    "src"
   ]
 }

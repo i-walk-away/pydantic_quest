@@ -1,7 +1,7 @@
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from backend.src.app.core.exceptions.repositories.repository_exc import IDNotFoundError
+from backend.src.app.core.exceptions.repositories.repository_exc import NotFoundError
 from backend.src.app.domain.models.db.user import User
 from backend.src.app.domain.repositories.base_repository import BaseRepository
 
@@ -25,15 +25,17 @@ class UserRepository(BaseRepository[User]):
         Get user by username
 
         :param username: username
+
         :return: User object
         """
         stmt = select(User).where(User.username == username)
         result = await self.session.scalar(stmt)
 
         if result is None:
-            raise IDNotFoundError(
+            raise NotFoundError(
                 entity_type_str=self.model_name_str,
-                id=id
+                field_name="username",
+                field_value=username
             )
 
         return result

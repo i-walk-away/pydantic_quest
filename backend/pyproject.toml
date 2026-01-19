@@ -5,7 +5,7 @@ src = ["src"]
 exclude = ["migrations", "scripts"]
 
 [tool.ruff.lint]
-select = ["E", "F"]
-ignore = ["E501"]
+select = ["E", "F", "B", "UP", "SIM", "C4", "T20", "ARG"]
+ignore = ["E501", "B008"]
 
 [tool.ruff.format]

@@ -1,7 +1,7 @@
 from uuid import UUID
 
 from backend.src.app.domain.models.db.user import User
-from backend.src.app.domain.models.dto.user import UserDTO, CreateUserDTO
+from backend.src.app.domain.models.dto.user import CreateUserDTO, UserDTO
 from backend.src.app.domain.repositories.user_repository import UserRepository
 
 
