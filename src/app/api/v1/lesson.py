@@ -5,5 +5,3 @@ router = build_lesson_router(
     tags=['Lessons'],
     dependencies=[]
 )
-
-linter_testing = govnosral
