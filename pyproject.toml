@@ -1,10 +1,10 @@
-[ruff]
+[tool.ruff]
 line-length = 100
-src = ["src"]
 target-version = "py312"
+src = ["src"]
 
-[lint]
+[tool.ruff.lint]
 select = ["E", "F"]
 ignore = ["E501"]
 
-[format]
+[tool.ruff.format]
