@@ -1,4 +1,3 @@
-from .auth import LoginCredentials
-from .auth import LoginResponse
+from .auth import LoginCredentials, LoginResponse
 
 __all__ = ["LoginCredentials", "LoginResponse"]
