@@ -1,23 +1,46 @@
+import { Suspense, lazy, type ReactElement } from "react";
 import { BrowserRouter, Navigate, Route, Routes } from "react-router-dom";
 
-import { AdminLayout } from "@pages/admin/AdminLayout";
-import { AdminLessonsPage } from "@pages/admin/AdminLessonsPage";
-import { AdminLessonEditorPage } from "@pages/admin/AdminLessonEditorPage";
-import { AdminSettingsPage } from "@pages/admin/AdminSettingsPage";
+import { ErrorBoundary } from "@shared/ui/ErrorBoundary";
 
-export const App = (): JSX.Element => {
+const QuestPage = lazy(async () => {
+  const module = await import("@pages/quest/QuestPage");
+  return { default: module.QuestPage };
+});
+const AdminLayout = lazy(async () => {
+  const module = await import("@pages/admin/AdminLayout");
+  return { default: module.AdminLayout };
+});
+const AdminLessonsPage = lazy(async () => {
+  const module = await import("@pages/admin/AdminLessonsPage");
+  return { default: module.AdminLessonsPage };
+});
+const AdminLessonEditorPage = lazy(async () => {
+  const module = await import("@pages/admin/AdminLessonEditorPage");
+  return { default: module.AdminLessonEditorPage };
+});
+const AdminSettingsPage = lazy(async () => {
+  const module = await import("@pages/admin/AdminSettingsPage");
+  return { default: module.AdminSettingsPage };
+});
+
+export const App = (): ReactElement => {
   return (
-    <BrowserRouter>
-      <Routes>
-        <Route path="/" element={<Navigate to="/admin/lessons" replace={true} />} />
-        <Route path="/admin" element={<AdminLayout />}>
-          <Route path="lessons" element={<AdminLessonsPage />} />
-          <Route path="lessons/new" element={<AdminLessonEditorPage />} />
-          <Route path="lessons/:lessonId" element={<AdminLessonEditorPage />} />
-          <Route path="settings" element={<AdminSettingsPage />} />
-        </Route>
-        <Route path="*" element={<Navigate to="/admin/lessons" replace={true} />} />
-      </Routes>
-    </BrowserRouter>
+    <ErrorBoundary>
+      <Suspense fallback={null}>
+        <BrowserRouter>
+          <Routes>
+            <Route path="/" element={<QuestPage />} />
+            <Route path="/admin" element={<AdminLayout />}>
+              <Route path="lessons" element={<AdminLessonsPage />} />
+              <Route path="lessons/new" element={<AdminLessonEditorPage />} />
+              <Route path="lessons/:lessonId" element={<AdminLessonEditorPage />} />
+              <Route path="settings" element={<AdminSettingsPage />} />
+            </Route>
+            <Route path="*" element={<Navigate to="/" replace={true} />} />
+          </Routes>
+        </BrowserRouter>
+      </Suspense>
+    </ErrorBoundary>
   );
 };

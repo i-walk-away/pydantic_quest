@@ -1,6 +1,7 @@
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 
 import { fetchLesson } from "@shared/api/lessonApi";
+import { useLatestRequest } from "@shared/lib/useLatestRequest";
 import { type Lesson } from "@shared/model/lesson";
 
 interface LessonState {
@@ -19,43 +20,31 @@ export const useLesson = (lessonId: string | null): UseLessonResult => {
     isLoading: Boolean(lessonId),
     error: null,
   });
-  const requestIdRef = useRef(0);
+  const { run } = useLatestRequest();
 
   const load = useCallback(() => {
     if (!lessonId) {
       setState({ data: null, isLoading: false, error: null });
-      return () => undefined;
+      return;
     }
-
-    const controller = new AbortController();
-    const requestId = requestIdRef.current + 1;
-    requestIdRef.current = requestId;
 
     setState((prev) => ({ ...prev, isLoading: true, error: null }));
 
-    fetchLesson(lessonId, controller.signal)
+    run((signal) => fetchLesson(lessonId, signal))
       .then((data) => {
-        if (requestIdRef.current !== requestId) {
+        if (!data) {
           return;
         }
         setState({ data: data, isLoading: false, error: null });
       })
       .catch((error: unknown) => {
-        if (requestIdRef.current !== requestId) {
-          return;
-        }
         const message = error instanceof Error ? error.message : "Failed to load lesson";
         setState((prev) => ({ ...prev, isLoading: false, error: message }));
       });
-
-    return () => controller.abort();
-  }, [lessonId]);
+  }, [lessonId, run]);
 
   useEffect(() => {
-    const abort = load();
-    return () => {
-      abort?.();
-    };
+    load();
   }, [load]);
 
   const reload = useCallback(() => {

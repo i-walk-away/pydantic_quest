@@ -1,3 +1,4 @@
+import type { ReactElement } from "react";
 import { Link } from "react-router-dom";
 
 import { Button } from "@shared/ui/Button";
@@ -8,7 +9,7 @@ interface LessonTableProps {
   onDelete: (lessonId: string) => void;
 }
 
-export const LessonTable = ({ lessons, onDelete }: LessonTableProps): JSX.Element => {
+export const LessonTable = ({ lessons, onDelete }: LessonTableProps): ReactElement => {
   if (lessons.length === 0) {
     return <div className="empty">No lessons yet.</div>;
   }

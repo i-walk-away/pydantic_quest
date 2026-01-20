@@ -3,8 +3,8 @@ from datetime import datetime
 from sqlalchemy import DateTime, Integer, String, Text, func
 from sqlalchemy.orm import Mapped, mapped_column
 
-from backend.src.app.domain.models.db import Base
-from backend.src.app.domain.models.dto.lesson import LessonDTO
+from src.app.domain.models.db import Base
+from src.app.domain.models.dto.lesson import LessonDTO
 
 
 class Lesson(Base):

@@ -1,8 +1,8 @@
 from sqlalchemy import String
 from sqlalchemy.orm import Mapped, mapped_column
 
-from backend.src.app.domain.models.db import Base
-from backend.src.app.domain.models.dto.user import UserDTO
+from src.app.domain.models.db import Base
+from src.app.domain.models.dto.user import UserDTO
 
 
 class User(Base):

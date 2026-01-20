@@ -1,9 +1,9 @@
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from backend.src.app.core.exceptions.repositories.repository_exc import NotFoundError
-from backend.src.app.domain.models.db.user import User
-from backend.src.app.domain.repositories.base_repository import BaseRepository
+from src.app.core.exceptions.repositories.repository_exc import NotFoundError
+from src.app.domain.models.db.user import User
+from src.app.domain.repositories.base_repository import BaseRepository
 
 
 class UserRepository(BaseRepository[User]):

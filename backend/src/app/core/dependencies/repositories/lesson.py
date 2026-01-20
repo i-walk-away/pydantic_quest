@@ -1,8 +1,8 @@
 from fastapi import Depends
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from backend.src.app.core.dependencies.db import get_session
-from backend.src.app.domain.repositories.lesson_repository import LessonRepository
+from src.app.core.dependencies.db import get_session
+from src.app.domain.repositories.lesson_repository import LessonRepository
 
 
 def get_lesson_repository(

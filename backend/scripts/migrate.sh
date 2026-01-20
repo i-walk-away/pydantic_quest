@@ -9,6 +9,7 @@ reset_db="false"
 versions_dir="${backend_root}/migrations/versions"
 started_db="false"
 env_file="${project_root}/.env"
+python_cmd=""
 
 if [ ! -f "${env_file}" ]; then
   echo "env file ${env_file} not found"
@@ -19,6 +20,15 @@ set -a
 # shellcheck disable=SC1090
 . "${env_file}"
 set +a
+
+if command -v python >/dev/null 2>&1; then
+  python_cmd="python"
+elif command -v python3 >/dev/null 2>&1; then
+  python_cmd="python3"
+else
+  echo "python interpreter not found"
+  exit 1
+fi
 
 if [ "${1:-}" = "--reset-db" ]; then
   reset_db="true"
@@ -83,7 +93,7 @@ fi
 
 if [ -n "${latest_after}" ] && [ "${latest_after}" != "${latest_before}" ]; then
   is_empty_revision="$(
-    python - "${latest_after}" <<'PY'
+    "${python_cmd}" - "${latest_after}" <<'PY'
 import ast
 import pathlib
 import sys

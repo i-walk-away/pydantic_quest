@@ -1,4 +1,4 @@
-import { type AnchorHTMLAttributes, type ReactNode } from "react";
+import { type AnchorHTMLAttributes, type ReactElement, type ReactNode } from "react";
 import { Link, type LinkProps } from "react-router-dom";
 
 interface LinkButtonProps extends Omit<LinkProps, "to">, AnchorHTMLAttributes<HTMLAnchorElement> {
@@ -7,7 +7,13 @@ interface LinkButtonProps extends Omit<LinkProps, "to">, AnchorHTMLAttributes<HT
   children: ReactNode;
 }
 
-export const LinkButton = ({ variant = "ghost", children, to, className, ...props }: LinkButtonProps): JSX.Element => {
+export const LinkButton = ({
+  variant = "ghost",
+  children,
+  to,
+  className,
+  ...props
+}: LinkButtonProps): ReactElement => {
   const combinedClassName = [
     "btn",
     variant === "accent" ? "btn--accent" : "btn--ghost",
