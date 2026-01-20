@@ -8,44 +8,42 @@ class RepositoryError(HTTPException):
     Base repository exception class.
     """
 
-
-class IDNotFoundError(RepositoryError):
     def __init__(
             self,
-            entity_type_str: str,
-            id: UUID
-    ):
+            status_code: int,
+            detail: str
+    ) -> None:
         """
-        Initialize not found by id error.
+        Initialize repository error.
 
-        :param entity_type_str: entity type name
-        :param id: entity id
+        :param status_code: HTTP status code
+        :param detail: error message
 
         :return: None
         """
-        self.status_code = 404
-
-        super().__init__(
-            status_code=self.status_code,
-            detail=f'{entity_type_str} with id {id} not found in the database.'
-        )
+        super().__init__(status_code=status_code, detail=detail)
 
 
-class NameNotFound(RepositoryError):
+class NotFoundError(RepositoryError):
     def __init__(
             self,
             entity_type_str: str,
-            name: str
-    ):
+            field_name: str,
+            field_value: str | UUID
+    ) -> None:
         """
-        Initialize not found by name error.
+        Initialize not found error.
 
-        :param entity_type_str:
-        :param name:
+        :param entity_type_str: entity type name
+        :param field_name: field name
+        :param field_value: field value
+
+        :return: None
         """
-        self.status_code = 404
+        status_code = 404
+        detail = f'{entity_type_str} with {field_name} {field_value} not found in the database.'
 
         super().__init__(
-            status_code=self.status_code,
-            detail=f'{entity_type_str} with name {name} not found in the database.'
+            status_code=status_code,
+            detail=detail
         )

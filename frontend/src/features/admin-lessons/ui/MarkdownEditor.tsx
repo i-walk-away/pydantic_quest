@@ -1,4 +1,4 @@
-import { useMemo, useRef } from "react";
+import { useMemo, useRef, type ReactElement } from "react";
 
 import { renderMarkdown } from "@shared/lib/markdown/renderMarkdown";
 import { eventToCombo, type MarkdownHotkeys } from "@shared/lib/hotkeys";
@@ -19,7 +19,7 @@ export const MarkdownEditor = ({
   toolbarHidden,
   onToggleToolbar,
   hotkeys,
-}: MarkdownEditorProps): JSX.Element => {
+}: MarkdownEditorProps): ReactElement => {
   const previewHtml = useMemo(() => renderMarkdown(value), [value]);
   const textareaRef = useRef<HTMLTextAreaElement | null>(null);
 

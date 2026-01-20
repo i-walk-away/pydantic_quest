@@ -1,14 +1,22 @@
-import { useCallback, useState } from "react";
+import { useCallback, useEffect, type ReactElement } from "react";
 
 import { useLessons } from "@features/admin-lessons/hooks/useLessons";
 import { LessonTable } from "@features/admin-lessons/ui/LessonTable";
 import { deleteLesson } from "@shared/api/lessonApi";
+import { useToast } from "@shared/lib/useToast";
 import { LinkButton } from "@shared/ui/LinkButton";
 import { Button } from "@shared/ui/Button";
+import { Notice } from "@shared/ui/Notice";
 
-export const AdminLessonsPage = (): JSX.Element => {
+export const AdminLessonsPage = (): ReactElement => {
   const { data, isLoading, error, reload } = useLessons();
-  const [actionError, setActionError] = useState<string | null>(null);
+  const { toasts, showToast } = useToast({ durationMs: 1000 });
+
+  useEffect(() => {
+    if (error) {
+      showToast({ message: error, variant: "error" });
+    }
+  }, [error, showToast]);
 
   const handleDelete = useCallback(
     async (lessonId: string) => {
@@ -18,18 +26,25 @@ export const AdminLessonsPage = (): JSX.Element => {
       }
       try {
         await deleteLesson(lessonId);
-        setActionError(null);
+        showToast({ message: "Lesson deleted", variant: "success" });
         reload();
       } catch (error: unknown) {
         const message = error instanceof Error ? error.message : "Failed to delete lesson";
-        setActionError(message);
+        showToast({ message: message, variant: "error" });
       }
     },
-    [reload]
+    [reload, showToast]
   );
 
   return (
     <div className="admin-page">
+      {toasts.length > 0 && (
+        <div className="toast-stack">
+          {toasts.map((toast) => (
+            <Notice key={toast.id} message={toast.message} variant={toast.variant} />
+          ))}
+        </div>
+      )}
       <div className="panel__header">
         <div>
           <p className="eyebrow">library</p>
@@ -42,8 +57,6 @@ export const AdminLessonsPage = (): JSX.Element => {
       </div>
 
       {isLoading && <div className="status muted">Loading lessons...</div>}
-      {error && <div className="status error">{error}</div>}
-      {actionError && <div className="status error">{actionError}</div>}
 
       {!isLoading && !error && (
         <LessonTable lessons={data} onDelete={handleDelete} />

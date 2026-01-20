@@ -1,8 +1,8 @@
 from uuid import UUID
 
-from backend.src.app.domain.models.db.lesson import Lesson
-from backend.src.app.domain.models.dto.lesson import LessonDTO, CreateLessonDTO, UpdateLessonDTO
-from backend.src.app.domain.repositories.lesson_repository import LessonRepository
+from src.app.domain.models.db.lesson import Lesson
+from src.app.domain.models.dto.lesson import CreateLessonDTO, LessonDTO, UpdateLessonDTO
+from src.app.domain.repositories.lesson_repository import LessonRepository
 
 
 class LessonService:

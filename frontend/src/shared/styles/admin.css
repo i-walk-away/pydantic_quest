@@ -6,6 +6,19 @@
   gap: 10px;
 }
 
+.error-boundary {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  padding: 24px;
+}
+
+.muted {
+  color: var(--text-muted);
+}
+
 .topbar {
   display: flex;
   justify-content: space-between;
@@ -18,16 +31,14 @@
   align-items: center;
 }
 
-.logo__mark {
-  width: 28px;
-  height: 28px;
-  display: grid;
-  place-items: center;
-  border-radius: 12px;
-  background: var(--md-typeset-a-color);
-  color: #fff;
-  font-weight: 700;
-  box-shadow: var(--shadow);
+.logo__image {
+  width: 32px;
+  height: 32px;
+  border-radius: 0;
+  display: block;
+  object-fit: contain;
+  box-shadow: none;
+  background: transparent;
 }
 
 .logo__text {
@@ -72,6 +83,10 @@
   justify-content: space-between;
   align-items: center;
   gap: 16px;
+}
+
+.push-right {
+  margin-left: auto;
 }
 
 .admin-layout {
@@ -205,8 +220,47 @@ h2 {
   color: #f27c7c;
 }
 
-.muted {
-  color: var(--text-muted);
+.toast-stack {
+  position: fixed;
+  top: 12px;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 2000;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  max-width: min(360px, calc(100vw - 32px));
+  pointer-events: none;
+  animation: toastSlide 0.2s ease both;
+}
+
+.notice {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 14px;
+  border-radius: 12px;
+  background: rgba(233, 32, 99, 0.12);
+  color: var(--text-strong);
+  font-size: 0.95rem;
+  border: 1px solid rgba(233, 32, 99, 0.3);
+  box-shadow: var(--shadow);
+  pointer-events: auto;
+}
+
+.notice--success {
+  background: rgba(34, 176, 120, 0.12);
+  border-color: rgba(34, 176, 120, 0.3);
+}
+
+.notice--error {
+  background: rgba(242, 124, 124, 0.12);
+  border-color: rgba(242, 124, 124, 0.35);
+}
+
+.notice--info {
+  background: rgba(113, 146, 255, 0.12);
+  border-color: rgba(113, 146, 255, 0.3);
 }
 
 .table-wrap {
@@ -467,6 +521,21 @@ h2 {
 @media (max-width: 1100px) {
   .editor-grid {
     grid-template-columns: 1fr;
+  }
+
+  .toast-stack {
+    max-width: none;
+  }
+}
+
+@keyframes toastSlide {
+  from {
+    opacity: 0;
+    transform: translateY(-6px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
   }
 }
 

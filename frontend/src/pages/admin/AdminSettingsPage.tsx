@@ -1,8 +1,10 @@
-import { useMemo, useState } from "react";
+import { useMemo, useState, type ReactElement } from "react";
 
 import { defaultHotkeys, loadHotkeys, normalizeHotkey, saveHotkeys, type MarkdownHotkeys } from "@shared/lib/hotkeys";
 import { Button } from "@shared/ui/Button";
 import { Input } from "@shared/ui/Input";
+import { useToast } from "@shared/lib/useToast";
+import { Notice } from "@shared/ui/Notice";
 
 const captureCombo = (event: React.KeyboardEvent<HTMLInputElement>): string => {
   event.preventDefault();
@@ -26,9 +28,10 @@ const captureCombo = (event: React.KeyboardEvent<HTMLInputElement>): string => {
   return parts.join("+");
 };
 
-export const AdminSettingsPage = (): JSX.Element => {
+export const AdminSettingsPage = (): ReactElement => {
   const initial = useMemo(() => loadHotkeys(), []);
   const [values, setValues] = useState<MarkdownHotkeys>(initial);
+  const { toasts, showToast } = useToast({ durationMs: 1000 });
 
   const updateField = (key: keyof MarkdownHotkeys, value: string) => {
     setValues((prev) => ({ ...prev, [key]: normalizeHotkey(value) }));
@@ -37,11 +40,13 @@ export const AdminSettingsPage = (): JSX.Element => {
   const handleSubmit = (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
     saveHotkeys(values);
+    showToast({ message: "Hotkeys saved", variant: "success" });
   };
 
   const handleReset = () => {
     setValues(defaultHotkeys);
     saveHotkeys(defaultHotkeys);
+    showToast({ message: "Hotkeys reset", variant: "success" });
   };
 
   return (
@@ -56,6 +61,13 @@ export const AdminSettingsPage = (): JSX.Element => {
       <div className="settings-body">
         <div className="settings-card">
           <p className="muted">Click a field and press the shortcut you want to use.</p>
+          {toasts.length > 0 && (
+            <div className="toast-stack">
+              {toasts.map((toast) => (
+                <Notice key={toast.id} message={toast.message} variant={toast.variant} />
+              ))}
+            </div>
+          )}
           <form className="settings-form" onSubmit={handleSubmit}>
             <label className="field">
               <span>Bold</span>

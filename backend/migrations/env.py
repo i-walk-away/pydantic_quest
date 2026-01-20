@@ -3,15 +3,15 @@ from logging.config import fileConfig
 from pathlib import Path
 from urllib.parse import urlparse, urlunparse
 
+project_root = Path(__file__).resolve().parents[1]
+sys.path.append(str(project_root))
+
 from alembic import context
 from sqlalchemy import engine_from_config
 from sqlalchemy import pool
 
-from backend.cfg.cfg import settings
-from backend.src.app.domain.models.db import Base
-
-project_root = Path(__file__).resolve().parents[1]
-sys.path.append(str(project_root))
+from src.cfg.cfg import settings
+from src.app.domain.models.db import Base
 
 # this is the Alembic Config object, which provides
 # access to the values within the .ini file in use.

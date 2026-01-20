@@ -24,13 +24,22 @@ class Database(BaseSettings):
         return f"mysql+aiomysql://{self.username}:{self.password}@{self.host}:{self.port}/{self.database}"
 
 
+def build_database() -> Database:
+    """
+    Build database settings instance.
+
+    :return: database settings instance
+    """
+    return Database()
+
+
 class Settings(BaseSettings):
     model_config = SettingsConfigDict(
         env_file=".env",
         extra="ignore",
     )
 
-    database: Database = Field(default_factory=Database)
+    database: Database = Field(default_factory=build_database)
     # auth: Auth = Field(default_factory=Auth)
 
 

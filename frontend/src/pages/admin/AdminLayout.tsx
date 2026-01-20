@@ -1,19 +1,21 @@
-import { NavLink, Outlet } from "react-router-dom";
+import type { ReactElement } from "react";
+import { Link, NavLink, Outlet } from "react-router-dom";
 
+import logoUrl from "@shared/assets/logo.png";
 import { LinkButton } from "@shared/ui/LinkButton";
 
 const navClass = ({ isActive }: { isActive: boolean }): string => {
   return isActive ? "nav-item is-active" : "nav-item";
 };
 
-export const AdminLayout = (): JSX.Element => {
+export const AdminLayout = (): ReactElement => {
   return (
     <div className="scene">
       <header className="topbar">
-        <div className="logo">
-          <span className="logo__mark">P</span>
+        <Link className="logo" to="/">
+          <img className="logo__image" src={logoUrl} alt="Pydantic Quest logo" />
           <span className="logo__text">pydantic.quest</span>
-        </div>
+        </Link>
         <div className="topbar__meta">
           <span className="pill">admin</span>
           <span className="pill pill--ghost">dashboard</span>

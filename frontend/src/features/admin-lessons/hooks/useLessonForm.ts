@@ -1,4 +1,4 @@
-import { useCallback, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 
 import { type Lesson, type LessonFormValues } from "@shared/model/lesson";
 
@@ -47,6 +47,21 @@ export const useLessonForm = (lesson: Lesson | null) => {
         }
       : emptyValues
   );
+
+  useEffect(() => {
+    if (!lesson) {
+      setValues(emptyValues);
+      return;
+    }
+
+    setValues({
+      order: lesson.order,
+      slug: lesson.slug,
+      title: lesson.title,
+      bodyMarkdown: lesson.bodyMarkdown,
+      expectedOutput: lesson.expectedOutput,
+    });
+  }, [lesson]);
 
   const updateField = useCallback(
     <K extends keyof LessonFormValues>(key: K, value: LessonFormValues[K]) => {

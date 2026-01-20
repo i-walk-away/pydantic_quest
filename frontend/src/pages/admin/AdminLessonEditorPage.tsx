@@ -1,43 +1,79 @@
-import { useCallback, useMemo, useState } from "react";
-import { useNavigate, useParams } from "react-router-dom";
+import { useCallback, useEffect, useMemo, useState, type ReactElement } from "react";
+import { useLocation, useNavigate, useParams } from "react-router-dom";
 
 import { useLesson } from "@features/admin-lessons/hooks/useLesson";
 import { useLessonForm } from "@features/admin-lessons/hooks/useLessonForm";
 import { MarkdownEditor } from "@features/admin-lessons/ui/MarkdownEditor";
 import { createLesson, deleteLesson, updateLesson } from "@shared/api/lessonApi";
 import { loadHotkeys } from "@shared/lib/hotkeys";
+import { type ToastVariant, useToast } from "@shared/lib/useToast";
 import { Button } from "@shared/ui/Button";
 import { Input } from "@shared/ui/Input";
+import { Notice } from "@shared/ui/Notice";
 import { Textarea } from "@shared/ui/Textarea";
 
-export const AdminLessonEditorPage = (): JSX.Element => {
+interface LocationState {
+  toast?: {
+    message: string;
+    variant: ToastVariant;
+  };
+}
+
+export const AdminLessonEditorPage = (): ReactElement => {
   const { lessonId } = useParams();
   const navigate = useNavigate();
+  const location = useLocation();
   const { data, isLoading, error } = useLesson(lessonId ?? null);
   const { values, updateField, reset } = useLessonForm(data);
   const [saving, setSaving] = useState(false);
-  const [actionError, setActionError] = useState<string | null>(null);
   const [toolbarHidden, setToolbarHidden] = useState(false);
+  const { toasts, showToast } = useToast({ durationMs: 1000 });
 
   const hotkeys = useMemo(() => loadHotkeys(), []);
 
+  useEffect(() => {
+    const state = location.state as LocationState | null;
+    if (state?.toast) {
+      showToast({ message: state.toast.message, variant: state.toast.variant });
+      navigate(
+        location.pathname,
+        {
+          replace: true,
+          state: null
+        }
+      );
+    }
+  }, [location.pathname, location.state, navigate, showToast]);
+
+  useEffect(() => {
+    if (error) {
+      showToast({ message: error, variant: "error" });
+    }
+  }, [error, showToast]);
+
   const handleSave = useCallback(async () => {
     setSaving(true);
-    setActionError(null);
     try {
       if (lessonId) {
         await updateLesson(lessonId, values);
+        showToast({ message: "Lesson saved", variant: "success" });
       } else {
         const created = await createLesson(values);
-        navigate(`/admin/lessons/${created.id}`, { replace: true });
+        navigate(
+          `/admin/lessons/${created.id}`,
+          {
+            replace: true,
+            state: { toast: { message: "Lesson created", variant: "success" } }
+          }
+        );
       }
     } catch (error: unknown) {
       const message = error instanceof Error ? error.message : "Failed to save lesson";
-      setActionError(message);
+      showToast({ message: message, variant: "error" });
     } finally {
       setSaving(false);
     }
-  }, [lessonId, navigate, values]);
+  }, [lessonId, navigate, showToast, values]);
 
   const handleDelete = useCallback(async () => {
     if (!lessonId) {
@@ -49,12 +85,18 @@ export const AdminLessonEditorPage = (): JSX.Element => {
     }
     try {
       await deleteLesson(lessonId);
-      navigate("/admin/lessons", { replace: true });
+      navigate(
+        "/admin/lessons",
+        {
+          replace: true,
+          state: { toast: { message: "Lesson deleted", variant: "success" } }
+        }
+      );
     } catch (error: unknown) {
       const message = error instanceof Error ? error.message : "Failed to delete lesson";
-      setActionError(message);
+      showToast({ message: message, variant: "error" });
     }
-  }, [lessonId, navigate]);
+  }, [lessonId, navigate, showToast]);
 
   const handleSubmit = (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
@@ -63,6 +105,13 @@ export const AdminLessonEditorPage = (): JSX.Element => {
 
   return (
     <div className="admin-page">
+      {toasts.length > 0 && (
+        <div className="toast-stack">
+          {toasts.map((toast) => (
+            <Notice key={toast.id} message={toast.message} variant={toast.variant} />
+          ))}
+        </div>
+      )}
       <div className="panel__header">
         <div>
           <p className="eyebrow">editor</p>
@@ -84,8 +133,6 @@ export const AdminLessonEditorPage = (): JSX.Element => {
       </div>
 
       {isLoading && <div className="status muted">Loading lesson...</div>}
-      {error && <div className="status error">{error}</div>}
-      {actionError && <div className="status error">{actionError}</div>}
 
       <form id="lesson-form" className="lesson-form" onSubmit={handleSubmit}>
         <div className="field-grid">

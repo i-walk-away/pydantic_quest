@@ -18,6 +18,9 @@ export default defineConfig(({ mode }) => {
     },
     server: {
       port: 5173,
+      headers: {
+        "Cache-Control": "no-store"
+      },
       proxy: {
         "/api": {
           target: apiTarget,
