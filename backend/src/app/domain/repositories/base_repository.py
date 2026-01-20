@@ -28,7 +28,7 @@ class BaseRepository[Model]:
         self.model = model
         self.model_name_str = self.model.__name__
 
-    async def get(self, id: UUID) -> Model | None:
+    async def get(self, id: UUID) -> Model:
         """
         Get object from database by id.
 
@@ -82,7 +82,7 @@ class BaseRepository[Model]:
 
         return True
 
-    async def update(self, id: UUID, data: dict) -> Model | None:
+    async def update(self, id: UUID, data: dict[str, object]) -> Model:
         """
         Update an existing object
 
