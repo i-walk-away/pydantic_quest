@@ -1,3 +1,2 @@
-# pydantic_quest
-
-[![Ruff](https://img.shields.io/endpoint?url=https://raw.githubusercontent.com/astral-sh/ruff/main/assets/badge/v2.json)](https://github.com/astral-sh/ruff)
+# Pydantic Quest
+Free interactive course on Pydantic. I'll write more when the time comes. 
