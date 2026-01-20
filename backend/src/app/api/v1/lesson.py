@@ -2,12 +2,14 @@ from uuid import UUID
 
 from fastapi import APIRouter, Depends
 
+from src.app.core.dependencies.security.user import require_admin_user
 from src.app.core.dependencies.services.lesson import get_lesson_service
 from src.app.domain.models.dto.lesson import (
     CreateLessonDTO,
     LessonDTO,
     UpdateLessonDTO,
 )
+from src.app.domain.models.dto.user import UserDTO
 from src.app.domain.services.lesson_service import LessonService
 
 router = APIRouter(
@@ -20,13 +22,15 @@ router = APIRouter(
 @router.post(path="/create", summary="Create new lesson")
 async def create_lesson(
         data: CreateLessonDTO,
-        lesson_service: LessonService = Depends(dependency=get_lesson_service)
+        lesson_service: LessonService = Depends(dependency=get_lesson_service),
+        _admin: UserDTO = Depends(require_admin_user)
 ) -> LessonDTO:
     """
     Create lesson.
 
     :param data: lesson creation data
     :param lesson_service: lesson service
+    :param _admin: authenticated admin user
 
     :return: created lesson
     """
@@ -73,7 +77,8 @@ async def get_lesson_by_id(
 async def update_lesson(
         lesson_id: UUID,
         data: UpdateLessonDTO,
-        lesson_service: LessonService = Depends(dependency=get_lesson_service)
+        lesson_service: LessonService = Depends(dependency=get_lesson_service),
+        _admin: UserDTO = Depends(require_admin_user)
 ) -> LessonDTO:
     """
     Update lesson.
@@ -81,6 +86,7 @@ async def update_lesson(
     :param lesson_id: lesson id
     :param data: lesson update data
     :param lesson_service: lesson service
+    :param _admin: authenticated admin user
 
     :return: updated lesson
     """
@@ -92,14 +98,16 @@ async def update_lesson(
 @router.delete(path="/{lesson_id}", summary="Delete lesson")
 async def delete_lesson(
         lesson_id: UUID,
-        lesson_service: LessonService = Depends(dependency=get_lesson_service)
+        lesson_service: LessonService = Depends(dependency=get_lesson_service),
+        _admin: UserDTO = Depends(require_admin_user)
 ) -> bool:
     """
     Delete lesson.
 
     :param lesson_id: lesson id
     :param lesson_service: lesson service
+    :param _admin: authenticated admin user
 
-    :return: ``True`` if lesson was deleted
+    :return: True if lesson was deleted
     """
     return await lesson_service.delete(id=lesson_id)

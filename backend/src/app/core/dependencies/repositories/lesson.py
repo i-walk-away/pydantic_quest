@@ -9,7 +9,7 @@ def get_lesson_repository(
         session: AsyncSession = Depends(get_session)
 ) -> LessonRepository:
     """
-    Constructs an instance of ``LessonRepository`` with SQLA Async Session injected.
+    Constructs an instance of LessonRepository with SQLA Async Session injected.
 
     :param session: database session
 

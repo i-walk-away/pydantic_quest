@@ -1,5 +1,5 @@
-from src.app.core.auth_manager import AuthManager
 from src.app.core.exceptions.auth_exc import InvalidCredentials
+from src.app.core.security.auth_manager import AuthManager
 from src.app.domain.models.dto.auth import LoginCredentials
 from src.app.domain.repositories import UserRepository
 

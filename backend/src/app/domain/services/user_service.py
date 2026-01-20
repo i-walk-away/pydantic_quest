@@ -1,7 +1,7 @@
 from uuid import UUID
 
-from src.app.core.auth_manager import AuthManager
 from src.app.core.exceptions.user_exc import UserAlreadyExists
+from src.app.core.security.auth_manager import AuthManager
 from src.app.domain.models.db.user import User
 from src.app.domain.models.dto.user import CreateUserDTO, UserDTO
 from src.app.domain.repositories import UserRepository
@@ -34,7 +34,7 @@ class UserService:
 
         return user.to_dto()
 
-    async def get_by_username(self, username: str) -> UserDTO | None:
+    async def get_by_username(self, username: str) -> UserDTO:
         """
         Gets user by username from the database.
 
@@ -42,9 +42,6 @@ class UserService:
         :return: UserDTO representing a user.
         """
         user = await self.repository.get_by_username(username=username)
-
-        if not user:
-            return None
 
         return user.to_dto()
 
