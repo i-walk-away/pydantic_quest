@@ -29,7 +29,7 @@ class LessonService:
 
     async def get_all(self) -> list[LessonDTO]:
         """
-        Get all lessons.
+        Get all lessons sorted by lesson.order
 
         :return: lesson list
         """
@@ -43,8 +43,7 @@ class LessonService:
         """
         Create new lesson.
 
-        :param schema: DTO object containing fields needed to construct new
-            Lesson
+        :param schema: DTO object containing fields needed to construct new Lesson
 
         :return: DTO representation of created Lesson
         """

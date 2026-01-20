@@ -1,11 +1,11 @@
-from pydantic import BaseModel
+from src.app.domain.models.dto.extended_basemodel import ExtendedBaseModel
 
 
-class LoginCredentials(BaseModel):
+class LoginCredentials(ExtendedBaseModel):
     username: str
     plain_password: str
 
 
-class LoginResponse(BaseModel):
+class LoginResponse(ExtendedBaseModel):
     access_token: str
     token_type: str = 'bearer'

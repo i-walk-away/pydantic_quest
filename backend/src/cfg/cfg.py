@@ -16,21 +16,13 @@ class Database(BaseSettings):
     @computed_field
     @property
     def url(self) -> str:
-        """
-        Build database connection URL.
-
-        :return: database connection URL
-        """
         return f"mysql+aiomysql://{self.username}:{self.password}@{self.host}:{self.port}/{self.database}"
 
 
-def build_database() -> Database:
-    """
-    Build database settings instance.
-
-    :return: database settings instance
-    """
-    return Database()
+class Auth(BaseSettings):
+    jwt_secret_key: str = Field(alias="JWT_SECRET_KEY")
+    jwt_algorithm: str = Field(alias='JWT_ALGORITHM')
+    jwt_lifespan: int = Field(alias='JWT_LIFESPAN')  # in minutes
 
 
 class Settings(BaseSettings):
@@ -39,8 +31,8 @@ class Settings(BaseSettings):
         extra="ignore",
     )
 
-    database: Database = Field(default_factory=build_database)
-    # auth: Auth = Field(default_factory=Auth)
+    database: Database = Field(default_factory=Database)
+    auth: Auth = Field(default_factory=Auth)
 
 
 settings = Settings()

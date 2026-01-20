@@ -1,9 +1,9 @@
 from datetime import datetime
 
-from pydantic import BaseModel
+from src.app.domain.models.dto.extended_basemodel import ExtendedBaseModel
 
 
-class UpdateLessonDTO(BaseModel):
+class UpdateLessonDTO(ExtendedBaseModel):
     order: int | None = None
     slug: str | None = None
     name: str | None = None

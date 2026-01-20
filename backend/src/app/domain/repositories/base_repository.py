@@ -4,7 +4,7 @@ from uuid import UUID
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from src.app.core.exceptions.repositories.repository_exc import NotFoundError
+from src.app.core.exceptions.base_exc import NotFoundError
 from src.app.domain.models.db import Base
 
 Model = TypeVar("Model", bound=Base)

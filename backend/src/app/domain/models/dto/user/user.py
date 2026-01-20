@@ -1,8 +1,8 @@
 from uuid import UUID
 
-from pydantic import BaseModel
+from src.app.domain.models.dto.extended_basemodel import ExtendedBaseModel
 
 
-class UserDTO(BaseModel):
+class UserDTO(ExtendedBaseModel):
     id: UUID
     username: str

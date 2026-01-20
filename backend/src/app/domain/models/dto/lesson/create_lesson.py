@@ -1,7 +1,9 @@
-from pydantic import BaseModel, Field
+from pydantic import Field
+
+from src.app.domain.models.dto.extended_basemodel import ExtendedBaseModel
 
 
-class CreateLessonDTO(BaseModel):
+class CreateLessonDTO(ExtendedBaseModel):
     name: str
     order: int
     slug: str

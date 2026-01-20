@@ -12,7 +12,4 @@ class User(Base):
     hashed_password: Mapped[str] = mapped_column(String(255))
 
     def to_dto(self) -> UserDTO:
-        return UserDTO(
-            id=self.id,
-            username=self.username,
-        )
+        return UserDTO.model_validate(obj=self, from_attributes=True)

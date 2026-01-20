@@ -1,10 +1,10 @@
 from datetime import datetime
 from uuid import UUID
 
-from pydantic import BaseModel
+from src.app.domain.models.dto.extended_basemodel import ExtendedBaseModel
 
 
-class LessonDTO(BaseModel):
+class LessonDTO(ExtendedBaseModel):
     id: UUID
     order: int
     slug: str

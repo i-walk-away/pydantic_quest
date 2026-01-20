@@ -1,7 +1,7 @@
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from src.app.core.exceptions.repositories.repository_exc import NotFoundError
+from src.app.core.exceptions.base_exc import NotFoundError
 from src.app.domain.models.db.user import User
 from src.app.domain.repositories.base_repository import BaseRepository
 

@@ -1,30 +1,17 @@
+"""
+General exceptions
+"""
+
 from uuid import UUID
 
 from fastapi import HTTPException
 
 
-class RepositoryError(HTTPException):
+class NotFoundError(HTTPException):
     """
-    Base repository exception class.
+    Entity was not found
     """
 
-    def __init__(
-            self,
-            status_code: int,
-            detail: str
-    ) -> None:
-        """
-        Initialize repository error.
-
-        :param status_code: HTTP status code
-        :param detail: error message
-
-        :return: None
-        """
-        super().__init__(status_code=status_code, detail=detail)
-
-
-class NotFoundError(RepositoryError):
     def __init__(
             self,
             entity_type_str: str,
