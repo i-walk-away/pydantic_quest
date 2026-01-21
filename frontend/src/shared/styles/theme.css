@@ -1,11 +1,11 @@
 :root {
   --md-typeset-a-color: #e92063;
   --md-hue: 230;
-  --md-default-bg-color: hsl(232.5, 13.3%, 11.8%);
+  --md-default-bg-color: hsl(232.5, 13.3%, 8.4%);
   --md-typeset-color: hsl(298.6, 73.9%, 46.7%);
-  --surface-1: hsl(232.5, 14%, 16%);
-  --surface-2: hsl(232.5, 14%, 20%);
-  --surface-3: hsl(232.5, 14%, 26%);
+  --surface-1: hsl(232.5, 14%, 12.5%);
+  --surface-2: hsl(232.5, 14%, 16.5%);
+  --surface-3: hsl(232.5, 14%, 22.5%);
   --text-strong: hsl(0, 0%, 96%);
   --text-muted: hsl(0, 0%, 78%);
   --shadow: 0 20px 50px rgba(0, 0, 0, 0.35);

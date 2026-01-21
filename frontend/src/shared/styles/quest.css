@@ -402,7 +402,7 @@
 .auth-overlay {
   position: fixed;
   inset: 0;
-  background: rgba(8, 10, 16, 0.78);
+  background: rgba(0, 0, 0, 0.6);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -412,14 +412,14 @@
 
 .auth-dialog {
   width: min(520px, 92vw);
-  background: rgba(15, 16, 24, 0.92);
+  background: #000;
   border-radius: 18px;
   padding: 28px;
   display: flex;
   flex-direction: column;
   gap: 20px;
-  border: 1px solid rgba(255, 255, 255, 0.06);
-  box-shadow: 0 24px 60px rgba(0, 0, 0, 0.45);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  box-shadow: none;
 }
 
 .auth-dialog__header {
@@ -456,8 +456,8 @@
 .auth-field .input {
   height: 44px;
   border-radius: 12px;
-  background: rgba(255, 255, 255, 0.03);
-  border: 1px solid rgba(255, 255, 255, 0.08);
+  background: #000;
+  border: 1px solid rgba(255, 255, 255, 0.18);
   color: var(--text-strong);
   padding: 0 14px;
 }
