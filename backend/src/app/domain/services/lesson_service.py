@@ -16,7 +16,7 @@ class LessonService:
         """
         self.repository = lesson_repository
 
-    async def get_by_id(self, id: UUID) -> LessonDTO:
+    async def get_by_id(self, id: UUID) -> LessonDTO | None:
         """
         Get lesson by id.
 

@@ -36,6 +36,9 @@ class AuthService:
         """
         user = await self.user_repository.get_by_username(username=credentials.username)
 
+        if not user:
+            return False
+
         is_password_correct = self.auth_manager.verify_password_against_hash(
             plain_password=credentials.plain_password,
             hashed_password=user.hashed_password

@@ -4,7 +4,6 @@ from uuid import UUID
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from src.app.core.exceptions.base_exc import NotFoundError
 from src.app.domain.models.db import Base
 
 Model = TypeVar("Model", bound=Base)
@@ -26,9 +25,8 @@ class BaseRepository[Model]:
         """
         self.session = session
         self.model = model
-        self.model_name_str = self.model.__name__
 
-    async def get(self, id: UUID) -> Model:
+    async def get(self, id: UUID) -> Model | None:
         """
         Get object from database by id.
 
@@ -38,13 +36,6 @@ class BaseRepository[Model]:
         """
         stmt = select(self.model).where(self.model.id == id)  # type: ignore
         result = await self.session.scalar(stmt)
-
-        if result is None:
-            raise NotFoundError(
-                entity_type_str=self.model_name_str,
-                field_name="id",
-                field_value=id
-            )
 
         return result
 
