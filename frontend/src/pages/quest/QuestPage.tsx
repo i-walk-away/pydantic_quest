@@ -244,22 +244,31 @@ export const QuestPage = (): ReactElement => {
       <main
         className={isDragging ? "layout layout--dragging" : "layout"}
         ref={layoutRef}
-        style={{ gridTemplateColumns: `${splitPercent}% 8px ${100 - splitPercent}%` }}
+        style={{
+          gridTemplateColumns: `calc(${splitPercent}% - 1px) 2px calc(${100 - splitPercent}% - 1px)`,
+        }}
       >
         <section className="panel panel--lesson">
           <div className="panel__header">
-            <div>
-              <p className="eyebrow">lesson 03</p>
-              <h1>Validation with model_config</h1>
-            </div>
-            <Button
-              variant="ghost"
+            <h1 className="panel__title">Validation with model_config</h1>
+            <button
               type="button"
-              className="btn--compact"
+              className="lesson-toggle"
               onClick={() => setIsLessonListOpen((prev) => !prev)}
+              aria-expanded={isLessonListOpen}
             >
-              lesson list
-            </Button>
+              <span
+                className={
+                  isLessonListOpen
+                    ? "lesson-toggle__chevron lesson-toggle__chevron--open"
+                    : "lesson-toggle__chevron"
+                }
+                aria-hidden="true"
+              >
+                {">"}
+              </span>
+              <span className="lesson-toggle__label">lesson 03</span>
+            </button>
           </div>
 
           {isLessonListOpen ? (
@@ -324,10 +333,10 @@ export const QuestPage = (): ReactElement => {
           )}
 
           <div className="panel__footer">
-            <Button variant="ghost" type="button" className="btn--compact">
+            <Button variant="ghost" type="button" className="btn--compact btn--text">
               previous lesson
             </Button>
-            <Button variant="ghost" type="button" className="push-right btn--compact">
+            <Button variant="ghost" type="button" className="push-right btn--compact btn--text">
               next lesson
             </Button>
           </div>
@@ -342,10 +351,8 @@ export const QuestPage = (): ReactElement => {
 
         <section className="panel panel--code">
           <div className="panel__header">
-            <div>
-              <p className="eyebrow">python 3.14</p>
-              <h2>Code editor</h2>
-            </div>
+            <h2 className="panel__title">Code editor</h2>
+            <span className="panel__meta">python 3.12</span>
           </div>
 
           <div className="code-editor">
@@ -357,7 +364,7 @@ export const QuestPage = (): ReactElement => {
               <span className="status__dot"></span>
               waiting for run
             </div>
-            <Button variant="ghost" type="button" className="push-right">
+            <Button variant="ghost" type="button" className="push-right btn--text btn--text-accent">
               run
             </Button>
           </div>
