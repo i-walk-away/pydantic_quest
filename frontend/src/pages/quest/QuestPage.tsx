@@ -1,16 +1,22 @@
-import { useEffect, useRef, useState, type ReactElement } from "react";
-import { Link } from "react-router-dom";
+import { useEffect, useMemo, useRef, useState, type ReactElement } from "react";
+import { Link, useLocation } from "react-router-dom";
 
 import logoUrl from "@shared/assets/logo.png";
+import { buildGithubLoginUrl, loginUser, signupUser } from "@shared/api/authApi";
+import { clearAuthToken, getAuthUsername, setAuthToken } from "@shared/lib/auth";
 import { Button } from "@shared/ui/Button";
 import { CodeEditor } from "@shared/ui/CodeEditor";
+import { Input } from "@shared/ui/Input";
 
 interface LessonListItem {
   id: number;
   title: string;
 }
 
+type AuthMode = "login" | "signup";
+
 export const QuestPage = (): ReactElement => {
+  const location = useLocation();
   const layoutRef = useRef<HTMLDivElement | null>(null);
   const [code, setCode] = useState(
     `from pydantic import BaseModel, ConfigDict\n\nclass User(BaseModel):\n  model_config = ConfigDict(extra="forbid")\n\n  name: str\n  age: int\n`
@@ -18,6 +24,15 @@ export const QuestPage = (): ReactElement => {
   const [isLessonListOpen, setIsLessonListOpen] = useState(false);
   const [splitPercent, setSplitPercent] = useState(55);
   const [isDragging, setIsDragging] = useState(false);
+  const [authMode, setAuthMode] = useState<AuthMode>("login");
+  const [isAuthOpen, setIsAuthOpen] = useState(false);
+  const [authError, setAuthError] = useState<string | null>(null);
+  const [authUsername, setAuthUsername] = useState("");
+  const [authPassword, setAuthPassword] = useState("");
+  const [isAuthSubmitting, setIsAuthSubmitting] = useState(false);
+  const [currentUser, setCurrentUser] = useState<string | null>(() => getAuthUsername());
+  const [isUserMenuOpen, setIsUserMenuOpen] = useState(false);
+  const userMenuRef = useRef<HTMLDivElement | null>(null);
   const lessons: LessonListItem[] = [
     { id: 1, title: "Pydantic BaseModel intro" },
     { id: 2, title: "Field types and coercion" },
@@ -36,6 +51,7 @@ export const QuestPage = (): ReactElement => {
     { id: 15, title: "Settings management" },
   ];
   const activeLessonId = 3;
+  const githubLoginUrl = useMemo(() => buildGithubLoginUrl(), []);
 
   useEffect(() => {
     if (!isDragging) {
@@ -69,6 +85,94 @@ export const QuestPage = (): ReactElement => {
     };
   }, [isDragging]);
 
+  useEffect(() => {
+    setCurrentUser(getAuthUsername());
+  }, [location.pathname, location.search]);
+
+  useEffect(() => {
+    if (!isUserMenuOpen) {
+      return;
+    }
+
+    const handlePointerDown = (event: PointerEvent): void => {
+      if (!userMenuRef.current) {
+        return;
+      }
+      if (userMenuRef.current.contains(event.target as Node)) {
+        return;
+      }
+      setIsUserMenuOpen(false);
+    };
+
+    const handleKeyDown = (event: KeyboardEvent): void => {
+      if (event.key === "Escape") {
+        setIsUserMenuOpen(false);
+      }
+    };
+
+    document.addEventListener("pointerdown", handlePointerDown);
+    document.addEventListener("keydown", handleKeyDown);
+
+    return () => {
+      document.removeEventListener("pointerdown", handlePointerDown);
+      document.removeEventListener("keydown", handleKeyDown);
+    };
+  }, [isUserMenuOpen]);
+
+  const openAuthDialog = (mode: AuthMode): void => {
+    if (currentUser) {
+      return;
+    }
+    setAuthMode(mode);
+    setIsAuthOpen(true);
+    setAuthError(null);
+  };
+
+  const closeAuthDialog = (): void => {
+    setIsAuthOpen(false);
+    setAuthError(null);
+  };
+
+  const handleAuthSubmit = async (): Promise<void> => {
+    if (!authUsername || !authPassword) {
+      setAuthError("Username and password are required.");
+      return;
+    }
+
+    setIsAuthSubmitting(true);
+    setAuthError(null);
+    try {
+      if (authMode === "signup") {
+        await signupUser({
+          username: authUsername,
+          plain_password: authPassword,
+        });
+      }
+
+      const loginResponse = await loginUser({
+        username: authUsername,
+        plain_password: authPassword,
+      });
+      setAuthToken(loginResponse.access_token);
+      setCurrentUser(getAuthUsername());
+      setIsAuthOpen(false);
+    } catch (error) {
+      if (error instanceof Error) {
+        setAuthError(error.message || "Authentication failed.");
+      } else {
+        setAuthError("Authentication failed.");
+      }
+    } finally {
+      setIsAuthSubmitting(false);
+    }
+  };
+
+  const handleLogout = (): void => {
+    clearAuthToken();
+    setCurrentUser(null);
+    setIsUserMenuOpen(false);
+  };
+
   return (
     <div className="scene quest-scene">
       <header className="topbar">
@@ -77,8 +181,63 @@ export const QuestPage = (): ReactElement => {
           <span className="logo__text">pydantic.quest</span>
         </Link>
         <div className="topbar__meta">
-          <span className="pill">quest</span>
-          <span className="pill pill--ghost">draft</span>
+          {currentUser ? (
+            <div className="auth-menu" ref={userMenuRef}>
+              <button
+                type="button"
+                className="auth-user auth-user--button"
+                onClick={() => setIsUserMenuOpen((prev) => !prev)}
+                aria-haspopup="menu"
+                aria-expanded={isUserMenuOpen}
+              >
+                {currentUser}
+              </button>
+              {isUserMenuOpen ? (
+                <div className="auth-menu__panel" role="menu">
+                  <button type="button" className="auth-menu__item" role="menuitem">
+                    <span className="auth-menu__icon" aria-hidden="true">
+                      <svg viewBox="0 0 24 24" role="img" focusable="false">
+                        <path d="M12 8.75A3.25 3.25 0 1 0 12 15.25 3.25 3.25 0 0 0 12 8.75Zm8.5 3.25a6.74 6.74 0 0 0-.1-1.1l2.04-1.6-2-3.45-2.41.97a7.6 7.6 0 0 0-1.9-1.1l-.36-2.55H9.23l-.36 2.55a7.6 7.6 0 0 0-1.9 1.1l-2.41-.97-2 3.45 2.04 1.6a6.74 6.74 0 0 0 0 2.2l-2.04 1.6 2 3.45 2.41-.97a7.6 7.6 0 0 0 1.9 1.1l.36 2.55h4.54l.36-2.55a7.6 7.6 0 0 0 1.9-1.1l2.41.97 2-3.45-2.04-1.6c.07-.36.1-.72.1-1.1Z" />
+                      </svg>
+                    </span>
+                    Settings
+                  </button>
+                  <button
+                    type="button"
+                    className="auth-menu__item auth-menu__item--danger"
+                    role="menuitem"
+                    onClick={handleLogout}
+                  >
+                    <span className="auth-menu__icon auth-menu__icon--danger" aria-hidden="true">
+                      <svg viewBox="0 0 24 24" role="img" focusable="false">
+                        <path d="M5 5h9.5a3.5 3.5 0 0 1 0 7H10v-2h4.5a1.5 1.5 0 0 0 0-3H5v10h9.5a1.5 1.5 0 0 0 1.5-1.5V14h2v1.5A3.5 3.5 0 0 1 14.5 19H5V5Zm13.1 4.9 3.4 2.1-3.4 2.1-.98-1.7 1.06-.6H10v-2h8.18l-1.06-.6.98-1.7Z" />
+                      </svg>
+                    </span>
+                    Logout
+                  </button>
+                </div>
+              ) : null}
+            </div>
+          ) : (
+            <>
+              <Button
+                variant="ghost"
+                type="button"
+                className="btn--compact"
+                onClick={() => openAuthDialog("login")}
+              >
+                login
+              </Button>
+              <Button
+                variant="ghost"
+                type="button"
+                className="btn--compact"
+                onClick={() => openAuthDialog("signup")}
+              >
+                sign up
+              </Button>
+            </>
+          )}
         </div>
       </header>
 
@@ -204,6 +363,84 @@ export const QuestPage = (): ReactElement => {
           </div>
         </section>
       </main>
+
+      {isAuthOpen ? (
+        <div className="auth-overlay" role="presentation" onClick={closeAuthDialog}>
+          <div className="auth-dialog" role="dialog" aria-modal="true" onClick={(event) => event.stopPropagation()}>
+            <header className="auth-dialog__header">
+              <div>
+                <p className="eyebrow">welcome</p>
+                <h2>{authMode === "login" ? "Login" : "Sign up"}</h2>
+              </div>
+              <button
+                type="button"
+                className="auth-dialog__close"
+                onClick={closeAuthDialog}
+                aria-label="Close"
+              >
+                ×
+              </button>
+            </header>
+
+            <div className="auth-dialog__body">
+              <label className="auth-field">
+                <span>Username</span>
+                <Input
+                  value={authUsername}
+                  onChange={(event) => setAuthUsername(event.target.value)}
+                  placeholder="username"
+                />
+              </label>
+              <label className="auth-field">
+                <span>Password</span>
+                <Input
+                  type="password"
+                  value={authPassword}
+                  onChange={(event) => setAuthPassword(event.target.value)}
+                  placeholder="password"
+                />
+              </label>
+              {authError ? <p className="auth-error">{authError}</p> : null}
+            </div>
+
+            <div className="auth-dialog__footer">
+              <Button
+                variant="ghost"
+                type="button"
+                onClick={handleAuthSubmit}
+                disabled={isAuthSubmitting}
+              >
+                {isAuthSubmitting
+                  ? "please wait"
+                  : authMode === "login"
+                  ? "login"
+                  : "create account"}
+              </Button>
+              <Button
+                variant="ghost"
+                type="button"
+                onClick={() => {
+                  window.location.assign(githubLoginUrl);
+                }}
+              >
+                login with github
+              </Button>
+            </div>
+
+            <div className="auth-dialog__switch">
+              {authMode === "login" ? (
+                <button type="button" onClick={() => openAuthDialog("signup")}>
+                  need an account? sign up
+                </button>
+              ) : (
+                <button type="button" onClick={() => openAuthDialog("login")}>
+                  already have an account? login
+                </button>
+              )}
+            </div>
+          </div>
+        </div>
+      ) : null}
     </div>
   );
 };

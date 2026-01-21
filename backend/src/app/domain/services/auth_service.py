@@ -39,9 +39,14 @@ class AuthService:
         if not user:
             return False
 
+        hashed_password = user.hashed_password
+
+        if hashed_password is None:
+            return False
+
         is_password_correct = self.auth_manager.verify_password_against_hash(
             plain_password=credentials.plain_password,
-            hashed_password=user.hashed_password
+            hashed_password=hashed_password
         )
 
         return is_password_correct

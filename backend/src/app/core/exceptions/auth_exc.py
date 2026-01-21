@@ -5,17 +5,16 @@ class InvalidCredentials(HTTPException):
     """
     Username or password is incorrect
     """
+    status_code = 401
+    detail = "Invalid username or password."
 
     def __init__(self) -> None:
         """
         Initialize invalid credentials error
         """
-        status_code = 401
-        detail = 'Invalid username or password. Dummy'
-
         super().__init__(
-            status_code=status_code,
-            detail=detail
+            status_code=self.status_code,
+            detail=self.detail
         )
 
 
@@ -23,6 +22,8 @@ class Unauthorized(HTTPException):
     """
     Access is forbidden for the current user.
     """
+    status_code = 403
+    detail = "Access denied."
 
     def __init__(self) -> None:
         """
@@ -30,10 +31,7 @@ class Unauthorized(HTTPException):
 
         :return: None
         """
-        status_code = 403
-        detail = "Access denied."
-
         super().__init__(
-            status_code=status_code,
-            detail=detail
+            status_code=self.status_code,
+            detail=self.detail
         )

@@ -25,6 +25,34 @@ class Auth(BaseSettings):
     jwt_lifespan: int = Field(alias='JWT_LIFESPAN')  # in minutes
 
 
+class GithubOAuth(BaseSettings):
+    client_id: str | None = Field(default=None, alias="GITHUB_CLIENT_ID")
+    client_secret: str | None = Field(default=None, alias="GITHUB_CLIENT_SECRET")
+    redirect_uri: str | None = Field(default=None, alias="GITHUB_REDIRECT_URI")
+    scope: str = Field(default="read:user user:email", alias="GITHUB_SCOPE")
+    allow_signup: bool = Field(default=True, alias="GITHUB_ALLOW_SIGNUP")
+
+    authorize_url: str = Field(
+        default="https://github.com/login/oauth/authorize",
+        alias="GITHUB_AUTHORIZE_URL"
+    )
+
+    token_url: str = Field(
+        default="https://github.com/login/oauth/access_token",
+        alias="GITHUB_TOKEN_URL"
+    )
+
+    user_url: str = Field(
+        default="https://api.github.com/user",
+        alias="GITHUB_USER_URL"
+    )
+
+    emails_url: str = Field(
+        default="https://api.github.com/user/emails",
+        alias="GITHUB_EMAILS_URL"
+    )
+
+
 class Settings(BaseSettings):
     model_config = SettingsConfigDict(
         env_file=".env",
@@ -33,6 +61,11 @@ class Settings(BaseSettings):
 
     database: Database = Field(default_factory=Database)
     auth: Auth = Field(default_factory=Auth)
+    github: GithubOAuth = Field(default_factory=GithubOAuth)
+    frontend_url: str = Field(
+        default="http://localhost:5173",
+        alias="FRONTEND_URL"
+    )
 
 
 settings = Settings()
