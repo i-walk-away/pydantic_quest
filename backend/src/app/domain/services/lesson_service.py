@@ -73,6 +73,9 @@ class LessonService:
             data=schema.model_dump(exclude_none=True)
         )
 
+        await self.repository.session.commit()
+        await self.repository.session.refresh(result)
+
         return result.to_dto()
 
     async def delete(self, id: UUID) -> bool:

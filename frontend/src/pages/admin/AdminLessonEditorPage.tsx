@@ -1,9 +1,9 @@
 import { useCallback, useEffect, useMemo, useState, type ReactElement } from "react";
 import { useLocation, useNavigate, useParams } from "react-router-dom";
 
-import { useLesson } from "@features/admin-lessons/hooks/useLesson";
-import { useLessonForm } from "@features/admin-lessons/hooks/useLessonForm";
-import { MarkdownEditor } from "@features/admin-lessons/ui/MarkdownEditor";
+import { useLesson } from "@features/admiin-lessons/hooks/useLesson";
+import { useLessonForm } from "@features/admiin-lessons/hooks/useLessonForm";
+import { MarkdownEditor } from "@features/admiin-lessons/ui/MarkdownEditor";
 import { createLesson, deleteLesson, updateLesson } from "@shared/api/lessonApi";
 import { loadHotkeys } from "@shared/lib/hotkeys";
 import { type ToastVariant, useToast } from "@shared/lib/useToast";
@@ -60,7 +60,7 @@ export const AdminLessonEditorPage = (): ReactElement => {
       } else {
         const created = await createLesson(values);
         navigate(
-          `/admin/lessons/${created.id}`,
+          `/admiin/lessons/${created.id}`,
           {
             replace: true,
             state: { toast: { message: "Lesson created", variant: "success" } }
@@ -86,7 +86,7 @@ export const AdminLessonEditorPage = (): ReactElement => {
     try {
       await deleteLesson(lessonId);
       navigate(
-        "/admin/lessons",
+        "/admiin/lessons",
         {
           replace: true,
           state: { toast: { message: "Lesson deleted", variant: "success" } }
@@ -167,6 +167,14 @@ export const AdminLessonEditorPage = (): ReactElement => {
             rows={3}
             value={values.expectedOutput}
             onChange={(event) => updateField("expectedOutput", event.target.value)}
+          />
+        </label>
+        <label className="field">
+          <span>Code editor default</span>
+          <Textarea
+            rows={6}
+            value={values.codeEditorDefault}
+            onChange={(event) => updateField("codeEditorDefault", event.target.value)}
           />
         </label>
 

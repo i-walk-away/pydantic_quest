@@ -11,5 +11,6 @@ class LessonDTO(ExtendedBaseModel):
     name: str
     body_markdown: str
     expected_output: str
+    code_editor_default: str
     created_at: datetime
     updated_at: datetime | None

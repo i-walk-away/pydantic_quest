@@ -15,6 +15,7 @@ class Lesson(Base):
     name: Mapped[str] = mapped_column(String(255), default="Lesson name")
     body_markdown: Mapped[str] = mapped_column(Text(), default="body")
     expected_output: Mapped[str] = mapped_column(Text())
+    code_editor_default: Mapped[str] = mapped_column(Text(), default="")
 
     created_at: Mapped[datetime] = mapped_column(
         DateTime(),

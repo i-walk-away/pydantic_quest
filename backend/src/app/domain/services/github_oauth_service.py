@@ -77,7 +77,12 @@ class GithubOAuthService:
             email=email
         )
 
-        return self.auth_manager.generate_jwt(input_data={"sub": user.username})
+        return self.auth_manager.generate_jwt(
+            input_data={
+                "sub": user.username,
+                "role": user.role.value
+            }
+        )
 
     async def _exchange_code_for_token(
             self,

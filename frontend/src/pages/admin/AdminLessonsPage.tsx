@@ -1,7 +1,7 @@
 import { useCallback, useEffect, type ReactElement } from "react";
 
-import { useLessons } from "@features/admin-lessons/hooks/useLessons";
-import { LessonTable } from "@features/admin-lessons/ui/LessonTable";
+import { useLessons } from "@features/admiin-lessons/hooks/useLessons";
+import { LessonTable } from "@features/admiin-lessons/ui/LessonTable";
 import { deleteLesson } from "@shared/api/lessonApi";
 import { useToast } from "@shared/lib/useToast";
 import { LinkButton } from "@shared/ui/LinkButton";
@@ -52,7 +52,7 @@ export const AdminLessonsPage = (): ReactElement => {
         </div>
         <div className="actions">
           <Button variant="ghost" type="button" onClick={reload}>refresh</Button>
-          <LinkButton to="/admin/lessons/new" variant="accent">new lesson</LinkButton>
+          <LinkButton to="/admiin/lessons/new" variant="accent">new lesson</LinkButton>
         </div>
       </div>
 

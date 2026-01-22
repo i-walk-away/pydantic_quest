@@ -166,6 +166,10 @@
   color: var(--text-muted);
   position: relative;
   transition: none;
+  border: none;
+  width: 100%;
+  text-align: left;
+  cursor: pointer;
 }
 
 .lesson-list__row.is-active {
@@ -373,6 +377,8 @@
   font-size: 0.9rem;
   cursor: pointer;
   text-align: left;
+  text-decoration: none;
+  width: 100%;
 }
 
 .auth-menu__item:hover {

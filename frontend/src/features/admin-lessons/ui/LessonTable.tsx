@@ -35,7 +35,7 @@ export const LessonTable = ({ lessons, onDelete }: LessonTableProps): ReactEleme
               <td>{lesson.updatedAt ? lesson.updatedAt.toLocaleString() : "-"}</td>
               <td>
                 <div className="actions">
-                  <Link className="btn btn--ghost" to={`/admin/lessons/${lesson.id}`}>
+                  <Link className="btn btn--ghost" to={`/admiin/lessons/${lesson.id}`}>
                     edit
                   </Link>
                   <Button variant="ghost" type="button" onClick={() => onDelete(lesson.id)}>

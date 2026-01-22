@@ -9,3 +9,4 @@ class CreateLessonDTO(ExtendedBaseModel):
     slug: str
     body_markdown: str = Field(default='body')
     expected_output: str
+    code_editor_default: str = Field(default="")

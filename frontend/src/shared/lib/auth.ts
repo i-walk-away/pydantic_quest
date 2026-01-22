@@ -1,5 +1,6 @@
 const tokenKey = "pq:token";
 const tokenSubjectKey = "sub";
+const tokenRoleKey = "role";
 
 export const getAuthToken = (): string | null => {
   if (typeof window === "undefined") {
@@ -37,6 +38,20 @@ export const getAuthUsername = (): string | null => {
   }
 
   return payload[tokenSubjectKey];
+};
+
+export const getAuthRole = (): string | null => {
+  const token = getAuthToken();
+  if (!token) {
+    return null;
+  }
+
+  const payload = decodeJwtPayload(token);
+  if (!payload || typeof payload[tokenRoleKey] !== "string") {
+    return null;
+  }
+
+  return payload[tokenRoleKey];
 };
 
 const decodeJwtPayload = (token: string): Record<string, unknown> | null => {

@@ -1,5 +1,6 @@
 from src.app.core.exceptions.auth_exc import InvalidCredentials
 from src.app.core.security.auth_manager import AuthManager
+from src.app.domain.models.db.user import User
 from src.app.domain.models.dto.auth import LoginCredentials
 from src.app.domain.repositories import UserRepository
 
@@ -20,33 +21,41 @@ class AuthService:
         :param credentials: login credentials
         :return: JSON Web Token
         """
-        is_authenticated = await self._validate_credentials(credentials=credentials)
+        user = await self._get_authenticated_user(credentials=credentials)
 
-        if not is_authenticated:
+        if not user:
             raise InvalidCredentials
 
-        return self.auth_manager.generate_jwt(input_data={"sub": credentials.username})
+        return self.auth_manager.generate_jwt(
+            input_data={
+                "sub": user.username,
+                "role": user.role.value
+            }
+        )
 
-    async def _validate_credentials(self, credentials: LoginCredentials) -> bool:
+    async def _get_authenticated_user(self, credentials: LoginCredentials) -> User | None:
         """
         Check if given credentials are valid
 
         :param credentials: username and password
-        :return: True if credentials are valid, otherwise False
+        :return: user if credentials are valid, otherwise None
         """
         user = await self.user_repository.get_by_username(username=credentials.username)
 
         if not user:
-            return False
+            return None
 
         hashed_password = user.hashed_password
 
         if hashed_password is None:
-            return False
+            return None
 
         is_password_correct = self.auth_manager.verify_password_against_hash(
             plain_password=credentials.plain_password,
             hashed_password=hashed_password
         )
 
-        return is_password_correct
+        if not is_password_correct:
+            return None
+
+        return user

@@ -3,24 +3,19 @@ import { Link, useLocation } from "react-router-dom";
 
 import logoUrl from "@shared/assets/logo.png";
 import { buildGithubLoginUrl, loginUser, signupUser } from "@shared/api/authApi";
-import { clearAuthToken, getAuthUsername, setAuthToken } from "@shared/lib/auth";
+import { fetchLessons } from "@shared/api/lessonApi";
+import { clearAuthToken, getAuthRole, getAuthUsername, setAuthToken } from "@shared/lib/auth";
+import { renderMarkdown } from "@shared/lib/markdown/renderMarkdown";
+import { type Lesson } from "@shared/model/lesson";
 import { Button } from "@shared/ui/Button";
 import { CodeEditor } from "@shared/ui/CodeEditor";
 import { Input } from "@shared/ui/Input";
-
-interface LessonListItem {
-  id: number;
-  title: string;
-}
 
 type AuthMode = "login" | "signup";
 
 export const QuestPage = (): ReactElement => {
   const location = useLocation();
   const layoutRef = useRef<HTMLDivElement | null>(null);
-  const [code, setCode] = useState(
-    `from pydantic import BaseModel, ConfigDict\n\nclass User(BaseModel):\n  model_config = ConfigDict(extra="forbid")\n\n  name: str\n  age: int\n`
-  );
   const [isLessonListOpen, setIsLessonListOpen] = useState(false);
   const [splitPercent, setSplitPercent] = useState(55);
   const [isDragging, setIsDragging] = useState(false);
@@ -31,27 +26,96 @@ export const QuestPage = (): ReactElement => {
   const [authPassword, setAuthPassword] = useState("");
   const [isAuthSubmitting, setIsAuthSubmitting] = useState(false);
   const [currentUser, setCurrentUser] = useState<string | null>(() => getAuthUsername());
+  const [currentRole, setCurrentRole] = useState<string | null>(() => getAuthRole());
   const [isUserMenuOpen, setIsUserMenuOpen] = useState(false);
   const userMenuRef = useRef<HTMLDivElement | null>(null);
-  const lessons: LessonListItem[] = [
-    { id: 1, title: "Pydantic BaseModel intro" },
-    { id: 2, title: "Field types and coercion" },
-    { id: 3, title: "Validation with model_config" },
-    { id: 4, title: "Custom validators" },
-    { id: 5, title: "Serializers and output shaping" },
-    { id: 6, title: "Model inheritance and reuse" },
-    { id: 7, title: "Optional fields and defaults" },
-    { id: 8, title: "Field constraints and regex" },
-    { id: 9, title: "Computed fields" },
-    { id: 10, title: "Annotated metadata" },
-    { id: 11, title: "Model validators and context" },
-    { id: 12, title: "Custom error messages" },
-    { id: 13, title: "Serialization strategies" },
-    { id: 14, title: "Private attributes" },
-    { id: 15, title: "Settings management" },
-  ];
-  const activeLessonId = 3;
+  const [lessons, setLessons] = useState<Lesson[]>([]);
+  const [activeLessonId, setActiveLessonId] = useState<string | null>(null);
+  const [lessonsError, setLessonsError] = useState<string | null>(null);
+  const [lessonsLoading, setLessonsLoading] = useState(true);
   const githubLoginUrl = useMemo(() => buildGithubLoginUrl(), []);
+  const fallbackCode = useMemo(
+    () =>
+      [
+        "from pydantic import BaseModel, ConfigDict",
+        "",
+        "class User(BaseModel):",
+        "  model_config = ConfigDict(extra=\"forbid\")",
+        "",
+        "  name: str",
+        "  age: int",
+        "",
+      ].join("\n"),
+    []
+  );
+  const [code, setCode] = useState(fallbackCode);
+  const fallbackMarkdown = useMemo(
+    () =>
+      [
+        "# Lesson name",
+        "",
+        "Plain text paragraph to show base typography.",
+        "",
+        "## Formatting examples",
+        "",
+        "**Bold text** and *italic text* in the same line.",
+        "",
+        "Inline code looks like `BaseModel`.",
+        "",
+        "```python",
+        "from pydantic import BaseModel",
+        "",
+        "class User(BaseModel):",
+        "  name: str",
+        "  age: int",
+        "```",
+        "",
+        "```expected",
+        "extra fields not permitted: foo, bar",
+        "```",
+      ].join("\n"),
+    []
+  );
+  const fallbackLesson = useMemo(
+    () => ({
+      id: "fallback",
+      slug: "lesson-name",
+      title: "Lesson name",
+      bodyMarkdown: fallbackMarkdown,
+      expectedOutput: "",
+      codeEditorDefault: fallbackCode,
+      createdAt: new Date(0),
+      updatedAt: null,
+      order: 1,
+    }),
+    [fallbackCode, fallbackMarkdown]
+  );
+  const showFallbackLesson = !lessonsLoading && !lessonsError && lessons.length === 0;
+  const lessonsToShow = lessons.length > 0 ? lessons : [fallbackLesson];
+  const activeLesson = useMemo(() => {
+    if (showFallbackLesson) {
+      return fallbackLesson;
+    }
+    if (lessons.length === 0) {
+      return fallbackLesson;
+    }
+    const current = lessons.find((lesson) => lesson.id === activeLessonId);
+    return current ?? lessons[0];
+  }, [activeLessonId, fallbackLesson, lessons, showFallbackLesson]);
+  const expectedBlock = activeLesson.expectedOutput
+    ? `\n\n\`\`\`expected\n${activeLesson.expectedOutput}\n\`\`\`\n`
+    : "";
+  const defaultEditorCode = showFallbackLesson
+    ? fallbackCode
+    : activeLesson.codeEditorDefault;
+  const lessonHtml = useMemo(
+    () => renderMarkdown(`${activeLesson.bodyMarkdown}${expectedBlock}`),
+    [activeLesson.bodyMarkdown, expectedBlock]
+  );
+  const lessonLabel = `lesson ${String(activeLesson.order).padStart(2, "0")}`;
+  const activeLessonIndex = lessons.findIndex((lesson) => lesson.id === activeLesson.id);
+  const isAtFirstLesson = lessons.length > 0 && activeLessonIndex <= 0;
+  const isAtLastLesson = lessons.length > 0 && activeLessonIndex >= lessons.length - 1;
 
   useEffect(() => {
     if (!isDragging) {
@@ -87,7 +151,43 @@ export const QuestPage = (): ReactElement => {
 
   useEffect(() => {
     setCurrentUser(getAuthUsername());
+    setCurrentRole(getAuthRole());
   }, [location.pathname, location.search]);
+
+  useEffect(() => {
+    const controller = new AbortController();
+    setLessonsLoading(true);
+    setLessonsError(null);
+
+    const loadLessons = async (): Promise<void> => {
+      try {
+        const data = await fetchLessons(controller.signal);
+        setLessons(data);
+        if (data.length > 0) {
+          setActiveLessonId((previous) => previous ?? data[0].id);
+        }
+      } catch (error) {
+        if (error instanceof Error && error.name === "AbortError") {
+          return;
+        }
+        const message = error instanceof Error ? error.message : "Failed to load lessons.";
+        setLessonsError(message);
+        setLessons([]);
+      } finally {
+        setLessonsLoading(false);
+      }
+    };
+
+    void loadLessons();
+
+    return () => {
+      controller.abort();
+    };
+  }, []);
+
+  useEffect(() => {
+    setCode(defaultEditorCode);
+  }, [defaultEditorCode, activeLesson.id]);
 
   useEffect(() => {
     if (!isUserMenuOpen) {
@@ -155,6 +255,7 @@ export const QuestPage = (): ReactElement => {
       });
       setAuthToken(loginResponse.access_token);
       setCurrentUser(getAuthUsername());
+      setCurrentRole(getAuthRole());
       setIsAuthOpen(false);
     } catch (error) {
       if (error instanceof Error) {
@@ -170,7 +271,31 @@ export const QuestPage = (): ReactElement => {
   const handleLogout = (): void => {
     clearAuthToken();
     setCurrentUser(null);
+    setCurrentRole(null);
     setIsUserMenuOpen(false);
+  };
+
+  const handleLessonSelect = (lessonId: string): void => {
+    setActiveLessonId(lessonId);
+    setIsLessonListOpen(false);
+  };
+
+  const handleNextLesson = (): void => {
+    if (lessons.length === 0 || isAtLastLesson) {
+      return;
+    }
+    const index = lessons.findIndex((lesson) => lesson.id === activeLesson.id);
+    const next = lessons[index + 1] ?? lessons[index];
+    setActiveLessonId(next.id);
+  };
+
+  const handlePreviousLesson = (): void => {
+    if (lessons.length === 0 || isAtFirstLesson) {
+      return;
+    }
+    const index = lessons.findIndex((lesson) => lesson.id === activeLesson.id);
+    const previous = lessons[index - 1] ?? lessons[index];
+    setActiveLessonId(previous.id);
   };
 
   return (
@@ -194,6 +319,21 @@ export const QuestPage = (): ReactElement => {
               </button>
               {isUserMenuOpen ? (
                 <div className="auth-menu__panel" role="menu">
+                  {currentRole === "admin" ? (
+                    <Link
+                      to="/admiin/lessons"
+                      className="auth-menu__item"
+                      role="menuitem"
+                      onClick={() => setIsUserMenuOpen(false)}
+                    >
+                      <span className="auth-menu__icon" aria-hidden="true">
+                        <svg viewBox="0 0 24 24" role="img" focusable="false">
+                          <path d="M4 5h16v4H4V5Zm0 6h16v8H4v-8Zm2 2v4h12v-4H6Z" />
+                        </svg>
+                      </span>
+                      Admin panel
+                    </Link>
+                  ) : null}
                   <button type="button" className="auth-menu__item" role="menuitem">
                     <span className="auth-menu__icon" aria-hidden="true">
                       <svg viewBox="0 0 24 24" role="img" focusable="false">
@@ -250,7 +390,7 @@ export const QuestPage = (): ReactElement => {
       >
         <section className="panel panel--lesson">
           <div className="panel__header">
-            <h1 className="panel__title">Validation with model_config</h1>
+            <h1 className="panel__title">{activeLesson.title}</h1>
             <button
               type="button"
               className="lesson-toggle"
@@ -267,76 +407,59 @@ export const QuestPage = (): ReactElement => {
               >
                 {">"}
               </span>
-              <span className="lesson-toggle__label">lesson 03</span>
+              <span className="lesson-toggle__label">{lessonLabel}</span>
             </button>
           </div>
 
           {isLessonListOpen ? (
             <div className="lesson-list">
-              {lessons.map((lesson) => (
-                <div
+              {lessonsLoading ? <div className="muted">Loading lessons...</div> : null}
+              {!lessonsLoading && lessonsError ? (
+                <div className="muted">{lessonsError}</div>
+              ) : null}
+              {lessonsToShow.map((lesson) => (
+                <button
                   key={lesson.id}
+                  type="button"
+                  onClick={() => handleLessonSelect(lesson.id)}
                   className={
-                    lesson.id === activeLessonId
+                    lesson.id === activeLesson.id
                       ? "lesson-list__row is-active"
                       : "lesson-list__row"
                   }
                 >
-                  <span className="lesson-list__order">{lesson.id}</span>
+                  <span className="lesson-list__order">{lesson.order}</span>
                   <span className="lesson-list__title">{lesson.title}</span>
-                </div>
+                </button>
               ))}
             </div>
           ) : (
-            <article className="markdown">
-              <p>
-                <strong>Goal:</strong> build a strict model that rejects extra fields and explains why.
-              </p>
-              <p>
-                In this lesson you will explore how Pydantic v2 handles extra input data, why it
-                matters for security, and how to keep your validation errors deterministic.
-              </p>
-              <ul>
-                <li>define <code>ConfigDict(extra="forbid")</code></li>
-                <li>return a readable error message</li>
-                <li>keep output stable for tests</li>
-                <li>avoid implicit coercion for business-critical fields</li>
-              </ul>
-              <div className="callout">
-                <p>Expected output:</p>
-                <pre><code>extra fields not permitted: foo, bar</code></pre>
-              </div>
-              <h3>Hints</h3>
-              <p>
-                Consider whether you want to expose raw error objects or a simplified message.
-                The goal is to teach a clear mental model, not overwhelm with noise.
-              </p>
-              <p>
-                If you want strict behavior for nested models too, make sure the config is applied
-                to each model. Pydantic does not automatically propagate settings.
-              </p>
-              <h3>Why it matters</h3>
-              <p>
-                In production APIs, extra fields can mask mistakes in client payloads, or silently
-                change behavior in unexpected ways. Explicitly forbidding extra fields keeps your
-                system predictable.
-              </p>
-              <p>
-                This also improves test reliability: error messages stay stable across refactors,
-                and you can assert exact outputs when teaching or grading.
-              </p>
-              <p>
-                Bonus: add a helper function that accepts a dictionary, validates it, and returns a
-                custom error string when invalid. This keeps view code clean and focused.
-              </p>
-            </article>
+            <>
+              {lessonsError && lessons.length === 0 ? (
+                <div className="muted">{lessonsError}</div>
+              ) : (
+                <article className="markdown" dangerouslySetInnerHTML={{ __html: lessonHtml }} />
+              )}
+            </>
           )}
 
           <div className="panel__footer">
-            <Button variant="ghost" type="button" className="btn--compact btn--text">
+            <Button
+              variant="ghost"
+              type="button"
+              className="btn--compact btn--text"
+              onClick={handlePreviousLesson}
+              disabled={lessons.length === 0 || isAtFirstLesson}
+            >
               previous lesson
             </Button>
-            <Button variant="ghost" type="button" className="push-right btn--compact btn--text">
+            <Button
+              variant="ghost"
+              type="button"
+              className="push-right btn--compact btn--text"
+              onClick={handleNextLesson}
+              disabled={lessons.length === 0 || isAtLastLesson}
+            >
               next lesson
             </Button>
           </div>
@@ -364,6 +487,14 @@ export const QuestPage = (): ReactElement => {
               <span className="status__dot"></span>
               waiting for run
             </div>
+            <Button
+              variant="ghost"
+              type="button"
+              className="btn--text btn--text-accent"
+              onClick={() => setCode(defaultEditorCode)}
+            >
+              reset
+            </Button>
             <Button variant="ghost" type="button" className="push-right btn--text btn--text-accent">
               run
             </Button>
