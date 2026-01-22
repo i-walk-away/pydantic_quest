@@ -28,12 +28,12 @@ export const AdminLayout = (): ReactElement => {
             <p className="eyebrow">workspace</p>
             <h2>Control</h2>
           </div>
-          <NavLink className={navClass} to="/admin/lessons">
+          <NavLink className={navClass} to="/admiin/lessons">
             Lessons
           </NavLink>
           <div className="nav-item">Submissions</div>
           <div className="nav-item">Users</div>
-          <NavLink className={navClass} to="/admin/settings">
+          <NavLink className={navClass} to="/admiin/settings">
             Settings
           </NavLink>
           <div className="nav-item">Audit log</div>
@@ -46,7 +46,7 @@ export const AdminLayout = (): ReactElement => {
 
       <footer className="footer-actions">
         <div className="status muted">FastAPI admin UI</div>
-        <LinkButton to="/admin/lessons" variant="ghost">
+        <LinkButton to="/admiin/lessons" variant="ghost">
           back to lessons
         </LinkButton>
       </footer>

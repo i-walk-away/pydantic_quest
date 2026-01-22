@@ -1,12 +1,15 @@
 from uuid import UUID
 
+from src.app.core.exceptions.base_exc import NotFoundError
+from src.app.core.exceptions.user_exc import UserAlreadyExists
+from src.app.core.security.auth_manager import AuthManager
 from src.app.domain.models.db.user import User
 from src.app.domain.models.dto.user import CreateUserDTO, UserDTO
-from src.app.domain.repositories.user_repository import UserRepository
+from src.app.domain.repositories import UserRepository
 
 
 class UserService:
-    def __init__(self, user_repository: UserRepository):
+    def __init__(self, user_repository: UserRepository, auth_manager: AuthManager):
         """
         Initialize user service.
 
@@ -15,8 +18,9 @@ class UserService:
         :return: None
         """
         self.repository = user_repository
+        self.auth_manager = auth_manager
 
-    async def get_by_id(self, id: UUID) -> UserDTO:
+    async def get_by_id(self, id: UUID) -> UserDTO | None:
         """
         Get user by id.
 
@@ -24,10 +28,18 @@ class UserService:
 
         :return: user dto
         """
-        result = await self.repository.get(id=id)
-        return result.to_dto()
+        user = await self.repository.get(id=id)
 
-    async def get_by_username(self, username: str) -> UserDTO | None:
+        if not user:
+            raise NotFoundError(
+                entity_type_str='User',
+                field_name='id',
+                field_value=id
+            )
+
+        return user.to_dto()
+
+    async def get_by_username(self, username: str) -> UserDTO:
         """
         Gets user by username from the database.
 
@@ -37,7 +49,11 @@ class UserService:
         user = await self.repository.get_by_username(username=username)
 
         if not user:
-            return None
+            raise NotFoundError(
+                entity_type_str='User',
+                field_name='username',
+                field_value=username
+            )
 
         return user.to_dto()
 
@@ -59,10 +75,17 @@ class UserService:
 
         :return: DTO representation of created User
         """
+        user = await self.repository.get_by_username(username=schema.username)
+
+        if user:
+            raise UserAlreadyExists(username=user.username)
+
+        hashed_password = self.auth_manager.hash_password(password=schema.plain_password)
         data = schema.model_dump()
 
         user = User(
-            **data
+            **data,
+            hashed_password=hashed_password
         )
 
         await self.repository.add(user)
@@ -77,8 +100,17 @@ class UserService:
 
         :param id: user id
 
-        :return: ``True`` if user was deleted
+        :return: True if user was deleted
         """
+        user = self.repository.get(id=id)
+
+        if not user:
+            raise NotFoundError(
+                entity_type_str='User',
+                field_name='id',
+                field_value=id
+            )
+
         deleted = await self.repository.delete(id=id)
         await self.repository.session.commit()
 

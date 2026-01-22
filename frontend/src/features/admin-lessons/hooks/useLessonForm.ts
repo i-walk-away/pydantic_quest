@@ -33,6 +33,7 @@ const emptyValues: LessonFormValues = {
   title: "",
   bodyMarkdown: defaultMarkdown,
   expectedOutput: "",
+  codeEditorDefault: "",
 };
 
 export const useLessonForm = (lesson: Lesson | null) => {
@@ -44,6 +45,7 @@ export const useLessonForm = (lesson: Lesson | null) => {
           title: lesson.title,
           bodyMarkdown: lesson.bodyMarkdown,
           expectedOutput: lesson.expectedOutput,
+          codeEditorDefault: lesson.codeEditorDefault,
         }
       : emptyValues
   );
@@ -60,6 +62,7 @@ export const useLessonForm = (lesson: Lesson | null) => {
       title: lesson.title,
       bodyMarkdown: lesson.bodyMarkdown,
       expectedOutput: lesson.expectedOutput,
+      codeEditorDefault: lesson.codeEditorDefault,
     });
   }, [lesson]);
 
@@ -77,6 +80,7 @@ export const useLessonForm = (lesson: Lesson | null) => {
       title: lesson.title,
       bodyMarkdown: lesson.bodyMarkdown,
       expectedOutput: lesson.expectedOutput,
+      codeEditorDefault: lesson.codeEditorDefault,
     } : emptyValues);
   }, [lesson]);
 

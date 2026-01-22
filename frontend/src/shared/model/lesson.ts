@@ -4,6 +4,7 @@ export interface LessonApiResponse {
   name: string;
   body_markdown: string;
   expected_output: string;
+  code_editor_default: string;
   created_at: string;
   updated_at: string | null;
   order: number;
@@ -15,6 +16,7 @@ export interface Lesson {
   title: string;
   bodyMarkdown: string;
   expectedOutput: string;
+  codeEditorDefault: string;
   createdAt: Date;
   updatedAt: Date | null;
   order: number;
@@ -26,6 +28,7 @@ export interface LessonFormValues {
   title: string;
   bodyMarkdown: string;
   expectedOutput: string;
+  codeEditorDefault: string;
 }
 
 export const mapLesson = (response: LessonApiResponse): Lesson => {
@@ -35,6 +38,7 @@ export const mapLesson = (response: LessonApiResponse): Lesson => {
     title: response.name,
     bodyMarkdown: response.body_markdown,
     expectedOutput: response.expected_output,
+    codeEditorDefault: response.code_editor_default,
     createdAt: new Date(response.created_at),
     updatedAt: response.updated_at ? new Date(response.updated_at) : null,
     order: response.order,
@@ -50,5 +54,6 @@ export const mapLessonPayload = (
     name: values.title,
     body_markdown: values.bodyMarkdown,
     expected_output: values.expectedOutput,
+    code_editor_default: values.codeEditorDefault,
   };
 };

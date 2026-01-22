@@ -1,6 +1,7 @@
 import { Suspense, lazy, type ReactElement } from "react";
 import { BrowserRouter, Navigate, Route, Routes } from "react-router-dom";
 
+import { AuthTokenHandler } from "@app/AuthTokenHandler";
 import { ErrorBoundary } from "@shared/ui/ErrorBoundary";
 
 const QuestPage = lazy(async () => {
@@ -29,9 +30,10 @@ export const App = (): ReactElement => {
     <ErrorBoundary>
       <Suspense fallback={null}>
         <BrowserRouter>
+          <AuthTokenHandler />
           <Routes>
             <Route path="/" element={<QuestPage />} />
-            <Route path="/admin" element={<AdminLayout />}>
+            <Route path="/admiin" element={<AdminLayout />}>
               <Route path="lessons" element={<AdminLessonsPage />} />
               <Route path="lessons/new" element={<AdminLessonEditorPage />} />
               <Route path="lessons/:lessonId" element={<AdminLessonEditorPage />} />

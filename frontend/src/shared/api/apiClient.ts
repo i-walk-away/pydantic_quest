@@ -27,11 +27,15 @@ const buildUrl = (path: string): string => {
   return `${base}${trimmed}`;
 };
 
+import { getAuthToken } from "@shared/lib/auth";
+
 export const apiRequest = async <T>({ path, method, body, signal }: ApiRequestOptions): Promise<T> => {
+  const token = getAuthToken();
   const response = await fetch(buildUrl(path), {
     method: method,
     headers: {
       "Content-Type": "application/json",
+      ...(token ? { Authorization: `Bearer ${token}` } : {}),
     },
     body: body ? JSON.stringify(body) : undefined,
     signal: signal,

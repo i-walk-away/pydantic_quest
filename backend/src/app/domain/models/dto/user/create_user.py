@@ -1,6 +1,8 @@
-from pydantic import BaseModel
+from pydantic import Field
+
+from src.app.domain.models.dto.extended_basemodel import ExtendedBaseModel
 
 
-class CreateUserDTO(BaseModel):
+class CreateUserDTO(ExtendedBaseModel):
     username: str
-    plain_password: str
+    plain_password: str = Field(exclude=True)
