@@ -19,4 +19,4 @@ jobs:
         uses: astral-sh/ruff-action@v3
         with:
           src: "./backend"
-          args: "check --config backend/pyproject.toml"
+          args: "check --config pyproject.toml"
