@@ -15,16 +15,46 @@ dependencies = [
     "python-dotenv>=1.1.0",
     "sqlalchemy>=2.0.0",
     "uvicorn>=0.40.0",
+    "cryptography>=46.0.3",
 ]
 
 [tool.ruff]
 line-length = 100
 target-version = "py314"
 src = ["backend/src"]
-exclude = ["backend/migrations", "backend/scripts"]
+exclude = [
+    "backend/migrations",
+    "backend/scripts",
+    ".bzr",
+    ".direnv",
+    ".eggs",
+    ".git",
+    ".git-rewrite",
+    ".hg",
+    ".ipynb_checkpoints",
+    ".mypy_cache",
+    ".nox",
+    ".pants.d",
+    ".pyenv",
+    ".pytest_cache",
+    ".pytype",
+    ".ruff_cache",
+    ".svn",
+    ".tox",
+    ".venv",
+    ".vscode",
+    "__pypackages__",
+    "_build",
+    "buck-out",
+    "build",
+    "dist",
+    "node_modules",
+    "site-packages",
+    "venv",
+]
 
 [tool.ruff.lint]
-select = ["E", "F", "B", "UP", "SIM", "C4", "T20", "ARG"]
+select = ["E", "F", "B", "N", "UP", "SIM", "C4", "T20", "ARG", "ASYNC", "ANN", "FBT", "COM", "C4", "PLC", "DTZ", "EM", "PIE", "T20", "PT", "RSE", "RET", "TC"]
 ignore = ["E501", "B008"]
 
 [tool.ruff.format]

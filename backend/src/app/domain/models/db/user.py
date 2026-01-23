@@ -15,7 +15,7 @@ class User(Base):
     hashed_password: Mapped[str | None] = mapped_column(String(255), nullable=True)
     role: Mapped[UserRole] = mapped_column(
         SQLEnum(UserRole, name="user_role"),
-        default=UserRole.USER
+        default=UserRole.USER,
     )
 
     def to_dto(self) -> UserDTO:

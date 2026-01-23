@@ -9,7 +9,7 @@ from src.app.domain.repositories import UserRepository
 
 
 class UserService:
-    def __init__(self, user_repository: UserRepository, auth_manager: AuthManager):
+    def __init__(self, user_repository: UserRepository, auth_manager: AuthManager) -> None:
         """
         Initialize user service.
 
@@ -34,7 +34,7 @@ class UserService:
             raise NotFoundError(
                 entity_type_str='User',
                 field_name='id',
-                field_value=id
+                field_value=id,
             )
 
         return user.to_dto()
@@ -52,7 +52,7 @@ class UserService:
             raise NotFoundError(
                 entity_type_str='User',
                 field_name='username',
-                field_value=username
+                field_value=username,
             )
 
         return user.to_dto()
@@ -85,7 +85,7 @@ class UserService:
 
         user = User(
             **data,
-            hashed_password=hashed_password
+            hashed_password=hashed_password,
         )
 
         await self.repository.add(user)
@@ -108,7 +108,7 @@ class UserService:
             raise NotFoundError(
                 entity_type_str='User',
                 field_name='id',
-                field_value=id
+                field_value=id,
             )
 
         deleted = await self.repository.delete(id=id)

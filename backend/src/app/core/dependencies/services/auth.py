@@ -9,7 +9,7 @@ from src.app.domain.services import AuthService
 
 def get_auth_service(
         repository: UserRepository = Depends(get_user_repository),
-        auth_manager: AuthManager = Depends(get_auth_manager)
+        auth_manager: AuthManager = Depends(get_auth_manager),
 ) -> AuthService:
     """
     Constructs an instance of AuthService with UserRepository and AuthManager

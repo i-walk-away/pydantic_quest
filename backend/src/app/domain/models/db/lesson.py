@@ -19,12 +19,12 @@ class Lesson(Base):
 
     created_at: Mapped[datetime] = mapped_column(
         DateTime(),
-        server_default=func.now()
+        server_default=func.now(),
     )
     updated_at: Mapped[datetime] = mapped_column(
         DateTime(),
         server_default=func.now(),
-        onupdate=func.now()
+        onupdate=func.now(),
     )
 
     def to_dto(self) -> LessonDTO:

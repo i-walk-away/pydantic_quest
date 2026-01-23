@@ -6,7 +6,7 @@ from src.app.domain.services import LessonService
 
 
 def get_lesson_service(
-        repository: LessonRepository = Depends(get_lesson_repository)
+        repository: LessonRepository = Depends(get_lesson_repository),
 ) -> LessonService:
     """
     Build a lesson service.

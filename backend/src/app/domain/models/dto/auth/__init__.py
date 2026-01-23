@@ -3,7 +3,7 @@ from .github import (
     GithubEmailDTO,
     GithubOAuthCallbackDTO,
     GithubTokenDTO,
-    GithubUserDTO
+    GithubUserDTO,
 )
 
 __all__ = [

@@ -13,8 +13,8 @@ class BaseRepository[Model]:
     def __init__(
             self,
             session: AsyncSession,
-            model: type[Model]
-    ):
+            model: type[Model],
+    ) -> None:
         """
         Initialize repository with session and model.
 

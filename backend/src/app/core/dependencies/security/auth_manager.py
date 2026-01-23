@@ -6,7 +6,7 @@ from src.app.core.security.auth_manager import AuthManager
 
 
 def get_auth_manager(
-        context: CryptContext = Depends(get_crypt_context)
+        context: CryptContext = Depends(get_crypt_context),
 ) -> AuthManager:
     """
     Constructs an instance of AuthManager with passlib.CryptContext injected.

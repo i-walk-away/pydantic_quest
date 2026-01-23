@@ -1,9 +1,9 @@
 import { useCallback, useEffect, useMemo, useState, type ReactElement } from "react";
 import { useLocation, useNavigate, useParams } from "react-router-dom";
 
-import { useLesson } from "@features/admiin-lessons/hooks/useLesson";
-import { useLessonForm } from "@features/admiin-lessons/hooks/useLessonForm";
-import { MarkdownEditor } from "@features/admiin-lessons/ui/MarkdownEditor";
+import { useLesson } from "@features/admin-lessons/hooks/useLesson";
+import { useLessonForm } from "@features/admin-lessons/hooks/useLessonForm";
+import { MarkdownEditor } from "@features/admin-lessons/ui/MarkdownEditor";
 import { createLesson, deleteLesson, updateLesson } from "@shared/api/lessonApi";
 import { loadHotkeys } from "@shared/lib/hotkeys";
 import { type ToastVariant, useToast } from "@shared/lib/useToast";

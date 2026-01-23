@@ -16,7 +16,7 @@ scheme_factory = HTTPBearer(auto_error=False)
 
 async def get_user_from_jwt(
         user_service: UserService = Depends(get_user_service),
-        jwt: HTTPAuthorizationCredentials = Depends(scheme_factory)
+        jwt: HTTPAuthorizationCredentials = Depends(scheme_factory),
 ) -> UserDTO:
     """
     Gets user from the given JSON Web Token.
@@ -32,7 +32,7 @@ async def get_user_from_jwt(
         decoded_token: dict = decode(
             jwt=jwt.credentials,
             key=settings.auth.jwt_secret_key,
-            algorithms=[settings.auth.jwt_algorithm]
+            algorithms=[settings.auth.jwt_algorithm],
         )
         username = decoded_token.get('sub')
         if not username:
@@ -49,7 +49,7 @@ async def get_user_from_jwt(
 
 
 async def require_admin_user(
-        user: UserDTO = Depends(get_user_from_jwt)
+        user: UserDTO = Depends(get_user_from_jwt),
 ) -> UserDTO:
     """
     Ensure that the current user has admin role.

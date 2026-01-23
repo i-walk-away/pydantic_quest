@@ -14,7 +14,7 @@ class InvalidCredentials(HTTPException):
         """
         super().__init__(
             status_code=self.status_code,
-            detail=self.detail
+            detail=self.detail,
         )
 
 
@@ -33,5 +33,5 @@ class Unauthorized(HTTPException):
         """
         super().__init__(
             status_code=self.status_code,
-            detail=self.detail
+            detail=self.detail,
         )

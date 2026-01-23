@@ -5,7 +5,7 @@ from src.app.domain.repositories.base_repository import BaseRepository
 
 
 class LessonRepository(BaseRepository[Lesson]):
-    def __init__(self, session: AsyncSession):
+    def __init__(self, session: AsyncSession) -> None:
         """
         Initialize lesson repository.
 
@@ -15,5 +15,5 @@ class LessonRepository(BaseRepository[Lesson]):
         """
         super().__init__(
             session=session,
-            model=Lesson
+            model=Lesson,
         )

@@ -20,7 +20,7 @@ class OAuthConfigError(HTTPException):
             self.detail = detail
         super().__init__(
             status_code=self.status_code,
-            detail=self.detail
+            detail=self.detail,
         )
 
 
@@ -43,7 +43,7 @@ class OAuthStateError(HTTPException):
             self.detail = detail
         super().__init__(
             status_code=self.status_code,
-            detail=self.detail
+            detail=self.detail,
         )
 
 
@@ -66,7 +66,7 @@ class OAuthTokenExchangeError(HTTPException):
             self.detail = detail
         super().__init__(
             status_code=self.status_code,
-            detail=self.detail
+            detail=self.detail,
         )
 
 
@@ -89,7 +89,7 @@ class OAuthTokenMissingError(HTTPException):
             self.detail = detail
         super().__init__(
             status_code=self.status_code,
-            detail=self.detail
+            detail=self.detail,
         )
 
 
@@ -112,7 +112,7 @@ class OAuthUserFetchError(HTTPException):
             self.detail = detail
         super().__init__(
             status_code=self.status_code,
-            detail=self.detail
+            detail=self.detail,
         )
 
 
@@ -135,7 +135,7 @@ class OAuthEmailFetchError(HTTPException):
             self.detail = detail
         super().__init__(
             status_code=self.status_code,
-            detail=self.detail
+            detail=self.detail,
         )
 
 
@@ -158,7 +158,7 @@ class OAuthEmailNotVerifiedError(HTTPException):
             self.detail = detail
         super().__init__(
             status_code=self.status_code,
-            detail=self.detail
+            detail=self.detail,
         )
 
 
@@ -181,5 +181,5 @@ class OAuthAccountConflict(HTTPException):
             self.detail = detail
         super().__init__(
             status_code=self.status_code,
-            detail=self.detail
+            detail=self.detail,
         )
