@@ -16,7 +16,7 @@ class NotFoundError(HTTPException):
             self,
             entity_type_str: str,
             field_name: str,
-            field_value: str | UUID
+            field_value: str | UUID,
     ) -> None:
         """
         Initialize not found error.
@@ -32,5 +32,5 @@ class NotFoundError(HTTPException):
 
         super().__init__(
             status_code=status_code,
-            detail=detail
+            detail=detail,
         )

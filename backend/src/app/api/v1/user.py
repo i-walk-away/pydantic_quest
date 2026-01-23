@@ -39,7 +39,7 @@ async def create_user(
 
 @router.get(path="/get_all", summary="Get all users")
 async def get_all_users(
-        user_service: UserService = Depends(dependency=get_user_service)
+        user_service: UserService = Depends(dependency=get_user_service),
 ) -> list[UserDTO]:
     """
     Get all users.
@@ -56,7 +56,7 @@ async def get_all_users(
 @router.get(path="/{user_id}", summary="Get user by id")
 async def get_user_by_id(
         user_id: UUID,
-        user_service: UserService = Depends(dependency=get_user_service)
+        user_service: UserService = Depends(dependency=get_user_service),
 ) -> UserDTO:
     """
     Get user by id.
@@ -97,7 +97,7 @@ async def get_user_by_id(
 async def delete_user(
         user_id: UUID,
         user_service: UserService = Depends(dependency=get_user_service),
-        _admin: UserDTO = Depends(require_admin_user)
+        _admin: UserDTO = Depends(require_admin_user),
 ) -> bool:
     """
     Delete user.

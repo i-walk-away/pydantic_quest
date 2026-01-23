@@ -9,7 +9,7 @@ from src.app.core.exceptions.oauth_exc import (
     OAuthEmailNotVerifiedError,
     OAuthTokenExchangeError,
     OAuthTokenMissingError,
-    OAuthUserFetchError
+    OAuthUserFetchError,
 )
 from src.app.core.security.auth_manager import AuthManager
 from src.app.domain.models.db.user import User
@@ -24,7 +24,7 @@ class GithubOAuthService:
     Handles GitHub OAuth authentication flow.
     """
 
-    def __init__(self, user_repository: UserRepository, auth_manager: AuthManager):
+    def __init__(self, user_repository: UserRepository, auth_manager: AuthManager) -> None:
         """
         Initialize GitHub OAuth service.
 
@@ -49,7 +49,7 @@ class GithubOAuthService:
 
         params = self._build_authorize_params(
             state=state,
-            code_challenge=code_challenge
+            code_challenge=code_challenge,
         )
 
         return f"{settings.github.authorize_url}?{urlencode(params)}"
@@ -67,27 +67,27 @@ class GithubOAuthService:
 
         token = await self._exchange_code_for_token(
             code=code,
-            code_verifier=code_verifier
+            code_verifier=code_verifier,
         )
         github_user = await self._fetch_user(access_token=token.access_token)
         email = await self._fetch_primary_email(access_token=token.access_token)
         user = await self._get_or_create_user(
             github_id=github_user.id,
             username=github_user.login,
-            email=email
+            email=email,
         )
 
         return self.auth_manager.generate_jwt(
             input_data={
                 "sub": user.username,
-                "role": user.role.value
-            }
+                "role": user.role.value,
+            },
         )
 
     async def _exchange_code_for_token(
             self,
             code: str,
-            code_verifier: str
+            code_verifier: str,
     ) -> GithubTokenDTO:
         """
         Exchange authorization code for access token.
@@ -99,7 +99,7 @@ class GithubOAuthService:
         """
         data = self._build_token_payload(
             code=code,
-            code_verifier=code_verifier
+            code_verifier=code_verifier,
         )
         headers = self._build_token_headers()
 
@@ -107,12 +107,12 @@ class GithubOAuthService:
             response = await client.post(
                 settings.github.token_url,
                 data=data,
-                headers=headers
+                headers=headers,
             )
 
         if response.status_code != 200:
             raise OAuthTokenExchangeError(
-                detail="Failed to exchange code for access token."
+                detail="Failed to exchange code for access token.",
             )
 
         token = GithubTokenDTO.model_validate(response.json())
@@ -134,7 +134,7 @@ class GithubOAuthService:
         async with httpx.AsyncClient(timeout=10.0) as client:
             response = await client.get(
                 settings.github.user_url,
-                headers=headers
+                headers=headers,
             )
 
         if response.status_code != 200:
@@ -155,7 +155,7 @@ class GithubOAuthService:
         async with httpx.AsyncClient(timeout=10.0) as client:
             response = await client.get(
                 settings.github.emails_url,
-                headers=headers
+                headers=headers,
             )
 
         if response.status_code != 200:
@@ -175,7 +175,7 @@ class GithubOAuthService:
             self,
             github_id: int,
             username: str,
-            email: str
+            email: str,
     ) -> User:
         """
         Get existing user or create a new one for GitHub OAuth.
@@ -206,7 +206,7 @@ class GithubOAuthService:
             email=email,
             github_id=github_id,
             hashed_password=None,
-            role=UserRole.USER
+            role=UserRole.USER,
         )
 
         await self.user_repository.add(model=user)
@@ -216,7 +216,7 @@ class GithubOAuthService:
         return user
 
     @staticmethod
-    def _build_authorize_params(state: str, code_challenge: str) -> dict[str, str]:
+    def _build_authorize_params(state: str, code_challenge: str) -> dict[str, str | None]:
         """
         Build OAuth authorize params.
 
@@ -225,6 +225,7 @@ class GithubOAuthService:
 
         :return: params dictionary
         """
+
         return {
             "client_id": settings.github.client_id,
             "state": state,
@@ -236,7 +237,7 @@ class GithubOAuthService:
         }
 
     @staticmethod
-    def _build_token_payload(code: str, code_verifier: str) -> dict[str, str]:
+    def _build_token_payload(code: str, code_verifier: str) -> dict[str, str | None]:
         """
         Build token exchange payload.
 

@@ -23,7 +23,7 @@ router = APIRouter(
 async def create_lesson(
         data: CreateLessonDTO,
         lesson_service: LessonService = Depends(dependency=get_lesson_service),
-        _admin: UserDTO = Depends(require_admin_user)
+        _admin: UserDTO = Depends(require_admin_user),
 ) -> LessonDTO:
     """
     Create lesson.
@@ -41,7 +41,7 @@ async def create_lesson(
 
 @router.get(path="/get_all", summary="Get all lessons")
 async def get_all_lessons(
-        lesson_service: LessonService = Depends(dependency=get_lesson_service)
+        lesson_service: LessonService = Depends(dependency=get_lesson_service),
 ) -> list[LessonDTO]:
     """
     Get all lessons.
@@ -58,7 +58,7 @@ async def get_all_lessons(
 @router.get(path="/{lesson_id}", summary="Get lesson by id")
 async def get_lesson_by_id(
         lesson_id: UUID,
-        lesson_service: LessonService = Depends(dependency=get_lesson_service)
+        lesson_service: LessonService = Depends(dependency=get_lesson_service),
 ) -> LessonDTO:
     """
     Get lesson by id.
@@ -78,7 +78,7 @@ async def update_lesson(
         lesson_id: UUID,
         data: UpdateLessonDTO,
         lesson_service: LessonService = Depends(dependency=get_lesson_service),
-        _admin: UserDTO = Depends(require_admin_user)
+        _admin: UserDTO = Depends(require_admin_user),
 ) -> LessonDTO:
     """
     Update lesson.
@@ -99,7 +99,7 @@ async def update_lesson(
 async def delete_lesson(
         lesson_id: UUID,
         lesson_service: LessonService = Depends(dependency=get_lesson_service),
-        _admin: UserDTO = Depends(require_admin_user)
+        _admin: UserDTO = Depends(require_admin_user),
 ) -> bool:
     """
     Delete lesson.

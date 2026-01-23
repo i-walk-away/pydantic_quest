@@ -6,7 +6,7 @@ from src.app.domain.repositories.lesson_repository import LessonRepository
 
 
 class LessonService:
-    def __init__(self, lesson_repository: LessonRepository):
+    def __init__(self, lesson_repository: LessonRepository) -> None:
         """
         Initialize lesson service.
 
@@ -50,7 +50,7 @@ class LessonService:
         data = schema.model_dump()
 
         lesson = Lesson(
-            **data
+            **data,
         )
 
         await self.repository.add(lesson)
@@ -70,7 +70,7 @@ class LessonService:
         """
         result = await self.repository.update(
             id=id,
-            data=schema.model_dump(exclude_none=True)
+            data=schema.model_dump(exclude_none=True),
         )
 
         await self.repository.session.commit()

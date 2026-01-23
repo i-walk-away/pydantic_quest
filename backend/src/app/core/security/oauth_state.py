@@ -23,7 +23,7 @@ def create_oauth_state(secret: str) -> tuple[str, str, str]:
 def parse_oauth_state(
         secret: str,
         cookie_value: str,
-        state: str
+        state: str,
 ) -> str | None:
     """
     Validate OAuth state cookie and return code_verifier.
@@ -42,7 +42,7 @@ def parse_oauth_state(
     expected_signature = _sign(
         secret=secret,
         state=stored_state,
-        code_verifier=code_verifier
+        code_verifier=code_verifier,
     )
 
     if not hmac.compare_digest(signature, expected_signature):

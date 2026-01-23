@@ -6,7 +6,7 @@ from src.app.domain.repositories.base_repository import BaseRepository
 
 
 class UserRepository(BaseRepository[User]):
-    def __init__(self, session: AsyncSession):
+    def __init__(self, session: AsyncSession) -> None:
         """
         Initialize user repository.
 
@@ -16,7 +16,7 @@ class UserRepository(BaseRepository[User]):
         """
         super().__init__(
             session=session,
-            model=User
+            model=User,
         )
 
     async def get_by_username(self, username: str) -> User | None:

@@ -9,7 +9,7 @@ from src.app.domain.services import UserService
 
 def get_user_service(
         repository: UserRepository = Depends(get_user_repository),
-        auth_manager: AuthManager = Depends(get_auth_manager)
+        auth_manager: AuthManager = Depends(get_auth_manager),
 ) -> UserService:
     """
     Build a user service with repository and auth manager injected

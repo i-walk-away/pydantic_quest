@@ -6,7 +6,7 @@ from src.app.domain.repositories.lesson_repository import LessonRepository
 
 
 def get_lesson_repository(
-        session: AsyncSession = Depends(get_session)
+        session: AsyncSession = Depends(get_session),
 ) -> LessonRepository:
     """
     Constructs an instance of LessonRepository with SQLA Async Session injected.

@@ -34,22 +34,22 @@ class GithubOAuth(BaseSettings):
 
     authorize_url: str = Field(
         default="https://github.com/login/oauth/authorize",
-        alias="GITHUB_AUTHORIZE_URL"
+        alias="GITHUB_AUTHORIZE_URL",
     )
 
     token_url: str = Field(
         default="https://github.com/login/oauth/access_token",
-        alias="GITHUB_TOKEN_URL"
+        alias="GITHUB_TOKEN_URL",
     )
 
     user_url: str = Field(
         default="https://api.github.com/user",
-        alias="GITHUB_USER_URL"
+        alias="GITHUB_USER_URL",
     )
 
     emails_url: str = Field(
         default="https://api.github.com/user/emails",
-        alias="GITHUB_EMAILS_URL"
+        alias="GITHUB_EMAILS_URL",
     )
 
 
@@ -64,7 +64,7 @@ class Settings(BaseSettings):
     github: GithubOAuth = Field(default_factory=GithubOAuth)
     frontend_url: str = Field(
         default="http://localhost:5173",
-        alias="FRONTEND_URL"
+        alias="FRONTEND_URL",
     )
 
 

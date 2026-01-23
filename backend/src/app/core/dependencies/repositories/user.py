@@ -6,7 +6,7 @@ from src.app.domain.repositories import UserRepository
 
 
 def get_user_repository(
-        session: AsyncSession = Depends(get_session)
+        session: AsyncSession = Depends(get_session),
 ) -> UserRepository:
     """
     Constructs an instance of UserRepository with SQLA Async Session injected.

@@ -1,4 +1,4 @@
-from datetime import datetime, timedelta, UTC
+from datetime import UTC, datetime, timedelta
 from uuid import uuid4
 
 from jwt import encode
@@ -12,7 +12,7 @@ class AuthManager:
     Manages security operations related to authentication.
     """
 
-    def __init__(self, context: CryptContext):
+    def __init__(self, context: CryptContext) -> None:
         self.context = context
 
     def hash_password(self, password: str) -> str:
@@ -27,7 +27,7 @@ class AuthManager:
     def verify_password_against_hash(
             self,
             plain_password: str,
-            hashed_password: str
+            hashed_password: str,
     ) -> bool:
         """
         Validates a given plaintext password against a hashed one. the plain_password gets
@@ -44,7 +44,7 @@ class AuthManager:
     @staticmethod
     def generate_jwt(
             input_data: dict,
-            expires_in: int = settings.auth.jwt_lifespan
+            expires_in: int = settings.auth.jwt_lifespan,
     ) -> str:
         """
         Generates a JSON Web Token (JWT).
@@ -59,11 +59,11 @@ class AuthManager:
             {
                 'iat': datetime.now(UTC),
                 'exp': datetime.now(UTC) + timedelta(expires_in),
-                'jti': str(uuid4())
-            }
+                'jti': str(uuid4()),
+            },
         )
         return encode(
             payload=jwt_payload,
             key=settings.auth.jwt_secret_key,
-            algorithm=settings.auth.jwt_algorithm
+            algorithm=settings.auth.jwt_algorithm,
         )

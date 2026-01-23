@@ -9,8 +9,14 @@ class AuthService:
     def __init__(
             self,
             user_repository: UserRepository,
-            auth_manager: AuthManager
-    ):
+            auth_manager: AuthManager,
+    ) -> None:
+        """
+        Docstring
+
+        :param user_repository:  a
+        :param auth_manager:  s
+        """
         self.user_repository = user_repository
         self.auth_manager = auth_manager
 
@@ -29,8 +35,8 @@ class AuthService:
         return self.auth_manager.generate_jwt(
             input_data={
                 "sub": user.username,
-                "role": user.role.value
-            }
+                "role": user.role.value,
+            },
         )
 
     async def _get_authenticated_user(self, credentials: LoginCredentials) -> User | None:
@@ -52,7 +58,7 @@ class AuthService:
 
         is_password_correct = self.auth_manager.verify_password_against_hash(
             plain_password=credentials.plain_password,
-            hashed_password=hashed_password
+            hashed_password=hashed_password,
         )
 
         if not is_password_correct:
