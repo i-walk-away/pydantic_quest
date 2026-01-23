@@ -11,6 +11,12 @@ class AuthService:
             user_repository: UserRepository,
             auth_manager: AuthManager,
     ) -> None:
+        """
+        Docstring
+
+        :param user_repository:  a
+        :param auth_manager:  s
+        """
         self.user_repository = user_repository
         self.auth_manager = auth_manager
 

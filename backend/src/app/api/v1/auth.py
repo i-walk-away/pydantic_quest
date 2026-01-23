@@ -20,13 +20,13 @@ from src.app.domain.services import AuthService, GithubOAuthService
 from src.cfg.cfg import settings
 
 router = APIRouter(prefix='/auth', tags=['Auth'])
-OAUTH_COOKIE_NAME = "github_oauth_state"
+OAUTH_COOKIE_NAME: str = "github_oauth_state"
 
 
 @router.post(path='/login', summary='login')
 async def login(
         credentials: LoginCredentials,
-        auth_service: AuthService = Depends(get_auth_service),
+        auth_service: AuthService = Depends(dependency=get_auth_service),
 ) -> LoginResponse:
     """
     Login user with username and password.
@@ -43,7 +43,7 @@ async def login(
 
 @router.get(path="/github", summary="GitHub OAuth login")
 async def github_login(
-        github_oauth_service: GithubOAuthService = Depends(get_github_oauth_service),
+        github_oauth_service: GithubOAuthService = Depends(dependency=get_github_oauth_service),
 ) -> RedirectResponse:
     """
     Redirect user to GitHub OAuth login page.
@@ -90,7 +90,7 @@ async def github_callback(
     """
     cookie_value = request.cookies.get(OAUTH_COOKIE_NAME)
     if not cookie_value:
-        raise OAuthStateError()
+        raise OAuthStateError
 
     code_verifier = parse_oauth_state(
         secret=settings.auth.jwt_secret_key,
@@ -98,7 +98,7 @@ async def github_callback(
         state=payload.state,
     )
     if not code_verifier:
-        raise OAuthStateError()
+        raise OAuthStateError
 
     jwt_token = await github_oauth_service.authenticate(
         code=payload.code,

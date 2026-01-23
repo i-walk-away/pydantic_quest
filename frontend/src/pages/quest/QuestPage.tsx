@@ -475,7 +475,7 @@ export const QuestPage = (): ReactElement => {
         <section className="panel panel--code">
           <div className="panel__header">
             <h2 className="panel__title">Code editor</h2>
-            <span className="panel__meta">python 3.12</span>
+            <span className="panel__meta">python 3.14.2</span>
           </div>
 
           <div className="code-editor">

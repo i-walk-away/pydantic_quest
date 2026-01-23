@@ -216,7 +216,7 @@ class GithubOAuthService:
         return user
 
     @staticmethod
-    def _build_authorize_params(state: str, code_challenge: str) -> dict[str, str]:
+    def _build_authorize_params(state: str, code_challenge: str) -> dict[str, str | None]:
         """
         Build OAuth authorize params.
 
@@ -225,6 +225,7 @@ class GithubOAuthService:
 
         :return: params dictionary
         """
+
         return {
             "client_id": settings.github.client_id,
             "state": state,
@@ -236,7 +237,7 @@ class GithubOAuthService:
         }
 
     @staticmethod
-    def _build_token_payload(code: str, code_verifier: str) -> dict[str, str]:
+    def _build_token_payload(code: str, code_verifier: str) -> dict[str, str | None]:
         """
         Build token exchange payload.
 
