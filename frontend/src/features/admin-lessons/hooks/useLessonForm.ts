@@ -34,6 +34,8 @@ const emptyValues: LessonFormValues = {
   bodyMarkdown: defaultMarkdown,
   expectedOutput: "",
   codeEditorDefault: "",
+  evalScript: "",
+  sampleCases: [],
 };
 
 export const useLessonForm = (lesson: Lesson | null) => {
@@ -46,6 +48,8 @@ export const useLessonForm = (lesson: Lesson | null) => {
           bodyMarkdown: lesson.bodyMarkdown,
           expectedOutput: lesson.expectedOutput,
           codeEditorDefault: lesson.codeEditorDefault,
+          evalScript: lesson.evalScript,
+          sampleCases: lesson.sampleCases,
         }
       : emptyValues
   );
@@ -63,6 +67,8 @@ export const useLessonForm = (lesson: Lesson | null) => {
       bodyMarkdown: lesson.bodyMarkdown,
       expectedOutput: lesson.expectedOutput,
       codeEditorDefault: lesson.codeEditorDefault,
+      evalScript: lesson.evalScript,
+      sampleCases: lesson.sampleCases,
     });
   }, [lesson]);
 
@@ -81,6 +87,8 @@ export const useLessonForm = (lesson: Lesson | null) => {
       bodyMarkdown: lesson.bodyMarkdown,
       expectedOutput: lesson.expectedOutput,
       codeEditorDefault: lesson.codeEditorDefault,
+      evalScript: lesson.evalScript,
+      sampleCases: lesson.sampleCases,
     } : emptyValues);
   }, [lesson]);
 

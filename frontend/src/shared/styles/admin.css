@@ -431,6 +431,29 @@ h2 {
   line-height: 1.6;
 }
 
+.sample-cases {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.sample-case-row {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr) auto;
+  gap: 8px;
+  align-items: center;
+}
+
+.sample-cases__actions {
+  display: flex;
+  justify-content: flex-start;
+}
+
+.sample-cases__empty {
+  font-size: 0.9rem;
+  color: var(--text-muted);
+}
+
 .markdown code {
   font-family: "IBM Plex Mono", monospace;
   color: var(--md-typeset-a-color);

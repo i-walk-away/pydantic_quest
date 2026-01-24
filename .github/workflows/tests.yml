@@ -1,0 +1,28 @@
+name: tests
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+
+jobs:
+  backend-tests:
+    runs-on: ubuntu-latest
+    env:
+      UV_PYTHON: 3.14.2
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup uv
+        uses: astral-sh/setup-uv@v5
+
+      - name: Install Python
+        run: uv python install 3.14.2
+
+      - name: Sync dependencies
+        run: uv sync --extra test
+
+      - name: Run tests
+        run: uv run pytest

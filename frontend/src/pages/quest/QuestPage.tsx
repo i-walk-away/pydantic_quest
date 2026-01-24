@@ -3,9 +3,11 @@ import { Link, useLocation } from "react-router-dom";
 
 import logoUrl from "@shared/assets/logo.png";
 import { buildGithubLoginUrl, loginUser, signupUser } from "@shared/api/authApi";
+import { runLessonCode } from "@shared/api/executionApi";
 import { fetchLessons } from "@shared/api/lessonApi";
 import { clearAuthToken, getAuthRole, getAuthUsername, setAuthToken } from "@shared/lib/auth";
 import { renderMarkdown } from "@shared/lib/markdown/renderMarkdown";
+import { type ExecutionResult } from "@shared/model/execution";
 import { type Lesson } from "@shared/model/lesson";
 import { Button } from "@shared/ui/Button";
 import { CodeEditor } from "@shared/ui/CodeEditor";
@@ -33,6 +35,9 @@ export const QuestPage = (): ReactElement => {
   const [activeLessonId, setActiveLessonId] = useState<string | null>(null);
   const [lessonsError, setLessonsError] = useState<string | null>(null);
   const [lessonsLoading, setLessonsLoading] = useState(true);
+  const [runResult, setRunResult] = useState<ExecutionResult | null>(null);
+  const [runError, setRunError] = useState<string | null>(null);
+  const [isRunning, setIsRunning] = useState(false);
   const githubLoginUrl = useMemo(() => buildGithubLoginUrl(), []);
   const fallbackCode = useMemo(
     () =>
@@ -84,6 +89,8 @@ export const QuestPage = (): ReactElement => {
       bodyMarkdown: fallbackMarkdown,
       expectedOutput: "",
       codeEditorDefault: fallbackCode,
+      evalScript: "",
+      sampleCases: [],
       createdAt: new Date(0),
       updatedAt: null,
       order: 1,
@@ -187,6 +194,8 @@ export const QuestPage = (): ReactElement => {
 
   useEffect(() => {
     setCode(defaultEditorCode);
+    setRunResult(null);
+    setRunError(null);
   }, [defaultEditorCode, activeLesson.id]);
 
   useEffect(() => {
@@ -297,6 +306,61 @@ export const QuestPage = (): ReactElement => {
     const previous = lessons[index - 1] ?? lessons[index];
     setActiveLessonId(previous.id);
   };
+
+  const handleRun = async (): Promise<void> => {
+    if (!activeLesson.id) {
+      return;
+    }
+    setIsRunning(true);
+    setRunError(null);
+    try {
+      const result = await runLessonCode(activeLesson.id, code);
+      setRunResult(result);
+    } catch (error) {
+      const message = error instanceof Error ? error.message : "Failed to run code.";
+      setRunError(message);
+    } finally {
+      setIsRunning(false);
+    }
+  };
+
+  const runStatusLabel = useMemo(() => {
+    if (isRunning) {
+      return "running...";
+    }
+    if (runError) {
+      return "run failed";
+    }
+    if (!runResult) {
+      return "waiting for run";
+    }
+    if (runResult.status === "accepted") {
+      return "accepted";
+    }
+    if (runResult.status === "wrong_answer") {
+      return "wrong answer";
+    }
+    if (runResult.status === "compile_error") {
+      return "compile error";
+    }
+    if (runResult.status === "runtime_error") {
+      return "runtime error";
+    }
+    if (runResult.status === "timeout") {
+      return "timeout";
+    }
+    return "run finished";
+  }, [isRunning, runError, runResult]);
+
+  const runStatusClass = useMemo(() => {
+    if (runResult?.status === "accepted") {
+      return "status status--success";
+    }
+    if (runResult?.status && runResult.status !== "wrong_answer") {
+      return "status status--error";
+    }
+    return "status";
+  }, [runResult]);
 
   return (
     <div className="scene quest-scene">
@@ -482,10 +546,44 @@ export const QuestPage = (): ReactElement => {
             <CodeEditor value={code} onChange={setCode} className="code-editor__surface" />
           </div>
 
+          {(runResult || runError) ? (
+            <div className="execution-results">
+              {runError ? <div className="execution-error">{runError}</div> : null}
+              {runResult?.cases.length ? (
+                <div className="execution-cases">
+                  {runResult.cases.map((caseResult) => (
+                    <div
+                      key={caseResult.name}
+                      className={
+                        caseResult.ok
+                          ? "execution-case execution-case--ok"
+                          : "execution-case execution-case--fail"
+                      }
+                    >
+                      <div className="execution-case__meta">
+                        <span className="execution-case__label">{caseResult.label}</span>
+                        <span className="execution-case__name">{caseResult.name}</span>
+                      </div>
+                      <span className="execution-case__status">
+                        {caseResult.ok ? "ok" : "fail"}
+                      </span>
+                      {caseResult.reason ? (
+                        <span className="execution-case__reason">{caseResult.reason}</span>
+                      ) : null}
+                    </div>
+                  ))}
+                </div>
+              ) : null}
+              {runResult?.stderr ? (
+                <pre className="execution-output">{runResult.stderr}</pre>
+              ) : null}
+            </div>
+          ) : null}
+
           <div className="panel__footer">
-            <div className="status">
+            <div className={runStatusClass}>
               <span className="status__dot"></span>
-              waiting for run
+              {runStatusLabel}
             </div>
             <Button
               variant="ghost"
@@ -495,7 +593,13 @@ export const QuestPage = (): ReactElement => {
             >
               reset
             </Button>
-            <Button variant="ghost" type="button" className="push-right btn--text btn--text-accent">
+            <Button
+              variant="ghost"
+              type="button"
+              className="push-right btn--text btn--text-accent"
+              onClick={handleRun}
+              disabled={isRunning}
+            >
               run
             </Button>
           </div>

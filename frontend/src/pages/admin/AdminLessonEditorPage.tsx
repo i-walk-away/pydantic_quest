@@ -4,6 +4,7 @@ import { useLocation, useNavigate, useParams } from "react-router-dom";
 import { useLesson } from "@features/admin-lessons/hooks/useLesson";
 import { useLessonForm } from "@features/admin-lessons/hooks/useLessonForm";
 import { MarkdownEditor } from "@features/admin-lessons/ui/MarkdownEditor";
+import { SampleCasesEditor } from "@features/admin-lessons/ui/SampleCasesEditor";
 import { createLesson, deleteLesson, updateLesson } from "@shared/api/lessonApi";
 import { loadHotkeys } from "@shared/lib/hotkeys";
 import { type ToastVariant, useToast } from "@shared/lib/useToast";
@@ -170,6 +171,14 @@ export const AdminLessonEditorPage = (): ReactElement => {
           />
         </label>
         <label className="field">
+          <span>Eval script</span>
+          <Textarea
+            rows={10}
+            value={values.evalScript}
+            onChange={(event) => updateField("evalScript", event.target.value)}
+          />
+        </label>
+        <label className="field">
           <span>Code editor default</span>
           <Textarea
             rows={6}
@@ -177,6 +186,11 @@ export const AdminLessonEditorPage = (): ReactElement => {
             onChange={(event) => updateField("codeEditorDefault", event.target.value)}
           />
         </label>
+
+        <SampleCasesEditor
+          cases={values.sampleCases}
+          onChange={(next) => updateField("sampleCases", next)}
+        />
 
         <MarkdownEditor
           value={values.bodyMarkdown}
