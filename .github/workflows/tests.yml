@@ -9,6 +9,8 @@ on:
 jobs:
   backend-tests:
     runs-on: ubuntu-latest
+    environment:
+      name: lint
     env:
       UV_PYTHON: 3.14.2
       DB_HOST: localhost
