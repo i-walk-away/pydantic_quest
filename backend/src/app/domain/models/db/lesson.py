@@ -1,6 +1,6 @@
 from datetime import datetime
 
-from sqlalchemy import DateTime, Integer, String, Text, func
+from sqlalchemy import DateTime, Integer, JSON, String, Text, func
 from sqlalchemy.orm import Mapped, mapped_column
 
 from src.app.domain.models.db import Base
@@ -14,8 +14,9 @@ class Lesson(Base):
     slug: Mapped[str] = mapped_column(String(255), unique=True)
     name: Mapped[str] = mapped_column(String(255), default="Lesson name")
     body_markdown: Mapped[str] = mapped_column(Text(), default="body")
-    expected_output: Mapped[str] = mapped_column(Text())
     code_editor_default: Mapped[str] = mapped_column(Text(), default="")
+    eval_script: Mapped[str] = mapped_column(Text(), default="")
+    sample_cases: Mapped[list[dict[str, str]] | None] = mapped_column(JSON(), default=None)
 
     created_at: Mapped[datetime] = mapped_column(
         DateTime(),

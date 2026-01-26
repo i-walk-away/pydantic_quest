@@ -32,6 +32,8 @@ services:
     depends_on:
       db:
         condition: service_healthy
+      piston:
+        condition: service_healthy
     healthcheck:
       test: [ "CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:8000/health')" ]
       interval: 1m
@@ -55,6 +57,26 @@ services:
       app:
         condition: service_healthy
 
+  piston:
+    image: ghcr.io/engineer-man/piston
+    privileged: true
+    environment:
+      PISTON_DISABLE_NETWORKING: "true"
+      PISTON_RUN_TIMEOUT: "10000"
+      PISTON_COMPILE_TIMEOUT: "10000"
+      PISTON_RUN_MEMORY_LIMIT: "134217728"
+      PISTON_COMPILE_MEMORY_LIMIT: "134217728"
+    ports:
+      - "2000:2000"
+    volumes:
+      - piston_data:/piston
+    healthcheck:
+      test: [ "CMD-SHELL", "node -e \"require('http').get('http://localhost:2000/api/v2/runtimes', (res) => process.exit(res.statusCode === 200 ? 0 : 1)).on('error', () => process.exit(1))\"" ]
+      interval: 1m
+      timeout: 5s
+      retries: 10
+      start_period: 20s
+
   migrator:
     build:
       context: .
@@ -65,12 +87,14 @@ services:
       - ./.env
     environment:
       DB_HOST: db
+    working_dir: /app/backend
     depends_on:
       db:
         condition: service_healthy
-    command: alembic upgrade head
+    command: [ "alembic", "-c", "/app/backend/alembic.ini", "upgrade", "head" ]
     volumes:
       - ./backend:/app/backend
 
 volumes:
   db_data:
+  piston_data:

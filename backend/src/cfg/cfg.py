@@ -53,6 +53,18 @@ class GithubOAuth(BaseSettings):
     )
 
 
+class ExecutionSettings(BaseSettings):
+    piston_url: str = Field(default="http://piston:2000", alias="PISTON_URL")
+    language: str = Field(default="python", alias="PISTON_LANGUAGE")
+    version: str = Field(default="3.12", alias="PISTON_VERSION")
+    run_timeout_ms: int = Field(default=10000, alias="PISTON_RUN_TIMEOUT_MS")
+    compile_timeout_ms: int = Field(default=10000, alias="PISTON_COMPILE_TIMEOUT_MS")
+    run_memory_limit_bytes: int = Field(default=134_217_728, alias="PISTON_RUN_MEMORY_LIMIT_BYTES")
+    compile_memory_limit_bytes: int = Field(default=134_217_728, alias="PISTON_COMPILE_MEMORY_LIMIT_BYTES")
+    rate_limit_window_sec: int = Field(default=60, alias="EXECUTION_RATE_LIMIT_WINDOW_SEC")
+    rate_limit_max: int = Field(default=20, alias="EXECUTION_RATE_LIMIT_MAX")
+
+
 class Settings(BaseSettings):
     model_config = SettingsConfigDict(
         env_file=".env",
@@ -62,6 +74,7 @@ class Settings(BaseSettings):
     database: Database = Field(default_factory=Database)
     auth: Auth = Field(default_factory=Auth)
     github: GithubOAuth = Field(default_factory=GithubOAuth)
+    execution: ExecutionSettings = Field(default_factory=ExecutionSettings)
     frontend_url: str = Field(
         default="http://localhost:5173",
         alias="FRONTEND_URL",

@@ -3,9 +3,11 @@ import { Link, useLocation } from "react-router-dom";
 
 import logoUrl from "@shared/assets/logo.png";
 import { buildGithubLoginUrl, loginUser, signupUser } from "@shared/api/authApi";
+import { runLessonCode } from "@shared/api/executionApi";
 import { fetchLessons } from "@shared/api/lessonApi";
 import { clearAuthToken, getAuthRole, getAuthUsername, setAuthToken } from "@shared/lib/auth";
 import { renderMarkdown } from "@shared/lib/markdown/renderMarkdown";
+import { type ExecutionResult } from "@shared/model/execution";
 import { type Lesson } from "@shared/model/lesson";
 import { Button } from "@shared/ui/Button";
 import { CodeEditor } from "@shared/ui/CodeEditor";
@@ -16,7 +18,9 @@ type AuthMode = "login" | "signup";
 export const QuestPage = (): ReactElement => {
   const location = useLocation();
   const layoutRef = useRef<HTMLDivElement | null>(null);
+  const lessonBodyRef = useRef<HTMLDivElement | null>(null);
   const [isLessonListOpen, setIsLessonListOpen] = useState(false);
+  const [isSampleCasesOpen, setIsSampleCasesOpen] = useState(false);
   const [splitPercent, setSplitPercent] = useState(55);
   const [isDragging, setIsDragging] = useState(false);
   const [authMode, setAuthMode] = useState<AuthMode>("login");
@@ -33,6 +37,9 @@ export const QuestPage = (): ReactElement => {
   const [activeLessonId, setActiveLessonId] = useState<string | null>(null);
   const [lessonsError, setLessonsError] = useState<string | null>(null);
   const [lessonsLoading, setLessonsLoading] = useState(true);
+  const [runResult, setRunResult] = useState<ExecutionResult | null>(null);
+  const [runError, setRunError] = useState<string | null>(null);
+  const [isRunning, setIsRunning] = useState(false);
   const githubLoginUrl = useMemo(() => buildGithubLoginUrl(), []);
   const fallbackCode = useMemo(
     () =>
@@ -82,8 +89,9 @@ export const QuestPage = (): ReactElement => {
       slug: "lesson-name",
       title: "Lesson name",
       bodyMarkdown: fallbackMarkdown,
-      expectedOutput: "",
       codeEditorDefault: fallbackCode,
+      evalScript: "",
+      sampleCases: [],
       createdAt: new Date(0),
       updatedAt: null,
       order: 1,
@@ -102,15 +110,12 @@ export const QuestPage = (): ReactElement => {
     const current = lessons.find((lesson) => lesson.id === activeLessonId);
     return current ?? lessons[0];
   }, [activeLessonId, fallbackLesson, lessons, showFallbackLesson]);
-  const expectedBlock = activeLesson.expectedOutput
-    ? `\n\n\`\`\`expected\n${activeLesson.expectedOutput}\n\`\`\`\n`
-    : "";
   const defaultEditorCode = showFallbackLesson
     ? fallbackCode
     : activeLesson.codeEditorDefault;
   const lessonHtml = useMemo(
-    () => renderMarkdown(`${activeLesson.bodyMarkdown}${expectedBlock}`),
-    [activeLesson.bodyMarkdown, expectedBlock]
+    () => renderMarkdown(activeLesson.bodyMarkdown),
+    [activeLesson.bodyMarkdown]
   );
   const lessonLabel = `lesson ${String(activeLesson.order).padStart(2, "0")}`;
   const activeLessonIndex = lessons.findIndex((lesson) => lesson.id === activeLesson.id);
@@ -187,6 +192,9 @@ export const QuestPage = (): ReactElement => {
 
   useEffect(() => {
     setCode(defaultEditorCode);
+    setRunResult(null);
+    setRunError(null);
+    setIsSampleCasesOpen(false);
   }, [defaultEditorCode, activeLesson.id]);
 
   useEffect(() => {
@@ -296,6 +304,78 @@ export const QuestPage = (): ReactElement => {
     const index = lessons.findIndex((lesson) => lesson.id === activeLesson.id);
     const previous = lessons[index - 1] ?? lessons[index];
     setActiveLessonId(previous.id);
+  };
+
+  const handleRun = async (): Promise<void> => {
+    if (!activeLesson.id) {
+      return;
+    }
+    setIsRunning(true);
+    setRunError(null);
+    try {
+      const result = await runLessonCode(activeLesson.id, code);
+      setRunResult(result);
+    } catch (error) {
+      const message = error instanceof Error ? error.message : "Failed to run code.";
+      setRunError(message);
+    } finally {
+      setIsRunning(false);
+    }
+  };
+
+  const runStatusLabel = useMemo(() => {
+    if (isRunning) {
+      return "running";
+    }
+    if (runError) {
+      return "failed";
+    }
+    if (!runResult) {
+      return "idle";
+    }
+    if (runResult.status === "accepted") {
+      return "passed";
+    }
+    if (runResult.status === "wrong_answer") {
+      return "failed";
+    }
+    if (runResult.status === "compile_error") {
+      return "failed";
+    }
+    if (runResult.status === "runtime_error") {
+      return "failed";
+    }
+    if (runResult.status === "timeout") {
+      return "failed";
+    }
+    return "finished";
+  }, [isRunning, runError, runResult]);
+
+  const runStatusClass = useMemo(() => {
+    if (runResult?.status === "accepted") {
+      return "status status--success";
+    }
+    if (runResult?.status && runResult.status !== "wrong_answer") {
+      return "status status--error";
+    }
+    return "status";
+  }, [runResult]);
+
+  useEffect(() => {
+    if (!isSampleCasesOpen || !lessonBodyRef.current) {
+      return;
+    }
+    const container = lessonBodyRef.current;
+    requestAnimationFrame(() => {
+      container.scrollTo({ top: container.scrollHeight, behavior: "auto" });
+    });
+  }, [isSampleCasesOpen]);
+
+  const handleSampleCasesToggle = (): void => {
+    if (isLessonListOpen) {
+      return;
+    }
+    setIsSampleCasesOpen((prev) => !prev);
   };
 
   return (
@@ -438,7 +518,47 @@ export const QuestPage = (): ReactElement => {
               {lessonsError && lessons.length === 0 ? (
                 <div className="muted">{lessonsError}</div>
               ) : (
-                <article className="markdown" dangerouslySetInnerHTML={{ __html: lessonHtml }} />
+                <div className="lesson-body" ref={lessonBodyRef}>
+                  <article className="markdown" dangerouslySetInnerHTML={{ __html: lessonHtml }} />
+                  <div
+                    className="lesson-samples"
+                    role="button"
+                    tabIndex={0}
+                    onClick={handleSampleCasesToggle}
+                    onKeyDown={(event) => {
+                      if (event.key === "Enter" || event.key === " ") {
+                        event.preventDefault();
+                        handleSampleCasesToggle();
+                      }
+                    }}
+                    aria-expanded={isSampleCasesOpen}
+                  >
+                    <Button
+                      variant="ghost"
+                      type="button"
+                      className="btn--compact btn--text"
+                      disabled={isLessonListOpen}
+                    >
+                      sample cases
+                    </Button>
+                    {isSampleCasesOpen && (
+                      <div className="lesson-samples__body">
+                        {activeLesson.sampleCases.length === 0 ? (
+                          <div className="muted">No sample cases yet.</div>
+                        ) : (
+                          <div className="lesson-samples__list">
+                            {activeLesson.sampleCases.map((sampleCase, index) => (
+                              <div key={sampleCase.name} className="lesson-samples__row">
+                                <span className="lesson-samples__index">{index + 1}</span>
+                                <span className="lesson-samples__label">{sampleCase.label}</span>
+                              </div>
+                            ))}
+                          </div>
+                        )}
+                      </div>
+                    )}
+                  </div>
+                </div>
               )}
             </>
           )}
@@ -482,20 +602,66 @@ export const QuestPage = (): ReactElement => {
             <CodeEditor value={code} onChange={setCode} className="code-editor__surface" />
           </div>
 
+          {(runResult || runError) ? (
+            <div className="execution-results">
+              {runError ? <div className="execution-error">{runError}</div> : null}
+              {runResult?.cases.length ? (
+                <div className="execution-cases">
+                  {runResult.cases.map((caseResult) => (
+                    <div
+                      key={caseResult.name}
+                      className={
+                        caseResult.ok
+                          ? "execution-case execution-case--ok"
+                          : "execution-case execution-case--fail"
+                      }
+                    >
+                      <div className="execution-case__meta">
+                        <span className="execution-case__label">{caseResult.label}</span>
+                        <span className="execution-case__name">{caseResult.name}</span>
+                      </div>
+                      <span className="execution-case__status">
+                        {caseResult.ok ? "ok" : "fail"}
+                      </span>
+                      {caseResult.reason ? (
+                        <span className="execution-case__reason">{caseResult.reason}</span>
+                      ) : null}
+                    </div>
+                  ))}
+                </div>
+              ) : null}
+              {runResult?.stderr ? (
+                <pre className="execution-output">{runResult.stderr}</pre>
+              ) : null}
+              {runResult?.status === "runtime_error" ? (
+                <div className="execution-hint">Check syntax and imports in your code.</div>
+              ) : null}
+              {runResult?.status === "compile_error" ? (
+                <div className="execution-hint">Check syntax errors in your code.</div>
+              ) : null}
+            </div>
+          ) : null}
+
           <div className="panel__footer">
-            <div className="status">
+            <div className={runStatusClass}>
               <span className="status__dot"></span>
-              waiting for run
+              <span className="status__label">{runStatusLabel}</span>
             </div>
             <Button
               variant="ghost"
               type="button"
-              className="btn--text btn--text-accent"
+              className="push-right btn--text btn--text-accent"
               onClick={() => setCode(defaultEditorCode)}
             >
               reset
             </Button>
-            <Button variant="ghost" type="button" className="push-right btn--text btn--text-accent">
+            <Button
+              variant="ghost"
+              type="button"
+              className="btn--text btn--text-accent"
+              onClick={handleRun}
+              disabled={isRunning}
+            >
               run
             </Button>
           </div>

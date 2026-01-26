@@ -32,7 +32,7 @@ def upgrade() -> None:
         sa.Column('id', sa.Uuid(), nullable=False),
         sa.PrimaryKeyConstraint('id'),
         sa.UniqueConstraint('slug')
-        )
+    )
     op.create_table(
         'users',
         sa.Column('username', sa.String(length=255), nullable=False),
@@ -41,7 +41,7 @@ def upgrade() -> None:
         sa.Column('id', sa.Uuid(), nullable=False),
         sa.PrimaryKeyConstraint('id'),
         sa.UniqueConstraint('username')
-        )
+    )
     # ### end Alembic commands ###
 
 
