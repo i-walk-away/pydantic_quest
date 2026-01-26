@@ -47,6 +47,14 @@ class CodeExecutionService:
                 stdout=None,
                 duration_ms=None,
             )
+        if USER_CODE_PLACEHOLDER not in lesson.eval_script:
+            return ExecutionResultDTO(
+                status=ExecutionStatus.RUNTIME_ERROR,
+                cases=[],
+                stderr="Evaluation script is missing {{USER_CODE}} placeholder.",
+                stdout=None,
+                duration_ms=None,
+            )
 
         source_code = self._render_source(
             definition_script=lesson.eval_script,
@@ -84,7 +92,7 @@ class CodeExecutionService:
             return ExecutionResultDTO(
                 status=ExecutionStatus.RUNTIME_ERROR,
                 cases=[],
-                stderr=run_result.get("stderr"),
+                stderr=self._normalize_stderr(stderr=run_result.get("stderr")),
                 stdout=run_result.get("stdout"),
                 duration_ms=run_result.get("wall_time"),
             )
@@ -97,7 +105,7 @@ class CodeExecutionService:
         return ExecutionResultDTO(
             status=status,
             cases=sample_cases,
-            stderr=run_result.get("stderr"),
+            stderr=self._normalize_stderr(stderr=run_result.get("stderr")),
             stdout=run_result.get("stdout"),
             duration_ms=run_result.get("wall_time"),
         )
@@ -123,7 +131,29 @@ class CodeExecutionService:
 
         :return: merged source code
         """
-        return definition_script.replace(USER_CODE_PLACEHOLDER, code)
+        wrapped_code = CodeExecutionService._wrap_user_code(code=code)
+        return definition_script.replace(USER_CODE_PLACEHOLDER, wrapped_code)
+
+    @staticmethod
+    def _wrap_user_code(code: str) -> str:
+        """
+        Wrap user code to surface runtime tracebacks.
+
+        :param code: raw user code
+
+        :return: wrapped user code
+        """
+        lines = code.splitlines()
+        if not lines:
+            return ""
+
+        indented = "\n".join(f"    {line}" if line else "" for line in lines)
+        return (
+            "try:\n"
+            f"{indented}\n"
+            "except Exception:\n"
+            "    raise\n"
+        )
 
     @staticmethod
     def _build_compile_error(compile_result: dict) -> ExecutionResultDTO | None:
@@ -140,7 +170,7 @@ class CodeExecutionService:
         return ExecutionResultDTO(
             status=ExecutionStatus.COMPILE_ERROR,
             cases=[],
-            stderr=compile_result.get("stderr"),
+            stderr=CodeExecutionService._normalize_stderr(stderr=compile_result.get("stderr")),
             stdout=compile_result.get("stdout"),
             duration_ms=compile_result.get("wall_time"),
         )
@@ -159,7 +189,7 @@ class CodeExecutionService:
             return ExecutionResultDTO(
                 status=ExecutionStatus.TIMEOUT,
                 cases=[],
-                stderr=run_result.get("stderr"),
+                stderr=CodeExecutionService._normalize_stderr(stderr=run_result.get("stderr")),
                 stdout=run_result.get("stdout"),
                 duration_ms=run_result.get("wall_time"),
             )
@@ -168,10 +198,30 @@ class CodeExecutionService:
         return ExecutionResultDTO(
             status=ExecutionStatus.RUNTIME_ERROR,
             cases=[],
-            stderr=run_result.get("stderr"),
+            stderr=CodeExecutionService._normalize_stderr(stderr=run_result.get("stderr")),
             stdout=run_result.get("stdout"),
             duration_ms=run_result.get("wall_time"),
         )
+
+    @staticmethod
+    def _normalize_stderr(stderr: str | None) -> str | None:
+        """
+        Normalize stderr by removing duplicated tracebacks.
+
+        :param stderr: raw stderr output
+
+        :return: normalized stderr output
+        """
+        if not stderr:
+            return stderr
+        trimmed = stderr.strip("\n")
+        lines = trimmed.splitlines()
+        if len(lines) % 2 == 0:
+            half = len(lines) // 2
+            if lines[:half] == lines[half:]:
+                normalized = "\n".join(lines[:half])
+                return f"{normalized}\n" if stderr.endswith("\n") else normalized
+        return stderr
 
     @staticmethod
     def _parse_stdout(stdout: str | None) -> dict:

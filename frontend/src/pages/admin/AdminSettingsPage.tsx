@@ -70,7 +70,7 @@ export const AdminSettingsPage = (): ReactElement => {
           )}
           <form className="settings-form" onSubmit={handleSubmit}>
             <label className="field">
-              <span>Bold</span>
+              <span className="field__label">Bold</span>
               <Input
                 value={values.bold}
                 onKeyDown={(event) => updateField("bold", captureCombo(event))}
@@ -78,7 +78,7 @@ export const AdminSettingsPage = (): ReactElement => {
               />
             </label>
             <label className="field">
-              <span>Italic</span>
+              <span className="field__label">Italic</span>
               <Input
                 value={values.italic}
                 onKeyDown={(event) => updateField("italic", captureCombo(event))}
@@ -86,7 +86,7 @@ export const AdminSettingsPage = (): ReactElement => {
               />
             </label>
             <label className="field">
-              <span>Code block</span>
+              <span className="field__label">Code block</span>
               <Input
                 value={values.codeBlock}
                 onKeyDown={(event) => updateField("codeBlock", captureCombo(event))}

@@ -18,7 +18,9 @@ type AuthMode = "login" | "signup";
 export const QuestPage = (): ReactElement => {
   const location = useLocation();
   const layoutRef = useRef<HTMLDivElement | null>(null);
+  const lessonBodyRef = useRef<HTMLDivElement | null>(null);
   const [isLessonListOpen, setIsLessonListOpen] = useState(false);
+  const [isSampleCasesOpen, setIsSampleCasesOpen] = useState(false);
   const [splitPercent, setSplitPercent] = useState(55);
   const [isDragging, setIsDragging] = useState(false);
   const [authMode, setAuthMode] = useState<AuthMode>("login");
@@ -87,7 +89,6 @@ export const QuestPage = (): ReactElement => {
       slug: "lesson-name",
       title: "Lesson name",
       bodyMarkdown: fallbackMarkdown,
-      expectedOutput: "",
       codeEditorDefault: fallbackCode,
       evalScript: "",
       sampleCases: [],
@@ -109,15 +110,12 @@ export const QuestPage = (): ReactElement => {
     const current = lessons.find((lesson) => lesson.id === activeLessonId);
     return current ?? lessons[0];
   }, [activeLessonId, fallbackLesson, lessons, showFallbackLesson]);
-  const expectedBlock = activeLesson.expectedOutput
-    ? `\n\n\`\`\`expected\n${activeLesson.expectedOutput}\n\`\`\`\n`
-    : "";
   const defaultEditorCode = showFallbackLesson
     ? fallbackCode
     : activeLesson.codeEditorDefault;
   const lessonHtml = useMemo(
-    () => renderMarkdown(`${activeLesson.bodyMarkdown}${expectedBlock}`),
-    [activeLesson.bodyMarkdown, expectedBlock]
+    () => renderMarkdown(activeLesson.bodyMarkdown),
+    [activeLesson.bodyMarkdown]
   );
   const lessonLabel = `lesson ${String(activeLesson.order).padStart(2, "0")}`;
   const activeLessonIndex = lessons.findIndex((lesson) => lesson.id === activeLesson.id);
@@ -196,6 +194,7 @@ export const QuestPage = (): ReactElement => {
     setCode(defaultEditorCode);
     setRunResult(null);
     setRunError(null);
+    setIsSampleCasesOpen(false);
   }, [defaultEditorCode, activeLesson.id]);
 
   useEffect(() => {
@@ -326,30 +325,30 @@ export const QuestPage = (): ReactElement => {
 
   const runStatusLabel = useMemo(() => {
     if (isRunning) {
-      return "running...";
+      return "running";
     }
     if (runError) {
-      return "run failed";
+      return "failed";
     }
     if (!runResult) {
-      return "waiting for run";
+      return "idle";
     }
     if (runResult.status === "accepted") {
-      return "accepted";
+      return "passed";
     }
     if (runResult.status === "wrong_answer") {
-      return "wrong answer";
+      return "failed";
     }
     if (runResult.status === "compile_error") {
-      return "compile error";
+      return "failed";
     }
     if (runResult.status === "runtime_error") {
-      return "runtime error";
+      return "failed";
     }
     if (runResult.status === "timeout") {
-      return "timeout";
+      return "failed";
     }
-    return "run finished";
+    return "finished";
   }, [isRunning, runError, runResult]);
 
   const runStatusClass = useMemo(() => {
@@ -361,6 +360,23 @@ export const QuestPage = (): ReactElement => {
     }
     return "status";
   }, [runResult]);
+
+  useEffect(() => {
+    if (!isSampleCasesOpen || !lessonBodyRef.current) {
+      return;
+    }
+    const container = lessonBodyRef.current;
+    requestAnimationFrame(() => {
+      container.scrollTo({ top: container.scrollHeight, behavior: "auto" });
+    });
+  }, [isSampleCasesOpen]);
+
+  const handleSampleCasesToggle = (): void => {
+    if (isLessonListOpen) {
+      return;
+    }
+    setIsSampleCasesOpen((prev) => !prev);
+  };
 
   return (
     <div className="scene quest-scene">
@@ -502,7 +518,47 @@ export const QuestPage = (): ReactElement => {
               {lessonsError && lessons.length === 0 ? (
                 <div className="muted">{lessonsError}</div>
               ) : (
-                <article className="markdown" dangerouslySetInnerHTML={{ __html: lessonHtml }} />
+                <div className="lesson-body" ref={lessonBodyRef}>
+                  <article className="markdown" dangerouslySetInnerHTML={{ __html: lessonHtml }} />
+                  <div
+                    className="lesson-samples"
+                    role="button"
+                    tabIndex={0}
+                    onClick={handleSampleCasesToggle}
+                    onKeyDown={(event) => {
+                      if (event.key === "Enter" || event.key === " ") {
+                        event.preventDefault();
+                        handleSampleCasesToggle();
+                      }
+                    }}
+                    aria-expanded={isSampleCasesOpen}
+                  >
+                    <Button
+                      variant="ghost"
+                      type="button"
+                      className="btn--compact btn--text"
+                      disabled={isLessonListOpen}
+                    >
+                      sample cases
+                    </Button>
+                    {isSampleCasesOpen && (
+                      <div className="lesson-samples__body">
+                        {activeLesson.sampleCases.length === 0 ? (
+                          <div className="muted">No sample cases yet.</div>
+                        ) : (
+                          <div className="lesson-samples__list">
+                            {activeLesson.sampleCases.map((sampleCase, index) => (
+                              <div key={sampleCase.name} className="lesson-samples__row">
+                                <span className="lesson-samples__index">{index + 1}</span>
+                                <span className="lesson-samples__label">{sampleCase.label}</span>
+                              </div>
+                            ))}
+                          </div>
+                        )}
+                      </div>
+                    )}
+                  </div>
+                </div>
               )}
             </>
           )}
@@ -577,18 +633,24 @@ export const QuestPage = (): ReactElement => {
               {runResult?.stderr ? (
                 <pre className="execution-output">{runResult.stderr}</pre>
               ) : null}
+              {runResult?.status === "runtime_error" ? (
+                <div className="execution-hint">Check syntax and imports in your code.</div>
+              ) : null}
+              {runResult?.status === "compile_error" ? (
+                <div className="execution-hint">Check syntax errors in your code.</div>
+              ) : null}
             </div>
           ) : null}
 
           <div className="panel__footer">
             <div className={runStatusClass}>
               <span className="status__dot"></span>
-              {runStatusLabel}
+              <span className="status__label">{runStatusLabel}</span>
             </div>
             <Button
               variant="ghost"
               type="button"
-              className="btn--text btn--text-accent"
+              className="push-right btn--text btn--text-accent"
               onClick={() => setCode(defaultEditorCode)}
             >
               reset
@@ -596,7 +658,7 @@ export const QuestPage = (): ReactElement => {
             <Button
               variant="ghost"
               type="button"
-              className="push-right btn--text btn--text-accent"
+              className="btn--text btn--text-accent"
               onClick={handleRun}
               disabled={isRunning}
             >

@@ -9,7 +9,6 @@ class CreateLessonDTO(ExtendedBaseModel):
     order: int
     slug: str
     body_markdown: str = Field(default='body')
-    expected_output: str
     code_editor_default: str = Field(default="")
     eval_script: str = Field(default="")
     sample_cases: list[LessonSampleCaseDTO] | None = None

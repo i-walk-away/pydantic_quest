@@ -3,7 +3,6 @@ export interface LessonApiResponse {
   slug: string;
   name: string;
   body_markdown: string;
-  expected_output: string;
   code_editor_default: string;
   eval_script: string;
   sample_cases: LessonSampleCase[] | null;
@@ -22,7 +21,6 @@ export interface Lesson {
   slug: string;
   title: string;
   bodyMarkdown: string;
-  expectedOutput: string;
   codeEditorDefault: string;
   evalScript: string;
   sampleCases: LessonSampleCase[];
@@ -36,7 +34,6 @@ export interface LessonFormValues {
   slug: string;
   title: string;
   bodyMarkdown: string;
-  expectedOutput: string;
   codeEditorDefault: string;
   evalScript: string;
   sampleCases: LessonSampleCase[];
@@ -48,7 +45,6 @@ export const mapLesson = (response: LessonApiResponse): Lesson => {
     slug: response.slug,
     title: response.name,
     bodyMarkdown: response.body_markdown,
-    expectedOutput: response.expected_output,
     codeEditorDefault: response.code_editor_default,
     evalScript: response.eval_script,
     sampleCases: response.sample_cases ?? [],
@@ -66,7 +62,6 @@ export const mapLessonPayload = (
     slug: values.slug,
     name: values.title,
     body_markdown: values.bodyMarkdown,
-    expected_output: values.expectedOutput,
     code_editor_default: values.codeEditorDefault,
     eval_script: values.evalScript,
     sample_cases: values.sampleCases,

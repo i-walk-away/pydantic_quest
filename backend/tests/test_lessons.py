@@ -7,7 +7,6 @@ def _lesson_payload(order: int, slug: str) -> dict:
         "order": order,
         "slug": slug,
         "body_markdown": "body",
-        "expected_output": "",
         "code_editor_default": "",
         "eval_script": "",
         "sample_cases": None,

@@ -125,6 +125,23 @@
   transform: rotate(90deg);
 }
 
+.lesson-body {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+  padding-right: 8px;
+}
+
+.lesson-body .markdown {
+  flex: 0;
+  min-height: auto;
+  overflow: visible;
+  padding-right: 0;
+}
+
 .markdown {
   font-size: 1rem;
   color: var(--text-muted);
@@ -201,6 +218,59 @@
 
 .lesson-list__title {
   font-size: 0.98rem;
+}
+
+.lesson-samples {
+  margin-top: 16px;
+  padding: 12px;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  background: rgba(0, 0, 0, 0.28);
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  cursor: pointer;
+}
+
+.lesson-samples:focus-visible {
+  outline: 1px solid rgba(255, 255, 255, 0.2);
+  outline-offset: 2px;
+}
+
+.lesson-samples__list {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.lesson-samples__body {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.lesson-samples__row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.lesson-samples__index {
+  width: 18px;
+  text-align: right;
+  font-size: 0.8rem;
+  color: var(--text-muted);
+  font-family: "IBM Plex Mono", monospace;
+}
+
+.lesson-samples__label {
+  color: var(--text-strong);
+  font-size: 0.92rem;
+}
+
+.lesson-samples .btn--text {
+  align-self: flex-start;
+  padding-left: 8px;
+  text-align: left;
 }
 
 .quest-scene .btn--compact {
@@ -352,6 +422,11 @@
 .execution-error {
   color: #f6b1b1;
   font-size: 0.9rem;
+}
+
+.execution-hint {
+  font-size: 0.85rem;
+  color: color-mix(in srgb, var(--text-muted) 85%, #000);
 }
 
 .execution-cases {

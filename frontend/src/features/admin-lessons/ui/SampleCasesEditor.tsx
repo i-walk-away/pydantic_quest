@@ -33,11 +33,14 @@ export const SampleCasesEditor = ({ cases, onChange }: SampleCasesEditorProps): 
 
   return (
     <div className="field">
-      <span>Sample cases</span>
+      <span className="field__label">Sample cases</span>
+      <div className="muted">
+        Case name is the internal ID used in the eval script. Label is what the user sees.
+      </div>
       <div className="sample-cases">
         {cases.length === 0 && <div className="sample-cases__empty">No sample cases.</div>}
         {cases.map((sampleCase, index) => (
-          <div key={`${sampleCase.name}-${index}`} className="sample-case-row">
+          <div key={`${index}`} className="sample-case-row">
             <Input
               placeholder="case name"
               value={sampleCase.name}

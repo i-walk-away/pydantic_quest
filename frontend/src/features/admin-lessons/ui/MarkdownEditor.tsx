@@ -121,7 +121,7 @@ export const MarkdownEditor = ({
 
       <div className="editor-grid">
         <label className="field">
-          <span>Body markdown</span>
+          <span className="field__label">Body markdown</span>
           <Textarea
             className="textarea--editor"
             name="body_markdown"

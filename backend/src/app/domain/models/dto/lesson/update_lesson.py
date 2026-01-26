@@ -9,7 +9,6 @@ class UpdateLessonDTO(ExtendedBaseModel):
     slug: str | None = None
     name: str | None = None
     body_markdown: str | None = None
-    expected_output: str | None = None
     code_editor_default: str | None = None
     eval_script: str | None = None
     sample_cases: list[LessonSampleCaseDTO] | None = None

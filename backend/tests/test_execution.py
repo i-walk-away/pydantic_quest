@@ -118,7 +118,6 @@ async def test_execution_run_success(
         slug="lesson-1",
         name="Lesson 1",
         body_markdown="body",
-        expected_output="",
         code_editor_default="",
         eval_script=EVAL_SCRIPT,
         sample_cases=[
@@ -154,7 +153,6 @@ async def test_execution_invalid_output_returns_runtime_error(
         slug="lesson-3",
         name="Lesson 3",
         body_markdown="body",
-        expected_output="",
         code_editor_default="",
         eval_script=EVAL_SCRIPT,
         sample_cases=[
@@ -188,7 +186,6 @@ async def test_execution_rate_limit(
         slug="lesson-2",
         name="Lesson 2",
         body_markdown="body",
-        expected_output="",
         code_editor_default="",
         eval_script=EVAL_SCRIPT,
         sample_cases=[
@@ -224,7 +221,6 @@ async def test_execution_wrong_answer(
         slug="lesson-4",
         name="Lesson 4",
         body_markdown="body",
-        expected_output="",
         code_editor_default="",
         eval_script=EVAL_SCRIPT,
         sample_cases=[
@@ -261,7 +257,6 @@ async def test_execution_runtime_error_includes_stderr(
         slug="lesson-5",
         name="Lesson 5",
         body_markdown="body",
-        expected_output="",
         code_editor_default="",
         eval_script=EVAL_SCRIPT,
         sample_cases=[
@@ -296,7 +291,6 @@ async def test_execution_compile_error(
         slug="lesson-6",
         name="Lesson 6",
         body_markdown="body",
-        expected_output="",
         code_editor_default="",
         eval_script=EVAL_SCRIPT,
         sample_cases=[

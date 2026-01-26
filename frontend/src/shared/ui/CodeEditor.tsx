@@ -24,6 +24,11 @@ export const CodeEditor = ({
 }: CodeEditorProps): ReactElement => {
   const parentRef = useRef<HTMLDivElement | null>(null);
   const viewRef = useRef<EditorView | null>(null);
+  const onChangeRef = useRef<CodeEditorProps["onChange"]>(onChange);
+
+  useEffect(() => {
+    onChangeRef.current = onChange;
+  }, [onChange]);
 
   const highlightStyle = useMemo(
     () =>
@@ -50,6 +55,10 @@ export const CodeEditor = ({
             fontFamily: '"IBM Plex Mono", monospace',
             fontSize: "0.92rem",
             lineHeight: "1.6",
+            textTransform: "none",
+          },
+          ".cm-line": {
+            textTransform: "none",
           },
           ".cm-scroller": {
             overflow: "auto",
@@ -88,7 +97,7 @@ export const CodeEditor = ({
         return;
       }
 
-      onChange?.(update.state.doc.toString());
+      onChangeRef.current?.(update.state.doc.toString());
     });
 
     const state = EditorState.create({
@@ -116,7 +125,7 @@ export const CodeEditor = ({
       viewRef.current?.destroy();
       viewRef.current = null;
     };
-  }, [highlightStyle, onChange, readOnly, theme]);
+  }, [highlightStyle, readOnly, theme]);
 
   useEffect(() => {
     const view = viewRef.current;
