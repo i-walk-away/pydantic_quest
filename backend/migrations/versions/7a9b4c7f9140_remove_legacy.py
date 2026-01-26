@@ -31,6 +31,6 @@ def downgrade() -> None:
     op.add_column(
         'lessons', sa.Column(
             'eval_key', mysql.VARCHAR(length=128), server_default=sa.text("'lesson_01'"), nullable=False
-            )
         )
+    )
     # ### end Alembic commands ###

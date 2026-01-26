@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useRef, useState, type ReactElement } from "react";
-import { Link, useLocation } from "react-router-dom";
+import { Link, useLocation, useNavigate, useParams } from "react-router-dom";
 
 import logoUrl from "@shared/assets/logo.png";
 import { buildGithubLoginUrl, loginUser, signupUser } from "@shared/api/authApi";
@@ -10,13 +10,15 @@ import { renderMarkdown } from "@shared/lib/markdown/renderMarkdown";
 import { type ExecutionResult } from "@shared/model/execution";
 import { type Lesson } from "@shared/model/lesson";
 import { Button } from "@shared/ui/Button";
-import { CodeEditor } from "@shared/ui/CodeEditor";
+import { LazyCodeEditor } from "@shared/ui/LazyCodeEditor";
 import { Input } from "@shared/ui/Input";
 
 type AuthMode = "login" | "signup";
 
 export const QuestPage = (): ReactElement => {
+  const { slug } = useParams();
   const location = useLocation();
+  const navigate = useNavigate();
   const layoutRef = useRef<HTMLDivElement | null>(null);
   const lessonBodyRef = useRef<HTMLDivElement | null>(null);
   const [isLessonListOpen, setIsLessonListOpen] = useState(false);
@@ -40,6 +42,19 @@ export const QuestPage = (): ReactElement => {
   const [runResult, setRunResult] = useState<ExecutionResult | null>(null);
   const [runError, setRunError] = useState<string | null>(null);
   const [isRunning, setIsRunning] = useState(false);
+  const [isTracebackCollapsed, setIsTracebackCollapsed] = useState(false);
+  const [completedSlugs, setCompletedSlugs] = useState<string[]>(() => {
+    if (typeof window === "undefined") {
+      return [];
+    }
+    try {
+      const raw = window.localStorage.getItem("pq_completed_lessons");
+      const parsed = raw ? JSON.parse(raw) : [];
+      return Array.isArray(parsed) ? parsed : [];
+    } catch {
+      return [];
+    }
+  });
   const githubLoginUrl = useMemo(() => buildGithubLoginUrl(), []);
   const fallbackCode = useMemo(
     () =>
@@ -121,6 +136,10 @@ export const QuestPage = (): ReactElement => {
   const activeLessonIndex = lessons.findIndex((lesson) => lesson.id === activeLesson.id);
   const isAtFirstLesson = lessons.length > 0 && activeLessonIndex <= 0;
   const isAtLastLesson = lessons.length > 0 && activeLessonIndex >= lessons.length - 1;
+  const isLessonCompleted = useMemo(
+    () => completedSlugs.includes(activeLesson.slug),
+    [activeLesson.slug, completedSlugs]
+  );
 
   useEffect(() => {
     if (!isDragging) {
@@ -169,7 +188,12 @@ export const QuestPage = (): ReactElement => {
         const data = await fetchLessons(controller.signal);
         setLessons(data);
         if (data.length > 0) {
-          setActiveLessonId((previous) => previous ?? data[0].id);
+          const matched = slug ? data.find((lesson) => lesson.slug === slug) : null;
+          const nextLesson = matched ?? data[0];
+          setActiveLessonId(nextLesson.id);
+          if (slug && !matched) {
+            navigate(`/lesson/${nextLesson.slug}`, { replace: true });
+          }
         }
       } catch (error) {
         if (error instanceof Error && error.name === "AbortError") {
@@ -188,13 +212,28 @@ export const QuestPage = (): ReactElement => {
     return () => {
       controller.abort();
     };
-  }, []);
+  }, [navigate, slug]);
+
+  useEffect(() => {
+    if (showFallbackLesson || lessons.length === 0) {
+      return;
+    }
+    const matched = slug ? lessons.find((lesson) => lesson.slug === slug) : null;
+    if (matched) {
+      setActiveLessonId(matched.id);
+      return;
+    }
+    if (slug) {
+      navigate(`/lesson/${lessons[0].slug}`, { replace: true });
+    }
+  }, [lessons, navigate, showFallbackLesson, slug]);
 
   useEffect(() => {
     setCode(defaultEditorCode);
     setRunResult(null);
     setRunError(null);
     setIsSampleCasesOpen(false);
+    setIsTracebackCollapsed(false);
   }, [defaultEditorCode, activeLesson.id]);
 
   useEffect(() => {
@@ -284,7 +323,11 @@ export const QuestPage = (): ReactElement => {
   };
 
   const handleLessonSelect = (lessonId: string): void => {
+    const lesson = lessons.find((item) => item.id === lessonId);
     setActiveLessonId(lessonId);
+    if (lesson) {
+      navigate(`/lesson/${lesson.slug}`);
+    }
     setIsLessonListOpen(false);
   };
 
@@ -295,6 +338,7 @@ export const QuestPage = (): ReactElement => {
     const index = lessons.findIndex((lesson) => lesson.id === activeLesson.id);
     const next = lessons[index + 1] ?? lessons[index];
     setActiveLessonId(next.id);
+    navigate(`/lesson/${next.slug}`);
   };
 
   const handlePreviousLesson = (): void => {
@@ -304,6 +348,7 @@ export const QuestPage = (): ReactElement => {
     const index = lessons.findIndex((lesson) => lesson.id === activeLesson.id);
     const previous = lessons[index - 1] ?? lessons[index];
     setActiveLessonId(previous.id);
+    navigate(`/lesson/${previous.slug}`);
   };
 
   const handleRun = async (): Promise<void> => {
@@ -312,6 +357,7 @@ export const QuestPage = (): ReactElement => {
     }
     setIsRunning(true);
     setRunError(null);
+    setIsTracebackCollapsed(false);
     try {
       const result = await runLessonCode(activeLesson.id, code);
       setRunResult(result);
@@ -322,6 +368,23 @@ export const QuestPage = (): ReactElement => {
       setIsRunning(false);
     }
   };
+
+  useEffect(() => {
+    if (runResult?.status !== "accepted") {
+      return;
+    }
+    if (!activeLesson.slug) {
+      return;
+    }
+    setCompletedSlugs((previous) => {
+      if (previous.includes(activeLesson.slug)) {
+        return previous;
+      }
+      const next = [...previous, activeLesson.slug];
+      window.localStorage.setItem("pq_completed_lessons", JSON.stringify(next));
+      return next;
+    });
+  }, [activeLesson.slug, runResult]);
 
   const runStatusLabel = useMemo(() => {
     if (isRunning) {
@@ -340,13 +403,13 @@ export const QuestPage = (): ReactElement => {
       return "failed";
     }
     if (runResult.status === "compile_error") {
-      return "failed";
+      return "compile error";
     }
     if (runResult.status === "runtime_error") {
-      return "failed";
+      return "runtime error";
     }
     if (runResult.status === "timeout") {
-      return "failed";
+      return "timeout";
     }
     return "finished";
   }, [isRunning, runError, runResult]);
@@ -488,6 +551,7 @@ export const QuestPage = (): ReactElement => {
                 {">"}
               </span>
               <span className="lesson-toggle__label">{lessonLabel}</span>
+              {isLessonCompleted ? <span className="lesson-toggle__check">✓</span> : null}
             </button>
           </div>
 
@@ -510,6 +574,9 @@ export const QuestPage = (): ReactElement => {
                 >
                   <span className="lesson-list__order">{lesson.order}</span>
                   <span className="lesson-list__title">{lesson.title}</span>
+                  {completedSlugs.includes(lesson.slug) ? (
+                    <span className="lesson-list__check">✓</span>
+                  ) : null}
                 </button>
               ))}
             </div>
@@ -599,7 +666,7 @@ export const QuestPage = (): ReactElement => {
           </div>
 
           <div className="code-editor">
-            <CodeEditor value={code} onChange={setCode} className="code-editor__surface" />
+            <LazyCodeEditor value={code} onChange={setCode} className="code-editor__surface" />
           </div>
 
           {(runResult || runError) ? (
@@ -631,7 +698,18 @@ export const QuestPage = (): ReactElement => {
                 </div>
               ) : null}
               {runResult?.stderr ? (
-                <pre className="execution-output">{runResult.stderr}</pre>
+                <div className="execution-trace">
+                  <button
+                    type="button"
+                    className="execution-trace__toggle"
+                    onClick={() => setIsTracebackCollapsed((prev) => !prev)}
+                  >
+                    {isTracebackCollapsed ? "show traceback" : "hide traceback"}
+                  </button>
+                  {!isTracebackCollapsed ? (
+                    <pre className="execution-output">{runResult.stderr}</pre>
+                  ) : null}
+                </div>
               ) : null}
               {runResult?.status === "runtime_error" ? (
                 <div className="execution-hint">Check syntax and imports in your code.</div>

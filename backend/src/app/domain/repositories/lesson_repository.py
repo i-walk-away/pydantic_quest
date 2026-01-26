@@ -1,3 +1,4 @@
+from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from src.app.domain.models.db.lesson import Lesson
@@ -17,3 +18,14 @@ class LessonRepository(BaseRepository[Lesson]):
             session=session,
             model=Lesson,
         )
+
+    async def get_by_slug(self, slug: str) -> Lesson | None:
+        """
+        Get lesson by slug.
+
+        :param slug: lesson slug
+
+        :return: lesson or None
+        """
+        stmt = select(Lesson).where(Lesson.slug == slug)
+        return await self.session.scalar(stmt)

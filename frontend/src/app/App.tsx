@@ -33,6 +33,7 @@ export const App = (): ReactElement => {
           <AuthTokenHandler />
           <Routes>
             <Route path="/" element={<QuestPage />} />
+            <Route path="/lesson/:slug" element={<QuestPage />} />
             <Route path="/admiin" element={<AdminLayout />}>
               <Route path="lessons" element={<AdminLessonsPage />} />
               <Route path="lessons/new" element={<AdminLessonEditorPage />} />

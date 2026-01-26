@@ -1,7 +1,7 @@
 import json
 from uuid import UUID
 
-from src.app.core.exceptions.execution_exc import ExecutionInvalidOutput
+from src.app.core.exceptions.execution_exc import ExecutionInvalidOutput, ExecutionPayloadTooLarge
 from src.app.domain.models.dto.execution.execution_case import ExecutionCaseDTO
 from src.app.domain.models.dto.execution.execution_result import ExecutionResultDTO
 from src.app.domain.models.dto.lesson.lesson import LessonDTO
@@ -10,6 +10,7 @@ from src.app.domain.models.enums.execution import ExecutionStatus
 from src.app.domain.services.lesson_service import LessonService
 from src.app.domain.services.piston_service import PistonService
 from src.app.eval.types import USER_CODE_PLACEHOLDER
+from src.cfg.cfg import settings
 
 
 class CodeExecutionService:
@@ -39,6 +40,10 @@ class CodeExecutionService:
         :return: execution result
         """
         lesson = await self._get_lesson(lesson_id=lesson_id)
+        self._validate_payload_sizes(
+            code=code,
+            eval_script=lesson.eval_script,
+        )
         if not lesson.eval_script.strip():
             return ExecutionResultDTO(
                 status=ExecutionStatus.RUNTIME_ERROR,
@@ -60,6 +65,8 @@ class CodeExecutionService:
             definition_script=lesson.eval_script,
             code=code,
         )
+        if len(source_code) > settings.execution.max_source_chars:
+            raise ExecutionPayloadTooLarge
         try:
             piston_result = await self.piston_service.execute(source_code=source_code)
         except ExecutionInvalidOutput:
@@ -92,8 +99,10 @@ class CodeExecutionService:
             return ExecutionResultDTO(
                 status=ExecutionStatus.RUNTIME_ERROR,
                 cases=[],
-                stderr=self._normalize_stderr(stderr=run_result.get("stderr")),
-                stdout=run_result.get("stdout"),
+                stderr=self._cap_output(
+                    output=self._normalize_stderr(stderr=run_result.get("stderr")),
+                ),
+                stdout=self._cap_output(output=run_result.get("stdout")),
                 duration_ms=run_result.get("wall_time"),
             )
         sample_cases = self._build_sample_cases(
@@ -105,8 +114,10 @@ class CodeExecutionService:
         return ExecutionResultDTO(
             status=status,
             cases=sample_cases,
-            stderr=self._normalize_stderr(stderr=run_result.get("stderr")),
-            stdout=run_result.get("stdout"),
+            stderr=self._cap_output(
+                output=self._normalize_stderr(stderr=run_result.get("stderr")),
+            ),
+            stdout=self._cap_output(output=run_result.get("stdout")),
             duration_ms=run_result.get("wall_time"),
         )
 
@@ -170,8 +181,10 @@ class CodeExecutionService:
         return ExecutionResultDTO(
             status=ExecutionStatus.COMPILE_ERROR,
             cases=[],
-            stderr=CodeExecutionService._normalize_stderr(stderr=compile_result.get("stderr")),
-            stdout=compile_result.get("stdout"),
+            stderr=CodeExecutionService._cap_output(
+                output=CodeExecutionService._normalize_stderr(stderr=compile_result.get("stderr")),
+            ),
+            stdout=CodeExecutionService._cap_output(output=compile_result.get("stdout")),
             duration_ms=compile_result.get("wall_time"),
         )
 
@@ -189,8 +202,10 @@ class CodeExecutionService:
             return ExecutionResultDTO(
                 status=ExecutionStatus.TIMEOUT,
                 cases=[],
-                stderr=CodeExecutionService._normalize_stderr(stderr=run_result.get("stderr")),
-                stdout=run_result.get("stdout"),
+                stderr=CodeExecutionService._cap_output(
+                    output=CodeExecutionService._normalize_stderr(stderr=run_result.get("stderr")),
+                ),
+                stdout=CodeExecutionService._cap_output(output=run_result.get("stdout")),
                 duration_ms=run_result.get("wall_time"),
             )
         if run_status not in ["SG", "RE"] and run_result.get("code") in [0, None]:
@@ -198,8 +213,10 @@ class CodeExecutionService:
         return ExecutionResultDTO(
             status=ExecutionStatus.RUNTIME_ERROR,
             cases=[],
-            stderr=CodeExecutionService._normalize_stderr(stderr=run_result.get("stderr")),
-            stdout=run_result.get("stdout"),
+            stderr=CodeExecutionService._cap_output(
+                output=CodeExecutionService._normalize_stderr(stderr=run_result.get("stderr")),
+            ),
+            stdout=CodeExecutionService._cap_output(output=run_result.get("stdout")),
             duration_ms=run_result.get("wall_time"),
         )
 
@@ -222,6 +239,39 @@ class CodeExecutionService:
                 normalized = "\n".join(lines[:half])
                 return f"{normalized}\n" if stderr.endswith("\n") else normalized
         return stderr
+
+    @staticmethod
+    def _cap_output(output: str | None) -> str | None:
+        """
+        Cap output size to prevent oversized payloads.
+
+        :param output: raw output
+
+        :return: capped output
+        """
+        if output is None:
+            return None
+        max_chars = settings.execution.max_output_chars
+        if len(output) <= max_chars:
+            return output
+        suffix = "\n...[output truncated]"
+        head = output[: max_chars - len(suffix)]
+        return f"{head}{suffix}"
+
+    @staticmethod
+    def _validate_payload_sizes(code: str, eval_script: str) -> None:
+        """
+        Validate input sizes.
+
+        :param code: user code
+        :param eval_script: evaluation script
+
+        :return: None
+        """
+        if len(code) > settings.execution.max_user_code_chars:
+            raise ExecutionPayloadTooLarge
+        if len(eval_script) > settings.execution.max_eval_script_chars:
+            raise ExecutionPayloadTooLarge
 
     @staticmethod
     def _parse_stdout(stdout: str | None) -> dict:

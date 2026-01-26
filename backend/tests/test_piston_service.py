@@ -17,12 +17,17 @@ class FakeResponse:
 
 
 class FakeClient:
-    def __init__(self, response: FakeResponse) -> None:
+    def __init__(self, response: FakeResponse, get_response: FakeResponse | None = None) -> None:
         self.response = response
+        self.get_response = get_response or FakeResponse(status_code=200, payload=[{"language": "python"}])
 
     async def post(self, *, url: str, json: dict) -> FakeResponse:
         _ = (url, json)
         return self.response
+
+    async def get(self, *, url: str) -> FakeResponse:
+        _ = url
+        return self.get_response
 
     async def __aenter__(self) -> FakeClient:
         return self

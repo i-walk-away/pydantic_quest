@@ -56,3 +56,22 @@ class ExecutionInvalidOutput(HTTPException):
             status_code=self.status_code,
             detail=self.detail,
         )
+
+
+class ExecutionPayloadTooLarge(HTTPException):
+    """
+    Execution payload is too large.
+    """
+    status_code = 413
+    detail = "Execution payload is too large."
+
+    def __init__(self) -> None:
+        """
+        Initialize execution payload too large error.
+
+        :return: None
+        """
+        super().__init__(
+            status_code=self.status_code,
+            detail=self.detail,
+        )

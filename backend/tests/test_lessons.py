@@ -57,12 +57,12 @@ async def test_create_update_delete_lesson_admin(
 
     update_response = await client.put(
         f"/api/v1/lessons/{lesson['id']}",
-        json=_lesson_payload(order=2, slug="lesson-1-updated"),
+        json=_lesson_payload(order=1, slug="lesson-1-updated"),
         headers=admin_headers,
     )
 
     assert update_response.status_code == 200
-    assert update_response.json()["order"] == 2
+    assert update_response.json()["order"] == 1
 
     delete_response = await client.delete(
         f"/api/v1/lessons/{lesson['id']}",

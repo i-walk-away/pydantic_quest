@@ -379,6 +379,12 @@ h2 {
   gap: 12px;
 }
 
+.field__error {
+  color: #f6b1b1;
+  font-size: 0.78rem;
+  letter-spacing: 0.02em;
+}
+
 .field-grid {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));

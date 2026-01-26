@@ -73,6 +73,24 @@ async def get_lesson_by_id(
     return lesson
 
 
+@router.get(path="/by_slug/{slug}", summary="Get lesson by slug")
+async def get_lesson_by_slug(
+        slug: str,
+        lesson_service: LessonService = Depends(dependency=get_lesson_service),
+) -> LessonDTO:
+    """
+    Get lesson by slug.
+
+    :param slug: lesson slug
+    :param lesson_service: lesson service
+
+    :return: lesson
+    """
+    lesson = await lesson_service.get_by_slug(slug=slug)
+
+    return lesson
+
+
 @router.put(path="/{lesson_id}", summary="Update lesson")
 async def update_lesson(
         lesson_id: UUID,
