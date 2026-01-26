@@ -11,6 +11,14 @@ jobs:
     runs-on: ubuntu-latest
     env:
       UV_PYTHON: 3.14.2
+      DB_HOST: localhost
+      DB_PORT: 3306
+      DB_NAME: pydanticquest_test
+      DB_USERNAME: test
+      DB_PASSWORD: test
+      JWT_SECRET_KEY: test-secret
+      JWT_ALGORITHM: HS256
+      JWT_LIFESPAN: 50
     steps:
       - name: Checkout
         uses: actions/checkout@v4
