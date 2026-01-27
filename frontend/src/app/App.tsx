@@ -24,6 +24,10 @@ const AdminSettingsPage = lazy(async () => {
   const module = await import("@pages/admin/AdminSettingsPage");
   return { default: module.AdminSettingsPage };
 });
+const SettingsPage = lazy(async () => {
+  const module = await import("@pages/settings/SettingsPage");
+  return { default: module.SettingsPage };
+});
 
 export const App = (): ReactElement => {
   return (
@@ -34,6 +38,7 @@ export const App = (): ReactElement => {
           <Routes>
             <Route path="/" element={<QuestPage />} />
             <Route path="/lesson/:slug" element={<QuestPage />} />
+            <Route path="/settings" element={<SettingsPage />} />
             <Route path="/admiin" element={<AdminLayout />}>
               <Route path="lessons" element={<AdminLessonsPage />} />
               <Route path="lessons/new" element={<AdminLessonEditorPage />} />

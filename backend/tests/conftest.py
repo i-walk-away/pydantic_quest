@@ -51,6 +51,7 @@ async def db_session(
         session_factory: async_sessionmaker[AsyncSession],
 ) -> AsyncGenerator[AsyncSession]:
     async with session_factory() as session:
+        await session.execute(text("DELETE FROM lesson_progress"))
         await session.execute(text("DELETE FROM lessons"))
         await session.execute(text("DELETE FROM users"))
         await session.commit()
@@ -119,6 +120,7 @@ async def client(
             yield session
 
     async with session_factory() as session:
+        await session.execute(text("DELETE FROM lesson_progress"))
         await session.execute(text("DELETE FROM lessons"))
         await session.execute(text("DELETE FROM users"))
         await session.commit()

@@ -7,6 +7,7 @@ from src.app.domain.models.dto.execution.execution_result import ExecutionResult
 from src.app.domain.models.dto.lesson.lesson import LessonDTO
 from src.app.domain.models.dto.lesson.sample_case import LessonSampleCaseDTO
 from src.app.domain.models.enums.execution import ExecutionStatus
+from src.app.domain.services.lesson_progress_service import LessonProgressService
 from src.app.domain.services.lesson_service import LessonService
 from src.app.domain.services.piston_service import PistonService
 from src.app.eval.types import USER_CODE_PLACEHOLDER
@@ -18,24 +19,28 @@ class CodeExecutionService:
             self,
             lesson_service: LessonService,
             piston_service: PistonService,
+            progress_service: LessonProgressService,
     ) -> None:
         """
         Initialize code execution service.
 
         :param lesson_service: lesson service
         :param piston_service: piston service
+        :param progress_service: progress service
 
         :return: None
         """
         self.lesson_service = lesson_service
         self.piston_service = piston_service
+        self.progress_service = progress_service
 
-    async def execute(self, lesson_id: UUID, code: str) -> ExecutionResultDTO:
+    async def execute(self, lesson_id: UUID, code: str, user_id: UUID | None = None) -> ExecutionResultDTO:
         """
         Execute lesson code against evaluation script.
 
         :param lesson_id: lesson id
         :param code: user code
+        :param user_id: user id
 
         :return: execution result
         """
@@ -110,6 +115,12 @@ class CodeExecutionService:
             lesson_sample_cases=lesson.sample_cases,
         )
         status = ExecutionStatus.ACCEPTED if parsed.get("ok") is True else ExecutionStatus.WRONG_ANSWER
+
+        if status == ExecutionStatus.ACCEPTED and user_id is not None:
+            await self.progress_service.mark_completed(
+                user_id=user_id,
+                lesson_id=lesson_id,
+            )
 
         return ExecutionResultDTO(
             status=status,

@@ -5,6 +5,7 @@ import logoUrl from "@shared/assets/logo.png";
 import { buildGithubLoginUrl, loginUser, signupUser } from "@shared/api/authApi";
 import { runLessonCode } from "@shared/api/executionApi";
 import { fetchLessons } from "@shared/api/lessonApi";
+import { fetchUserProgress } from "@shared/api/userApi";
 import { clearAuthToken, getAuthRole, getAuthUsername, setAuthToken } from "@shared/lib/auth";
 import { renderMarkdown } from "@shared/lib/markdown/renderMarkdown";
 import { type ExecutionResult } from "@shared/model/execution";
@@ -42,8 +43,12 @@ export const QuestPage = (): ReactElement => {
   const [runResult, setRunResult] = useState<ExecutionResult | null>(null);
   const [runError, setRunError] = useState<string | null>(null);
   const [isRunning, setIsRunning] = useState(false);
+  const [lastRunLessonId, setLastRunLessonId] = useState<string | null>(null);
   const [isTracebackCollapsed, setIsTracebackCollapsed] = useState(false);
   const [completedSlugs, setCompletedSlugs] = useState<string[]>(() => {
+    if (getAuthUsername()) {
+      return [];
+    }
     if (typeof window === "undefined") {
       return [];
     }
@@ -55,6 +60,7 @@ export const QuestPage = (): ReactElement => {
       return [];
     }
   });
+  const [remoteCompletedIds, setRemoteCompletedIds] = useState<string[] | null>(null);
   const githubLoginUrl = useMemo(() => buildGithubLoginUrl(), []);
   const fallbackCode = useMemo(
     () =>
@@ -215,6 +221,41 @@ export const QuestPage = (): ReactElement => {
   }, [navigate, slug]);
 
   useEffect(() => {
+    if (!currentUser || lessons.length === 0) {
+      return;
+    }
+    let isActive = true;
+    const loadProgress = async (): Promise<void> => {
+      try {
+        const progress = await fetchUserProgress();
+        if (!isActive) {
+          return;
+        }
+        setRemoteCompletedIds(progress);
+      } catch {
+        if (isActive) {
+          setRemoteCompletedIds([]);
+        }
+      }
+    };
+    void loadProgress();
+    return () => {
+      isActive = false;
+    };
+  }, [currentUser, lessons.length]);
+
+  useEffect(() => {
+    if (!currentUser || !remoteCompletedIds) {
+      return;
+    }
+    const completed = lessons
+      .filter((lesson) => remoteCompletedIds.includes(lesson.id))
+      .map((lesson) => lesson.slug)
+      .filter(Boolean);
+    setCompletedSlugs(completed);
+  }, [currentUser, remoteCompletedIds, lessons]);
+
+  useEffect(() => {
     if (showFallbackLesson || lessons.length === 0) {
       return;
     }
@@ -234,6 +275,7 @@ export const QuestPage = (): ReactElement => {
     setRunError(null);
     setIsSampleCasesOpen(false);
     setIsTracebackCollapsed(false);
+    setLastRunLessonId(null);
   }, [defaultEditorCode, activeLesson.id]);
 
   useEffect(() => {
@@ -320,6 +362,18 @@ export const QuestPage = (): ReactElement => {
     setCurrentUser(null);
     setCurrentRole(null);
     setIsUserMenuOpen(false);
+    setRemoteCompletedIds(null);
+    if (typeof window !== "undefined") {
+      try {
+        const raw = window.localStorage.getItem("pq_completed_lessons");
+        const parsed = raw ? JSON.parse(raw) : [];
+        setCompletedSlugs(Array.isArray(parsed) ? parsed : []);
+      } catch {
+        setCompletedSlugs([]);
+      }
+    } else {
+      setCompletedSlugs([]);
+    }
   };
 
   const handleLessonSelect = (lessonId: string): void => {
@@ -358,6 +412,7 @@ export const QuestPage = (): ReactElement => {
     setIsRunning(true);
     setRunError(null);
     setIsTracebackCollapsed(false);
+    setLastRunLessonId(activeLesson.id);
     try {
       const result = await runLessonCode(activeLesson.id, code);
       setRunResult(result);
@@ -376,15 +431,30 @@ export const QuestPage = (): ReactElement => {
     if (!activeLesson.slug) {
       return;
     }
+    if (!lastRunLessonId || lastRunLessonId !== activeLesson.id) {
+      return;
+    }
     setCompletedSlugs((previous) => {
       if (previous.includes(activeLesson.slug)) {
         return previous;
       }
       const next = [...previous, activeLesson.slug];
-      window.localStorage.setItem("pq_completed_lessons", JSON.stringify(next));
+      if (!currentUser) {
+        window.localStorage.setItem("pq_completed_lessons", JSON.stringify(next));
+      } else {
+        setRemoteCompletedIds((prev) => {
+          if (!prev) {
+            return [activeLesson.id];
+          }
+          if (prev.includes(activeLesson.id)) {
+            return prev;
+          }
+          return [...prev, activeLesson.id];
+        });
+      }
       return next;
     });
-  }, [activeLesson.slug, runResult]);
+  }, [activeLesson.slug, runResult, currentUser, activeLesson.id, lastRunLessonId]);
 
   const runStatusLabel = useMemo(() => {
     if (isRunning) {
@@ -477,14 +547,19 @@ export const QuestPage = (): ReactElement => {
                       Admin panel
                     </Link>
                   ) : null}
-                  <button type="button" className="auth-menu__item" role="menuitem">
+                  <Link
+                    to="/settings"
+                    className="auth-menu__item"
+                    role="menuitem"
+                    onClick={() => setIsUserMenuOpen(false)}
+                  >
                     <span className="auth-menu__icon" aria-hidden="true">
                       <svg viewBox="0 0 24 24" role="img" focusable="false">
                         <path d="M12 8.75A3.25 3.25 0 1 0 12 15.25 3.25 3.25 0 0 0 12 8.75Zm8.5 3.25a6.74 6.74 0 0 0-.1-1.1l2.04-1.6-2-3.45-2.41.97a7.6 7.6 0 0 0-1.9-1.1l-.36-2.55H9.23l-.36 2.55a7.6 7.6 0 0 0-1.9 1.1l-2.41-.97-2 3.45 2.04 1.6a6.74 6.74 0 0 0 0 2.2l-2.04 1.6 2 3.45 2.41-.97a7.6 7.6 0 0 0 1.9 1.1l.36 2.55h4.54l.36-2.55a7.6 7.6 0 0 0 1.9-1.1l2.41.97 2-3.45-2.04-1.6c.07-.36.1-.72.1-1.1Z" />
                       </svg>
                     </span>
                     Settings
-                  </button>
+                  </Link>
                   <button
                     type="button"
                     className="auth-menu__item auth-menu__item--danger"

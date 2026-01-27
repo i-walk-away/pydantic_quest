@@ -1,10 +1,15 @@
 from uuid import UUID
 
+from src.app.core.exceptions.auth_exc import InvalidCredentials
 from src.app.core.exceptions.base_exc import NotFoundError
-from src.app.core.exceptions.user_exc import UserAlreadyExists
+from src.app.core.exceptions.user_exc import (
+    UserAlreadyExists,
+    UserEmailAlreadyExists,
+    UserPasswordChangeInvalid,
+)
 from src.app.core.security.auth_manager import AuthManager
 from src.app.domain.models.db.user import User
-from src.app.domain.models.dto.user import CreateUserDTO, UserDTO
+from src.app.domain.models.dto.user import CreateUserDTO, UpdateUserDTO, UserDTO
 from src.app.domain.repositories import UserRepository
 
 
@@ -20,7 +25,7 @@ class UserService:
         self.repository = user_repository
         self.auth_manager = auth_manager
 
-    async def get_by_id(self, id: UUID) -> UserDTO | None:
+    async def get_by_id(self, id: UUID) -> UserDTO:
         """
         Get user by id.
 
@@ -115,3 +120,62 @@ class UserService:
         await self.repository.session.commit()
 
         return deleted
+
+    async def update_me(self, id: UUID, schema: UpdateUserDTO) -> UserDTO:
+        """
+        Update current user data.
+
+        :param id: user id
+        :param schema: update data
+
+        :return: updated user dto
+        """
+        user = await self.repository.get(id=id)
+        if not user:
+            raise NotFoundError(
+                entity_type_str='User',
+                field_name='id',
+                field_value=id,
+            )
+
+        data = schema.model_dump(exclude_unset=True, exclude_none=True)
+
+        username = data.get("username")
+        if username and username != user.username:
+            existing = await self.repository.get_by_username(username=username)
+            if existing and existing.id != user.id:
+                raise UserAlreadyExists(username=username)
+
+        email = data.get("email")
+        if email and email != user.email:
+            existing = await self.repository.get_by_email(email=email)
+            if existing and existing.id != user.id:
+                raise UserEmailAlreadyExists(email=email)
+
+        new_password = schema.new_password
+        current_password = schema.current_password
+        if new_password:
+            if not current_password:
+                raise UserPasswordChangeInvalid(detail="Current password is required.")
+
+            hashed_password = user.hashed_password
+            if hashed_password is None:
+                raise InvalidCredentials
+
+            is_password_correct = self.auth_manager.verify_password_against_hash(
+                plain_password=current_password,
+                hashed_password=hashed_password,
+            )
+            if not is_password_correct:
+                raise InvalidCredentials
+
+            data["hashed_password"] = self.auth_manager.hash_password(password=new_password)
+
+        data.pop("current_password", None)
+        data.pop("new_password", None)
+
+        updated = await self.repository.update(id=id, data=data)
+        await self.repository.session.commit()
+        await self.repository.session.refresh(updated)
+
+        return updated.to_dto()
