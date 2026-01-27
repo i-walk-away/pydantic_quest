@@ -1,3 +1,6 @@
+import asyncio
+import time
+
 import httpx
 
 from src.app.core.exceptions.execution_exc import ExecutionInvalidOutput, ExecutionServiceUnavailable
@@ -12,6 +15,7 @@ class PistonService:
         :return: None
         """
         self.base_url = settings.execution.piston_url
+        self._last_health_check = 0.0
 
     async def execute(self, source_code: str) -> dict:
         """
@@ -21,6 +25,7 @@ class PistonService:
 
         :return: piston response payload
         """
+        await self._ensure_available()
         payload = {
             "language": settings.execution.language,
             "version": settings.execution.version,
@@ -38,19 +43,49 @@ class PistonService:
             "compile_memory_limit": settings.execution.compile_memory_limit_bytes,
         }
 
+        retries = max(settings.execution.max_retries, 0)
+        last_error: Exception | None = None
+
+        timeout = settings.execution.http_timeout_ms / 1000
+        for attempt in range(retries + 1):
+            try:
+                async with httpx.AsyncClient(base_url=self.base_url, timeout=timeout) as client:
+                    response = await client.post(
+                        url="/api/v2/execute",
+                        json=payload,
+                    )
+                if response.status_code == 200:
+                    try:
+                        return response.json()
+                    except ValueError as exc:
+                        raise ExecutionInvalidOutput from exc
+                last_error = ExecutionServiceUnavailable()
+            except httpx.RequestError as exc:
+                last_error = exc
+
+            if attempt < retries:
+                await asyncio.sleep(settings.execution.retry_delay_ms / 1000)
+
+        raise ExecutionServiceUnavailable from last_error
+
+    async def _ensure_available(self) -> None:
+        """
+        Ensure Piston API is reachable.
+
+        :return: None
+        """
+        now = time.time()
+        if now - self._last_health_check < settings.execution.health_check_ttl_sec:
+            return
+
+        timeout = settings.execution.http_timeout_ms / 1000
         try:
-            async with httpx.AsyncClient(base_url=self.base_url) as client:
-                response = await client.post(
-                    url="/api/v2/execute",
-                    json=payload,
-                )
+            async with httpx.AsyncClient(base_url=self.base_url, timeout=timeout) as client:
+                response = await client.get(url="/api/v2/runtimes")
         except httpx.RequestError as exc:
             raise ExecutionServiceUnavailable from exc
 
         if response.status_code != 200:
             raise ExecutionServiceUnavailable
 
-        try:
-            return response.json()
-        except ValueError as exc:
-            raise ExecutionInvalidOutput from exc
+        self._last_health_check = now

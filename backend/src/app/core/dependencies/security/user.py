@@ -48,6 +48,27 @@ async def get_user_from_jwt(
     return user
 
 
+async def get_optional_user_from_jwt(
+        user_service: UserService = Depends(get_user_service),
+        jwt: HTTPAuthorizationCredentials | None = Depends(scheme_factory),
+) -> UserDTO | None:
+    """
+    Gets optional user from the given JSON Web Token.
+
+    :param user_service: user service
+    :param jwt: authorization credentials
+
+    :return: user dto or None
+    """
+    if not jwt:
+        return None
+
+    return await get_user_from_jwt(
+        user_service=user_service,
+        jwt=jwt,
+    )
+
+
 async def require_admin_user(
         user: UserDTO = Depends(get_user_from_jwt),
 ) -> UserDTO:

@@ -114,6 +114,13 @@
   margin-right: 4px;
 }
 
+.lesson-toggle__check {
+  color: #6bd1a7;
+  font-weight: 700;
+  letter-spacing: 0;
+  margin-left: 6px;
+}
+
 .lesson-toggle__chevron {
   font-size: 0.9rem;
   color: var(--md-typeset-a-color);
@@ -173,7 +180,7 @@
 
 .lesson-list__row {
   display: grid;
-  grid-template-columns: 26px 1fr;
+  grid-template-columns: 26px 1fr 18px;
   gap: 10px;
   align-items: center;
   min-height: 32px;
@@ -218,6 +225,12 @@
 
 .lesson-list__title {
   font-size: 0.98rem;
+}
+
+.lesson-list__check {
+  color: #6bd1a7;
+  font-size: 0.9rem;
+  justify-self: end;
 }
 
 .lesson-samples {
@@ -488,6 +501,23 @@
   color: var(--text-strong);
   max-height: 160px;
   overflow: auto;
+}
+
+.execution-trace {
+  display: grid;
+  gap: 6px;
+}
+
+.execution-trace__toggle {
+  align-self: flex-start;
+  background: transparent;
+  border: none;
+  color: var(--text-muted);
+  font-size: 0.75rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  cursor: pointer;
+  padding: 0;
 }
 
 .auth-user {

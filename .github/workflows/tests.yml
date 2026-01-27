@@ -18,9 +18,37 @@ jobs:
       DB_NAME: pydanticquest_test
       DB_USERNAME: test
       DB_PASSWORD: test
+      DB_ROOT_PASSWORD: test
       JWT_SECRET_KEY: test-secret
       JWT_ALGORITHM: HS256
       JWT_LIFESPAN: 50
+      FRONTEND_URL: http://localhost:5173
+      GITHUB_CLIENT_ID: test
+      GITHUB_CLIENT_SECRET: test
+      GITHUB_REDIRECT_URI: http://localhost:8000/api/v1/auth/github/callback
+      GITHUB_SCOPE: read:user user:email
+      GITHUB_ALLOW_SIGNUP: true
+      GITHUB_AUTHORIZE_URL: https://github.com/login/oauth/authorize
+      GITHUB_TOKEN_URL: https://github.com/login/oauth/access_token
+      GITHUB_USER_URL: https://api.github.com/user
+      GITHUB_EMAILS_URL: https://api.github.com/user/emails
+      PISTON_URL: http://piston:2000
+      PISTON_LANGUAGE: python
+      PISTON_VERSION: 3.12
+      PISTON_RUN_TIMEOUT_MS: 10000
+      PISTON_COMPILE_TIMEOUT_MS: 10000
+      PISTON_RUN_MEMORY_LIMIT_BYTES: 134217728
+      PISTON_COMPILE_MEMORY_LIMIT_BYTES: 134217728
+      EXECUTION_MAX_OUTPUT_CHARS: 16000
+      EXECUTION_MAX_USER_CODE_CHARS: 20000
+      EXECUTION_MAX_EVAL_SCRIPT_CHARS: 60000
+      EXECUTION_MAX_SOURCE_CHARS: 80000
+      PISTON_MAX_RETRIES: 2
+      PISTON_RETRY_DELAY_MS: 200
+      PISTON_HEALTH_TTL_SEC: 30
+      PISTON_HTTP_TIMEOUT_MS: 5000
+      EXECUTION_RATE_LIMIT_WINDOW_SEC: 60
+      EXECUTION_RATE_LIMIT_MAX: 20
     steps:
       - name: Checkout
         uses: actions/checkout@v4

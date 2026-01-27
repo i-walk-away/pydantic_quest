@@ -2,6 +2,7 @@ import { useCallback, useEffect, useMemo, useState, type ReactElement } from "re
 import { useLocation, useNavigate, useParams } from "react-router-dom";
 
 import { useLesson } from "@features/admin-lessons/hooks/useLesson";
+import { useLessons } from "@features/admin-lessons/hooks/useLessons";
 import { useLessonForm } from "@features/admin-lessons/hooks/useLessonForm";
 import { MarkdownEditor } from "@features/admin-lessons/ui/MarkdownEditor";
 import { SampleCasesEditor } from "@features/admin-lessons/ui/SampleCasesEditor";
@@ -9,7 +10,7 @@ import { createLesson, deleteLesson, updateLesson } from "@shared/api/lessonApi"
 import { loadHotkeys } from "@shared/lib/hotkeys";
 import { type ToastVariant, useToast } from "@shared/lib/useToast";
 import { Button } from "@shared/ui/Button";
-import { CodeEditor } from "@shared/ui/CodeEditor";
+import { LazyCodeEditor } from "@shared/ui/LazyCodeEditor";
 import { Input } from "@shared/ui/Input";
 import { Notice } from "@shared/ui/Notice";
 import { Textarea } from "@shared/ui/Textarea";
@@ -26,6 +27,7 @@ export const AdminLessonEditorPage = (): ReactElement => {
   const navigate = useNavigate();
   const location = useLocation();
   const { data, isLoading, error } = useLesson(lessonId ?? null);
+  const { data: lessons } = useLessons();
   const { values, updateField, reset } = useLessonForm(data);
   const [saving, setSaving] = useState(false);
   const [toolbarHidden, setToolbarHidden] = useState(false);
@@ -33,6 +35,35 @@ export const AdminLessonEditorPage = (): ReactElement => {
   const { toasts, showToast } = useToast({ durationMs: 1000 });
 
   const hotkeys = useMemo(() => loadHotkeys(), []);
+  const slugError = useMemo(() => {
+    const trimmed = values.slug.trim();
+    if (!trimmed) {
+      return null;
+    }
+    const conflict = lessons.find((lesson) => lesson.slug === trimmed && lesson.id !== lessonId);
+    if (conflict) {
+      return "Slug already exists.";
+    }
+    return null;
+  }, [lessons, lessonId, values.slug]);
+
+  const orderError = useMemo(() => {
+    const order = values.order;
+    if (!Number.isFinite(order) || order < 1) {
+      return "Order must be at least 1.";
+    }
+    const otherOrders = lessons
+      .filter((lesson) => lesson.id !== lessonId)
+      .map((lesson) => lesson.order);
+    const maxOrder = otherOrders.length ? Math.max(...otherOrders) : 0;
+    if (order > maxOrder + 1) {
+      return `Order must be between 1 and ${maxOrder + 1}.`;
+    }
+    if (otherOrders.includes(order)) {
+      return "Order already in use.";
+    }
+    return null;
+  }, [lessons, lessonId, values.order]);
   const evalScriptTemplate = useMemo(
     () =>
       [
@@ -114,6 +145,10 @@ export const AdminLessonEditorPage = (): ReactElement => {
   }, [error, showToast]);
 
   const handleSave = useCallback(async () => {
+    if (slugError || orderError) {
+      showToast({ message: "Fix validation errors before saving.", variant: "error" });
+      return;
+    }
     setSaving(true);
     try {
       if (lessonId) {
@@ -135,7 +170,7 @@ export const AdminLessonEditorPage = (): ReactElement => {
     } finally {
       setSaving(false);
     }
-  }, [lessonId, navigate, showToast, values]);
+  }, [lessonId, navigate, orderError, showToast, slugError, values]);
 
   const handleDelete = useCallback(async () => {
     if (!lessonId) {
@@ -225,6 +260,7 @@ export const AdminLessonEditorPage = (): ReactElement => {
                   value={values.order}
                   onChange={(event) => updateField("order", Number(event.target.value))}
                 />
+                {orderError ? <div className="field__error">{orderError}</div> : null}
               </label>
               <label className="field">
                 <span className="field__label">Slug</span>
@@ -232,6 +268,7 @@ export const AdminLessonEditorPage = (): ReactElement => {
                   value={values.slug}
                   onChange={(event) => updateField("slug", event.target.value)}
                 />
+                {slugError ? <div className="field__error">{slugError}</div> : null}
               </label>
               <label className="field field--wide">
                 <span className="field__label">Title</span>
@@ -285,7 +322,7 @@ export const AdminLessonEditorPage = (): ReactElement => {
                 </Button>
               </div>
               <div className="code-field code-field--eval">
-                <CodeEditor
+                <LazyCodeEditor
                   value={values.evalScript}
                   onChange={(next) => updateField("evalScript", next)}
                   className="code-editor code-field__surface"
@@ -295,7 +332,7 @@ export const AdminLessonEditorPage = (): ReactElement => {
             <div className="field">
               <span className="field__label">Code editor default</span>
               <div className="code-field">
-                <CodeEditor
+                <LazyCodeEditor
                   value={values.codeEditorDefault}
                   onChange={(next) => updateField("codeEditorDefault", next)}
                   className="code-editor code-field__surface"

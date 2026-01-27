@@ -18,6 +18,7 @@ services:
       timeout: 5s
       retries: 10
       start_period: 40s
+    restart: unless-stopped
 
   app:
     build:
@@ -41,31 +42,64 @@ services:
       retries: 5
       start_period: 10s
     restart: unless-stopped
+    profiles:
+      - prod
+
+  app-dev:
+    build:
+      context: .
+      dockerfile: backend/Dockerfile
+    env_file:
+      - ./.env
+    environment:
+      DB_HOST: db
+    ports:
+      - "${APP_PORT:-8000}:8000"
+    volumes:
+      - ./backend:/app/backend
+    depends_on:
+      db:
+        condition: service_healthy
+      piston:
+        condition: service_healthy
+    healthcheck:
+      test: [ "CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:8000/health')" ]
+      interval: 1m
+      timeout: 3s
+      retries: 5
+      start_period: 10s
+    command: [ "uvicorn", "main:app", "--host", "0.0.0.0", "--port", "8000", "--reload" ]
+    profiles:
+      - dev
 
   frontend:
     build: ./frontend
     env_file:
       - ./frontend/.env
     environment:
-      VITE_API_TARGET: http://app:8000
+      VITE_API_TARGET: http://app-dev:8000
     ports:
       - "5173:5173"
     volumes:
       - ./frontend:/app
       - /app/node_modules
+    profiles:
+      - dev
     depends_on:
-      app:
+      app-dev:
         condition: service_healthy
 
   piston:
     image: ghcr.io/engineer-man/piston
     privileged: true
     environment:
-      PISTON_DISABLE_NETWORKING: "true"
-      PISTON_RUN_TIMEOUT: "10000"
-      PISTON_COMPILE_TIMEOUT: "10000"
-      PISTON_RUN_MEMORY_LIMIT: "134217728"
-      PISTON_COMPILE_MEMORY_LIMIT: "134217728"
+      PISTON_DISABLE_NETWORKING: ${PISTON_DISABLE_NETWORKING}
+      PISTON_RUN_TIMEOUT: ${PISTON_RUN_TIMEOUT}
+      PISTON_COMPILE_TIMEOUT: ${PISTON_COMPILE_TIMEOUT}
+      PISTON_RUN_MEMORY_LIMIT: ${PISTON_RUN_MEMORY_LIMIT}
+      PISTON_COMPILE_MEMORY_LIMIT: ${PISTON_COMPILE_MEMORY_LIMIT}
+      PISTON_OUTPUT_MAX_SIZE: ${PISTON_OUTPUT_MAX_SIZE}
+      PISTON_MAX_FILE_SIZE: ${PISTON_MAX_FILE_SIZE}
     ports:
       - "2000:2000"
     volumes:

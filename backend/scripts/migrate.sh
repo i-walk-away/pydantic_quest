@@ -80,6 +80,7 @@ fi
 latest_before=""
 latest_after=""
 revision_created="false"
+deleted_revision="false"
 
 if [ -d "${versions_dir}" ]; then
   latest_before="$(ls -t "${versions_dir}"/*.py 2>/dev/null | head -n 1 || true)"
@@ -101,18 +102,24 @@ import sys
 path = pathlib.Path(sys.argv[1])
 tree = ast.parse(path.read_text(encoding="utf-8"))
 
-def is_pass(func_name: str) -> bool:
+def is_noop(func_name: str) -> bool:
     for node in tree.body:
         if isinstance(node, ast.FunctionDef) and node.name == func_name:
-            return len(node.body) == 1 and isinstance(node.body[0], ast.Pass)
+            body = [item for item in node.body if not isinstance(item, ast.Expr)]
+            return len(body) == 1 and isinstance(body[0], ast.Pass)
     return False
 
-print("true" if is_pass(func_name="upgrade") and is_pass(func_name="downgrade") else "false")
+has_ops = any(
+    isinstance(node, ast.Attribute) and getattr(node.value, "id", None) == "op"
+    for node in ast.walk(tree)
+)
+print("true" if is_noop(func_name="upgrade") and is_noop(func_name="downgrade") and not has_ops else "false")
 PY
   )"
 
   if [ "${is_empty_revision}" = "true" ]; then
     rm -f "${latest_after}"
+    deleted_revision="true"
   else
     revision_created="true"
   fi
