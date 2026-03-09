@@ -15,6 +15,7 @@ async def health_check() -> dict[str, str]:
 
     :return: health status payload
     """
+
     return {"status": "ok"}
 
 

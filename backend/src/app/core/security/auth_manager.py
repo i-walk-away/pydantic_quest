@@ -22,6 +22,7 @@ class AuthManager:
         :param password: input password to hash
         :return: hash value
         """
+
         return self.context.hash(secret=password)
 
     def verify_password_against_hash(
@@ -39,6 +40,7 @@ class AuthManager:
         :return: True if hashing plain_password results in a hash that exactly matches
           hashed_password. Otherwise False.
         """
+
         return self.context.verify(secret=plain_password, hash=hashed_password)
 
     @staticmethod
@@ -62,6 +64,7 @@ class AuthManager:
                 'jti': str(uuid4()),
             },
         )
+
         return encode(
             payload=jwt_payload,
             key=settings.auth.jwt_secret_key,

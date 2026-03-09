@@ -15,4 +15,5 @@ def get_lesson_progress_repository(
 
     :return: lesson progress repository
     """
+
     return LessonProgressRepository(session=session)

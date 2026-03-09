@@ -1,0 +1,33 @@
+cases:
+  - name: valid_user
+    label: valid user
+    hidden: false
+    script: |
+      user = User(name="Alice", age=18)
+      ok = user.age == 18 and user.name == "Alice"
+      if not ok:
+          reason = "user fields must match expected values"
+
+  - name: invalid_age_type
+    label: invalid age type
+    hidden: false
+    script: |
+      try:
+          User(name="Alice", age="18")
+          ok = False
+          reason = "string age must fail validation"
+      except Exception:
+          ok = True
+          reason = None
+
+  - name: required_name
+    label: required field validation
+    hidden: true
+    script: |
+      try:
+          User(age=18)
+          ok = False
+          reason = "missing name must fail validation"
+      except Exception:
+          ok = True
+          reason = None

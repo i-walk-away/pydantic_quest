@@ -16,10 +16,6 @@ const AdminLessonsPage = lazy(async () => {
   const module = await import("@pages/admin/AdminLessonsPage");
   return { default: module.AdminLessonsPage };
 });
-const AdminLessonEditorPage = lazy(async () => {
-  const module = await import("@pages/admin/AdminLessonEditorPage");
-  return { default: module.AdminLessonEditorPage };
-});
 const AdminSettingsPage = lazy(async () => {
   const module = await import("@pages/admin/AdminSettingsPage");
   return { default: module.AdminSettingsPage };
@@ -41,8 +37,6 @@ export const App = (): ReactElement => {
             <Route path="/settings" element={<SettingsPage />} />
             <Route path="/admiin" element={<AdminLayout />}>
               <Route path="lessons" element={<AdminLessonsPage />} />
-              <Route path="lessons/new" element={<AdminLessonEditorPage />} />
-              <Route path="lessons/:lessonId" element={<AdminLessonEditorPage />} />
               <Route path="settings" element={<AdminSettingsPage />} />
             </Route>
             <Route path="*" element={<Navigate to="/" replace={true} />} />

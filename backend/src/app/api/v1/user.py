@@ -67,6 +67,7 @@ async def get_me(
 
     :return: current user
     """
+
     return user
 
 
@@ -103,6 +104,7 @@ async def get_my_progress(
 
     :return: list of completed lesson ids
     """
+
     return await progress_service.get_completed_lesson_ids(user_id=user.id)
 
 
@@ -120,6 +122,7 @@ async def reset_my_progress(
     :return: deleted progress count
     """
     deleted = await progress_service.reset_progress(user_id=user.id)
+
     return {"deleted": deleted}
 
 
@@ -156,4 +159,5 @@ async def delete_user(
 
     :return: True if user was deleted
     """
+
     return await user_service.delete(id=user_id)

@@ -69,23 +69,30 @@ class BaseRepository[Model]:
         :return: ``True`` if object was found and deleted
         """
         item = await self.get(id=id)
-        await self.session.delete(item)
+
+        if item is None:
+            return False
+
+        await self.session.delete(instance=item)
 
         return True
 
-    async def update(self, id: UUID, data: dict[str, object]) -> Model:
+    async def update(self, id: UUID, data: dict[str, object]) -> Model | None:
         """
         Update an existing object
 
         :param id: Object's id
         :param data: Dictionary containing updated fields
 
-        :return: Updated object
+        :return: Updated object or ``None`` when not found
         """
-        if not data:
-            return await self.get(id=id)
-
         item = await self.get(id=id)
+
+        if item is None:
+            return None
+
+        if not data:
+            return item
 
         for key, value in data.items():
             if hasattr(item, key):

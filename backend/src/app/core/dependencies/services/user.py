@@ -19,4 +19,5 @@ def get_user_service(
 
     :return: user service
     """
+
     return UserService(user_repository=repository, auth_manager=auth_manager)

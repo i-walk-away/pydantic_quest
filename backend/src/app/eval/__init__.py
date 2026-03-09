@@ -1,3 +1,3 @@
 """
-Lesson evaluation scripts registry.
+Lesson execution runtime assets.
 """

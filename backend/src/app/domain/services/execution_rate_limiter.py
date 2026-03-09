@@ -21,6 +21,9 @@ class ExecutionRateLimiter:
         """
         Enforce rate limit for the given key.
 
+        Buckets are stored in memory and designed for a single-process runtime,
+        which keeps MVP behavior simple and predictable.
+
         :param key: rate limit key
 
         :return: None
@@ -29,7 +32,9 @@ class ExecutionRateLimiter:
         window_start = now - self.window_sec
         bucket = self._buckets.get(key) or []
         bucket = [timestamp for timestamp in bucket if timestamp >= window_start]
+
         if len(bucket) >= self.max_requests:
             raise ExecutionRateLimited
+
         bucket.append(now)
         self._buckets[key] = bucket

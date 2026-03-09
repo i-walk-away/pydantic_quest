@@ -15,4 +15,5 @@ def get_lesson_service(
 
     :return: lesson service
     """
+
     return LessonService(lesson_repository=repository)

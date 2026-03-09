@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 import pytest
 from sqlalchemy.ext.asyncio import AsyncSession
 
@@ -20,6 +22,7 @@ class FakeAuthManager:
     def generate_jwt(input_data: dict, expires_in: int = 60) -> str:
         _ = input_data
         _ = expires_in
+
         return "jwt-token"
 
 
@@ -32,6 +35,7 @@ class FakeResponse:
         if self._payload is None:
             message = "invalid json"
             raise ValueError(message)
+
         return self._payload
 
 
@@ -41,10 +45,12 @@ class FakeClient:
 
     async def post(self, url: str, *, data: dict, headers: dict) -> FakeResponse:
         _ = (data, headers)
+
         return self.responses[("POST", url)]
 
     async def get(self, url: str, *, headers: dict) -> FakeResponse:
         _ = headers
+
         return self.responses[("GET", url)]
 
     async def __aenter__(self) -> FakeClient:

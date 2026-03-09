@@ -35,6 +35,7 @@ def parse_oauth_state(
     :return: code_verifier
     """
     parts = cookie_value.split(".")
+
     if len(parts) != 3:
         return None
 
@@ -63,9 +64,11 @@ def build_code_challenge(code_verifier: str) -> str:
     :return: PKCE challenge string
     """
     digest = sha256(code_verifier.encode()).digest()
+
     return urlsafe_b64encode(digest).rstrip(b"=").decode()
 
 
 def _sign(secret: str, state: str, code_verifier: str) -> str:
     message = f"{state}.{code_verifier}".encode()
+
     return hmac.new(secret.encode(), message, sha256).hexdigest()

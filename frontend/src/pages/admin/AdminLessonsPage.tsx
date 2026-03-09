@@ -2,9 +2,8 @@ import { useCallback, useEffect, type ReactElement } from "react";
 
 import { useLessons } from "@features/admin-lessons/hooks/useLessons";
 import { LessonTable } from "@features/admin-lessons/ui/LessonTable";
-import { deleteLesson } from "@shared/api/lessonApi";
+import { syncLessonsFromFiles } from "@shared/api/lessonApi";
 import { useToast } from "@shared/lib/useToast";
-import { LinkButton } from "@shared/ui/LinkButton";
 import { Button } from "@shared/ui/Button";
 import { Notice } from "@shared/ui/Notice";
 
@@ -18,23 +17,21 @@ export const AdminLessonsPage = (): ReactElement => {
     }
   }, [error, showToast]);
 
-  const handleDelete = useCallback(
-    async (lessonId: string) => {
-      const shouldDelete = window.confirm("Delete this lesson?");
-      if (!shouldDelete) {
-        return;
-      }
-      try {
-        await deleteLesson(lessonId);
-        showToast({ message: "Lesson deleted", variant: "success" });
-        reload();
-      } catch (error: unknown) {
-        const message = error instanceof Error ? error.message : "Failed to delete lesson";
-        showToast({ message: message, variant: "error" });
-      }
-    },
-    [reload, showToast]
-  );
+  const handleSync = useCallback(async () => {
+    try {
+      const result = await syncLessonsFromFiles();
+      showToast(
+        {
+          message: `Synced lessons: +${result.created} ~${result.updated} -${result.deleted}.`,
+          variant: "success",
+        },
+      );
+      reload();
+    } catch (error: unknown) {
+      const message = error instanceof Error ? error.message : "Failed to sync lessons";
+      showToast({ message: message, variant: "error" });
+    }
+  }, [reload, showToast]);
 
   return (
     <div className="admin-page">
@@ -52,15 +49,13 @@ export const AdminLessonsPage = (): ReactElement => {
         </div>
         <div className="actions">
           <Button variant="ghost" type="button" onClick={reload}>refresh</Button>
-          <LinkButton to="/admiin/lessons/new" variant="accent">new lesson</LinkButton>
+          <Button variant="ghost" type="button" onClick={handleSync}>sync from files</Button>
         </div>
       </div>
 
       {isLoading && <div className="status muted">Loading lessons...</div>}
 
-      {!isLoading && !error && (
-        <LessonTable lessons={data} onDelete={handleDelete} />
-      )}
+      {!isLoading && !error && <LessonTable lessons={data} />}
 
       <div className="panel__footer">
         <div className="status muted">{data.length} lessons</div>

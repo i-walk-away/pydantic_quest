@@ -15,4 +15,5 @@ def get_auth_service(
     Constructs an instance of AuthService with UserRepository and AuthManager
     injected.
     """
+
     return AuthService(user_repository=repository, auth_manager=auth_manager)

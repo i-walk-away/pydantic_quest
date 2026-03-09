@@ -19,6 +19,9 @@ class LessonProgressService:
         """
         Mark lesson completed for user.
 
+        The operation is idempotent to avoid duplicate progress rows when
+        clients retry successful execution submissions.
+
         :param user_id: user id
         :param lesson_id: lesson id
 
@@ -28,6 +31,7 @@ class LessonProgressService:
             user_id=user_id,
             lesson_id=lesson_id,
         )
+
         if exists:
             return
 
@@ -35,7 +39,7 @@ class LessonProgressService:
             user_id=user_id,
             lesson_id=lesson_id,
         )
-        await self.repository.add(progress)
+        await self.repository.add(model=progress)
         await self.repository.session.commit()
 
     async def get_completed_lesson_ids(self, user_id: UUID) -> list[UUID]:
@@ -46,11 +50,15 @@ class LessonProgressService:
 
         :return: list of lesson ids
         """
+
         return await self.repository.get_completed_lesson_ids(user_id=user_id)
 
     async def reset_progress(self, user_id: UUID) -> int:
         """
         Reset lesson progress for user.
+
+        This method is used by account settings flows to clear personal course
+        progress without touching lesson content.
 
         :param user_id: user id
 

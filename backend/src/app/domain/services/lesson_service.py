@@ -26,10 +26,9 @@ class LessonService:
 
         :return: lesson dto
         """
-        result = await self.repository.get(id=id)
-        if result is None:
-            raise NotFoundError(entity_type_str="Lesson", field_name="id", field_value=id)
-        return result.to_dto()
+        lesson = await self._require_lesson(id=id)
+
+        return lesson.to_dto()
 
     async def get_by_slug(self, slug: str) -> LessonDTO:
         """
@@ -40,8 +39,10 @@ class LessonService:
         :return: lesson dto
         """
         result = await self.repository.get_by_slug(slug=slug)
+
         if result is None:
             raise NotFoundError(entity_type_str="Lesson", field_name="slug", field_value=slug)
+
         return result.to_dto()
 
     async def get_all(self) -> list[LessonDTO]:
@@ -68,19 +69,21 @@ class LessonService:
             slug=schema.slug,
             exclude_id=None,
         )
+
         await self._validate_order(
             order=schema.order,
             exclude_id=None,
         )
+
         data = schema.model_dump()
 
         lesson = Lesson(
             **data,
         )
 
-        await self.repository.add(lesson)
+        await self.repository.add(model=lesson)
         await self.repository.session.commit()
-        await self.repository.session.refresh(lesson)
+        await self.repository.session.refresh(instance=lesson)
 
         return lesson.to_dto()
 
@@ -98,18 +101,28 @@ class LessonService:
                 slug=schema.slug,
                 exclude_id=id,
             )
+
         if schema.order is not None:
             await self._validate_order(
                 order=schema.order,
                 exclude_id=id,
             )
+
+        data = schema.model_dump(exclude_none=True)
         result = await self.repository.update(
             id=id,
-            data=schema.model_dump(exclude_none=True),
+            data=data,
         )
 
+        if result is None:
+            raise NotFoundError(
+                entity_type_str="Lesson",
+                field_name="id",
+                field_value=id,
+            )
+
         await self.repository.session.commit()
-        await self.repository.session.refresh(result)
+        await self.repository.session.refresh(instance=result)
 
         return result.to_dto()
 
@@ -121,7 +134,17 @@ class LessonService:
 
         :return: ``True`` if lesson was deleted
         """
+        _ = await self._require_lesson(id=id)
+
         deleted = await self.repository.delete(id=id)
+
+        if not deleted:
+            raise NotFoundError(
+                entity_type_str="Lesson",
+                field_name="id",
+                field_value=id,
+            )
+
         await self.repository.session.commit()
 
         return deleted
@@ -136,10 +159,13 @@ class LessonService:
         :return: None
         """
         existing = await self.repository.get_by_slug(slug=slug)
+
         if existing is None:
             return
+
         if exclude_id is not None and existing.id == exclude_id:
             return
+
         raise LessonSlugConflict
 
     async def _validate_order(self, order: int, exclude_id: UUID | None) -> None:
@@ -151,18 +177,44 @@ class LessonService:
 
         :return: None
         """
+
         if order < 1:
             raise LessonOrderInvalid
 
         lessons = await self.repository.get_all()
         orders = []
+
         for lesson in lessons:
             if exclude_id is not None and lesson.id == exclude_id:
                 continue
             orders.append(lesson.order)
 
         max_order = max(orders, default=0)
+
         if order > max_order + 1:
             raise LessonOrderInvalid
+
         if order in orders:
             raise LessonOrderInvalid
+
+    async def _require_lesson(self, id: UUID) -> Lesson:
+        """
+        Resolve lesson by id or raise not found error.
+
+        This helper keeps lesson service API methods consistent and prevents
+        duplicated not-found handling logic.
+
+        :param id: lesson id
+
+        :return: lesson model
+        """
+        lesson = await self.repository.get(id=id)
+
+        if lesson is None:
+            raise NotFoundError(
+                entity_type_str="Lesson",
+                field_name="id",
+                field_value=id,
+            )
+
+        return lesson

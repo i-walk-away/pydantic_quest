@@ -1,0 +1,60 @@
+cases:
+  # each case has:
+  # - unique "name" (internal id)
+  # - readable "label" (shown to learner for visible cases)
+  # - hidden=true/false
+  # - script that sets boolean "ok" and optional "reason"
+
+  # visible "happy path": keep at least one simple success case for fast feedback
+  - name: valid_profile
+    label: valid profile
+    hidden: false
+    script: |
+      profile = UserProfile(username="alice", age=24, tags=["python"])
+      ok = profile.username == "alice" and profile.age == 24 and profile.tags == ["python"]
+      if not ok:
+          reason = "model should accept valid data and preserve field values"
+
+  # visible "negative path": learner immediately sees why solution is incomplete
+  - name: reject_blank_username
+    label: reject blank username
+    hidden: false
+    script: |
+      try:
+          UserProfile(username="   ", age=24, tags=[])
+          ok = False
+          reason = "blank username must raise validation error"
+      except Exception:
+          ok = True
+
+  # hidden anti-cheat/edge case: not shown in sample list
+  - name: reject_too_young
+    label: reject age under 13
+    hidden: true
+    script: |
+      try:
+          UserProfile(username="alice", age=12, tags=[])
+          ok = False
+          reason = "age under 13 must be rejected"
+      except Exception:
+          ok = True
+
+  # hidden boundary check: catches off-by-one bugs
+  - name: accept_boundary_age
+    label: accept boundary age
+    hidden: true
+    script: |
+      profile = UserProfile(username="alice", age=13, tags=[])
+      ok = profile.age == 13
+      if not ok:
+          reason = "age boundary value 13 should be accepted"
+
+  # hidden normalization case: useful when lesson requires sanitizing strings
+  - name: trim_username
+    label: trim username
+    hidden: true
+    script: |
+      profile = UserProfile(username="  alice  ", age=24, tags=[])
+      ok = profile.username == "alice"
+      if not ok:
+          reason = "username should be normalized with strip()"

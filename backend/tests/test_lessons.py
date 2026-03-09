@@ -8,8 +8,14 @@ def _lesson_payload(order: int, slug: str) -> dict:
         "slug": slug,
         "body_markdown": "body",
         "code_editor_default": "",
-        "eval_script": "",
-        "sample_cases": None,
+        "cases": [
+            {
+                "name": "basic_case",
+                "label": "basic case",
+                "script": "ok = True",
+                "hidden": False,
+            },
+        ],
     }
 
 
@@ -71,3 +77,62 @@ async def test_create_update_delete_lesson_admin(
 
     assert delete_response.status_code == 200
     assert delete_response.json() is True
+
+    delete_again_response = await client.delete(
+        f"/api/v1/lessons/{lesson['id']}",
+        headers=admin_headers,
+    )
+
+    assert delete_again_response.status_code == 404
+
+
+async def test_create_lesson_rejects_duplicate_case_names(
+        client: httpx.AsyncClient,
+        admin_headers: dict[str, str],
+) -> None:
+    payload = _lesson_payload(order=1, slug="lesson-dup-cases")
+    payload["cases"] = [
+        {
+            "name": "same_case",
+            "label": "case 1",
+            "script": "ok = True",
+            "hidden": False,
+        },
+        {
+            "name": "same_case",
+            "label": "case 2",
+            "script": "ok = True",
+            "hidden": False,
+        },
+    ]
+
+    response = await client.post(
+        "/api/v1/lessons/create",
+        json=payload,
+        headers=admin_headers,
+    )
+
+    assert response.status_code == 422
+
+
+async def test_create_lesson_rejects_blank_case_script(
+        client: httpx.AsyncClient,
+        admin_headers: dict[str, str],
+) -> None:
+    payload = _lesson_payload(order=2, slug="lesson-blank-case")
+    payload["cases"] = [
+        {
+            "name": "valid_name",
+            "label": "case",
+            "script": "   ",
+            "hidden": False,
+        },
+    ]
+
+    response = await client.post(
+        "/api/v1/lessons/create",
+        json=payload,
+        headers=admin_headers,
+    )
+
+    assert response.status_code == 422

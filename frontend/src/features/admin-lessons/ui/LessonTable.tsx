@@ -1,15 +1,12 @@
 import type { ReactElement } from "react";
-import { Link } from "react-router-dom";
 
-import { Button } from "@shared/ui/Button";
 import { type Lesson } from "@shared/model/lesson";
 
 interface LessonTableProps {
   lessons: Lesson[];
-  onDelete: (lessonId: string) => void;
 }
 
-export const LessonTable = ({ lessons, onDelete }: LessonTableProps): ReactElement => {
+export const LessonTable = ({ lessons }: LessonTableProps): ReactElement => {
   if (lessons.length === 0) {
     return <div className="empty">No lessons yet.</div>;
   }
@@ -23,7 +20,6 @@ export const LessonTable = ({ lessons, onDelete }: LessonTableProps): ReactEleme
             <th>Slug</th>
             <th>Title</th>
             <th>Updated</th>
-            <th>Actions</th>
           </tr>
         </thead>
         <tbody>
@@ -33,16 +29,6 @@ export const LessonTable = ({ lessons, onDelete }: LessonTableProps): ReactEleme
               <td>{lesson.slug}</td>
               <td>{lesson.title}</td>
               <td>{lesson.updatedAt ? lesson.updatedAt.toLocaleString() : "-"}</td>
-              <td>
-                <div className="actions">
-                  <Link className="btn btn--ghost" to={`/admiin/lessons/${lesson.id}`}>
-                    edit
-                  </Link>
-                  <Button variant="ghost" type="button" onClick={() => onDelete(lesson.id)}>
-                    delete
-                  </Button>
-                </div>
-              </td>
             </tr>
           ))}
         </tbody>

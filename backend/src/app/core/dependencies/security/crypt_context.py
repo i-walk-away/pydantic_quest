@@ -8,4 +8,5 @@ def get_crypt_context() -> CryptContext:
 
     :return: CryptContext object.
     """
+
     return CryptContext(schemes=["bcrypt"], deprecated="auto")

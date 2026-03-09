@@ -7,7 +7,18 @@ export const getAuthToken = (): string | null => {
     return null;
   }
 
-  return window.localStorage.getItem(tokenKey);
+  const token = window.localStorage.getItem(tokenKey);
+  if (!token) {
+    return null;
+  }
+
+  const payload = decodeJwtPayload(token);
+  if (isTokenExpired(payload)) {
+    window.localStorage.removeItem(tokenKey);
+    return null;
+  }
+
+  return token;
 };
 
 export const setAuthToken = (token: string): void => {
@@ -71,6 +82,17 @@ const decodeJwtPayload = (token: string): Record<string, unknown> | null => {
   } catch {
     return null;
   }
+};
+
+const isTokenExpired = (payload: Record<string, unknown> | null): boolean => {
+  if (!payload) {
+    return true;
+  }
+  const exp = payload["exp"];
+  if (typeof exp !== "number") {
+    return false;
+  }
+  return exp <= Math.floor(Date.now() / 1000);
 };
 
 const normalizeBase64 = (value: string): string => {

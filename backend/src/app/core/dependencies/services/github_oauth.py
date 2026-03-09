@@ -19,4 +19,5 @@ def get_github_oauth_service(
 
     :return: GitHub OAuth service
     """
+
     return GithubOAuthService(user_repository=repository, auth_manager=auth_manager)

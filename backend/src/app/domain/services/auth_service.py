@@ -12,19 +12,25 @@ class AuthService:
             auth_manager: AuthManager,
     ) -> None:
         """
-        Docstring
+        Initialize auth service.
 
-        :param user_repository:  a
-        :param auth_manager:  s
+        :param user_repository: user repository
+        :param auth_manager: auth manager
+
+        :return: None
         """
         self.user_repository = user_repository
         self.auth_manager = auth_manager
 
     async def login(self, credentials: LoginCredentials) -> str:
         """
-        Authenticate given credentials
+        Authenticate credentials and issue access token.
+
+        The method intentionally delegates credential verification to a helper
+        so token generation is never mixed with password checks.
 
         :param credentials: login credentials
+
         :return: JSON Web Token
         """
         user = await self._get_authenticated_user(credentials=credentials)
@@ -41,9 +47,13 @@ class AuthService:
 
     async def _get_authenticated_user(self, credentials: LoginCredentials) -> User | None:
         """
-        Check if given credentials are valid
+        Resolve authenticated user for a login attempt.
+
+        Returning ``None`` instead of raising here keeps the public login method
+        responsible for one unified invalid-credentials error contract.
 
         :param credentials: username and password
+
         :return: user if credentials are valid, otherwise None
         """
         user = await self.user_repository.get_by_username(username=credentials.username)
