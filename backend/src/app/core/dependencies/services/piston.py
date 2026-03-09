@@ -4,9 +4,9 @@ from src.app.domain.services.piston_service import PistonService
 
 def get_piston_service() -> CodeRunner:
     """
-    Provide piston service instance.
+    Provide Piston service instance.
 
-    :return: piston service
+    :return: Piston service
     """
 
     return PistonService()
