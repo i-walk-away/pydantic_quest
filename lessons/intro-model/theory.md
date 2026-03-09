@@ -2,8 +2,8 @@
 
 Create a `User` model with fields:
 
-- `name: str`
-- `age: int`
+- name: `str`
+- age: `int`
 
 Then create `user = User(name="Alice", age=18)`.
 
