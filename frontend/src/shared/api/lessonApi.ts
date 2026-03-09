@@ -43,3 +43,10 @@ export const deleteLesson = async (lessonId: string): Promise<boolean> => {
     method: "DELETE",
   });
 };
+
+export const syncLessonsFromFiles = async (): Promise<{ created: number; updated: number; deleted: number; total: number }> => {
+  return apiRequest<{ created: number; updated: number; deleted: number; total: number }>({
+    path: "/api/v1/lessons/sync_from_files",
+    method: "POST",
+  });
+};

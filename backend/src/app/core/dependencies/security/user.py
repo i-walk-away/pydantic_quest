@@ -4,7 +4,7 @@ from jwt import decode
 from jwt.exceptions import InvalidTokenError
 
 from src.app.core.dependencies.services.user import get_user_service
-from src.app.core.exceptions.auth_exc import InvalidCredentials, Unauthorized
+from src.app.core.exceptions.auth_exc import AuthenticationRequired, Unauthorized
 from src.app.core.exceptions.base_exc import NotFoundError
 from src.app.domain.models.dto.user import UserDTO
 from src.app.domain.models.enums.role import UserRole
@@ -25,8 +25,9 @@ async def get_user_from_jwt(
     :param jwt:
     :return:
     """
+
     if not jwt:
-        raise InvalidCredentials
+        raise AuthenticationRequired
 
     try:
         decoded_token: dict = decode(
@@ -34,16 +35,19 @@ async def get_user_from_jwt(
             key=settings.auth.jwt_secret_key,
             algorithms=[settings.auth.jwt_algorithm],
         )
+
         username = decoded_token.get('sub')
+
         if not username:
-            raise InvalidCredentials
+            raise AuthenticationRequired
+
     except InvalidTokenError as e:
-        raise InvalidCredentials from e
+        raise AuthenticationRequired from e
 
     try:
         user = await user_service.get_by_username(username=username)
     except NotFoundError as e:
-        raise InvalidCredentials from e
+        raise AuthenticationRequired from e
 
     return user
 
@@ -60,6 +64,7 @@ async def get_optional_user_from_jwt(
 
     :return: user dto or None
     """
+
     if not jwt:
         return None
 
@@ -79,6 +84,7 @@ async def require_admin_user(
 
     :return: authenticated admin user
     """
+
     if user.role != UserRole.ADMIN:
         raise Unauthorized
 

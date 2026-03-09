@@ -5,7 +5,7 @@ import { highlightPython } from "@shared/lib/markdown/highlightPython";
 const renderer = new marked.Renderer();
 
 renderer.code = ({ text, lang }: Tokens.Code) => {
-  if (lang === "expected") {
+  if (lang === "expected" || lang === "expected_output") {
     return `<div class="callout"><p>Expected output:</p><pre><code>${escapeHtml(text)}</code></pre></div>`;
   }
   const highlighted = highlightPython(text);

@@ -65,6 +65,7 @@ class Settings(BaseSettings):
     github: GithubOAuth = Field(default_factory=GithubOAuth)
     execution: ExecutionSettings = Field(default_factory=ExecutionSettings)
     frontend_url: str = Field(alias="FRONTEND_URL")
+    lessons_dir: str = Field(default="lessons", alias="LESSONS_DIR")
 
 
 settings = Settings()

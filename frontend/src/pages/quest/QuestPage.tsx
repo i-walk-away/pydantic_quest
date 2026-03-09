@@ -111,7 +111,7 @@ export const QuestPage = (): ReactElement => {
       title: "Lesson name",
       bodyMarkdown: fallbackMarkdown,
       codeEditorDefault: fallbackCode,
-      evalScript: "",
+      cases: [],
       sampleCases: [],
       createdAt: new Date(0),
       updatedAt: null,
@@ -494,6 +494,15 @@ export const QuestPage = (): ReactElement => {
     return "status";
   }, [runResult]);
 
+  const executionHint = useMemo(() => {
+    const stderr = runResult?.stderr?.trim();
+    if (!stderr) {
+      return null;
+    }
+    const firstLine = stderr.split("\n")[0]?.trim();
+    return firstLine || stderr;
+  }, [runResult?.stderr]);
+
   useEffect(() => {
     if (!isSampleCasesOpen || !lessonBodyRef.current) {
       return;
@@ -737,7 +746,7 @@ export const QuestPage = (): ReactElement => {
         <section className="panel panel--code">
           <div className="panel__header">
             <h2 className="panel__title">Code editor</h2>
-            <span className="panel__meta">python 3.14.2</span>
+            <span className="panel__meta">python 3.12</span>
           </div>
 
           <div className="code-editor">
@@ -787,10 +796,10 @@ export const QuestPage = (): ReactElement => {
                 </div>
               ) : null}
               {runResult?.status === "runtime_error" ? (
-                <div className="execution-hint">Check syntax and imports in your code.</div>
+                <div className="execution-hint">{executionHint ?? "Check syntax and imports in your code."}</div>
               ) : null}
               {runResult?.status === "compile_error" ? (
-                <div className="execution-hint">Check syntax errors in your code.</div>
+                <div className="execution-hint">{executionHint ?? "Check syntax errors in your code."}</div>
               ) : null}
             </div>
           ) : null}

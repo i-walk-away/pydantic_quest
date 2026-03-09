@@ -43,7 +43,7 @@ class ExecutionInvalidOutput(HTTPException):
     """
     Execution output is invalid.
     """
-    status_code = 500
+    status_code = 503
     detail = "Execution output is invalid."
 
     def __init__(self) -> None:

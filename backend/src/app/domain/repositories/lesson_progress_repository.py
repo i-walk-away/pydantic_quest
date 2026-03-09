@@ -62,5 +62,9 @@ class LessonProgressRepository(BaseRepository[LessonProgress]):
         """
         stmt = delete(LessonProgress).where(LessonProgress.user_id == user_id)
         result = await self.session.execute(stmt)
+        rowcount = getattr(result, "rowcount", None)
 
-        return result.rowcount or 0
+        if isinstance(rowcount, int):
+            return rowcount
+
+        return 0

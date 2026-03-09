@@ -12,8 +12,10 @@ class FakeAuthService:
 
     async def login(self, *, credentials: object) -> str:
         _ = credentials
+
         if not self.allow:
             raise InvalidCredentials
+
         return self.token
 
 

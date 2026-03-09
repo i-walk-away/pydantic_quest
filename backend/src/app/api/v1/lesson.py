@@ -4,13 +4,16 @@ from fastapi import APIRouter, Depends
 
 from src.app.core.dependencies.security.user import require_admin_user
 from src.app.core.dependencies.services.lesson import get_lesson_service
+from src.app.core.dependencies.services.lesson_sync import get_lesson_sync_service
 from src.app.domain.models.dto.lesson import (
     CreateLessonDTO,
     LessonDTO,
+    LessonSyncResultDTO,
     UpdateLessonDTO,
 )
 from src.app.domain.models.dto.user import UserDTO
 from src.app.domain.services.lesson_service import LessonService
+from src.app.domain.services.lesson_sync_service import LessonSyncService
 
 router = APIRouter(
     prefix="/lessons",
@@ -128,4 +131,28 @@ async def delete_lesson(
 
     :return: True if lesson was deleted
     """
+
     return await lesson_service.delete(id=lesson_id)
+
+
+@router.post(path="/sync_from_files", summary="Sync lessons from lessons directory")
+async def sync_lessons_from_files(
+        lesson_sync_service: LessonSyncService = Depends(dependency=get_lesson_sync_service),
+        _admin: UserDTO = Depends(require_admin_user),
+        *,
+        dry_run: bool = False,
+) -> LessonSyncResultDTO:
+    """
+    Sync lessons from files.
+
+    :param lesson_sync_service: lesson sync service
+    :param _admin: authenticated admin user
+    :param dry_run: dry-run mode
+
+    :return: sync counters
+    """
+
+    return await lesson_sync_service.sync(
+        delete_missing=True,
+        dry_run=dry_run,
+    )

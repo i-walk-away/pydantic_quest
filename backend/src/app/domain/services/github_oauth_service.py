@@ -52,7 +52,7 @@ class GithubOAuthService:
             code_challenge=code_challenge,
         )
 
-        return f"{settings.github.authorize_url}?{urlencode(params)}"
+        return f"{settings.github.authorize_url}?{urlencode(query=params)}"
 
     async def authenticate(self, code: str, code_verifier: str) -> str:
         """
@@ -105,7 +105,7 @@ class GithubOAuthService:
 
         async with httpx.AsyncClient(timeout=10.0) as client:
             response = await client.post(
-                settings.github.token_url,
+                url=settings.github.token_url,
                 data=data,
                 headers=headers,
             )
@@ -115,7 +115,8 @@ class GithubOAuthService:
                 detail="Failed to exchange code for access token.",
             )
 
-        token = GithubTokenDTO.model_validate(response.json())
+        token = GithubTokenDTO.model_validate(obj=response.json())
+
         if not token.access_token:
             raise OAuthTokenMissingError(detail="GitHub access token is missing.")
 
@@ -133,14 +134,14 @@ class GithubOAuthService:
 
         async with httpx.AsyncClient(timeout=10.0) as client:
             response = await client.get(
-                settings.github.user_url,
+                url=settings.github.user_url,
                 headers=headers,
             )
 
         if response.status_code != 200:
             raise OAuthUserFetchError(detail="Failed to fetch GitHub user profile.")
 
-        return GithubUserDTO.model_validate(response.json())
+        return GithubUserDTO.model_validate(obj=response.json())
 
     async def _fetch_primary_email(self, access_token: str) -> str:
         """
@@ -154,7 +155,7 @@ class GithubOAuthService:
 
         async with httpx.AsyncClient(timeout=10.0) as client:
             response = await client.get(
-                settings.github.emails_url,
+                url=settings.github.emails_url,
                 headers=headers,
             )
 
@@ -162,10 +163,13 @@ class GithubOAuthService:
             raise OAuthEmailFetchError(detail="Failed to fetch GitHub email list.")
 
         payload = response.json()
+
         if not isinstance(payload, list):
             raise OAuthEmailFetchError(detail="GitHub email response is invalid.")
+
         for item in payload:
-            email = GithubEmailDTO.model_validate(item)
+            email = GithubEmailDTO.model_validate(obj=item)
+
             if email.primary and email.verified:
                 return email.email
 
@@ -246,6 +250,7 @@ class GithubOAuthService:
 
         :return: payload dictionary
         """
+
         return {
             "client_id": settings.github.client_id,
             "client_secret": settings.github.client_secret,
@@ -261,6 +266,7 @@ class GithubOAuthService:
 
         :return: headers dictionary
         """
+
         return {"Accept": "application/json"}
 
     @staticmethod
@@ -272,6 +278,7 @@ class GithubOAuthService:
 
         :return: headers dictionary
         """
+
         return {
             "Authorization": f"Bearer {access_token}",
             "Accept": "application/vnd.github+json",
@@ -284,9 +291,12 @@ class GithubOAuthService:
 
         :return: None
         """
+
         if not settings.github.client_id:
             raise OAuthConfigError(detail="GitHub client id is not configured.")
+
         if not settings.github.client_secret:
             raise OAuthConfigError(detail="GitHub client secret is not configured.")
+
         if not settings.github.redirect_uri:
             raise OAuthConfigError(detail="GitHub redirect uri is not configured.")

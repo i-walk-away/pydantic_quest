@@ -19,4 +19,5 @@ def get_lesson_progress_service(
 
     :return: lesson progress service
     """
+
     return LessonProgressService(progress_repository=repository)

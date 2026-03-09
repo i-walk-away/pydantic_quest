@@ -1,8 +1,15 @@
+from uuid import UUID
+
 import pytest
+from pydantic import ValidationError
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from src.app.core.exceptions.auth_exc import InvalidCredentials
 from src.app.core.exceptions.base_exc import NotFoundError
+from src.app.core.exceptions.user_exc import (
+    UserAlreadyExists,
+    UserEmailAlreadyExists,
+)
 from src.app.core.security.oauth_state import (
     build_code_challenge,
     create_oauth_state,
@@ -10,7 +17,7 @@ from src.app.core.security.oauth_state import (
 )
 from src.app.domain.models.db.user import User
 from src.app.domain.models.dto.auth import LoginCredentials
-from src.app.domain.models.dto.user import CreateUserDTO
+from src.app.domain.models.dto.user import CreateUserDTO, UpdateUserDTO
 from src.app.domain.models.enums.role import UserRole
 from src.app.domain.repositories.user_repository import UserRepository
 from src.app.domain.services.auth_service import AuthService
@@ -24,20 +31,32 @@ class FakeAuthManager:
     def verify_password_against_hash(self, plain_password: str, hashed_password: str) -> bool:
         _ = plain_password
         _ = hashed_password
+
         return self.verify_ok
 
     @staticmethod
     def generate_jwt(input_data: dict, expires_in: int = 60) -> str:
         _ = input_data
         _ = expires_in
+
         return "token"
 
 
 class FakeHashManager:
+    def __init__(self, *, verify_ok: bool = True) -> None:
+        self.verify_ok = verify_ok
+
     @staticmethod
     def hash_password(password: str) -> str:
         _ = password
+
         return "hashed"
+
+    def verify_password_against_hash(self, plain_password: str, hashed_password: str) -> bool:
+        _ = plain_password
+        _ = hashed_password
+
+        return self.verify_ok
 
 
 class FakeUserRepository:
@@ -45,8 +64,10 @@ class FakeUserRepository:
         self.user = user
 
     async def get_by_username(self, username: str) -> User | None:
+
         if self.user and self.user.username == username:
             return self.user
+
         return None
 
 
@@ -96,6 +117,162 @@ async def test_user_service_get_missing(db_session: AsyncSession) -> None:
 
     with pytest.raises(NotFoundError):
         await service.get_by_username(username="missing")
+
+
+async def test_user_service_delete_missing_raises_not_found(db_session: AsyncSession) -> None:
+    repository = UserRepository(session=db_session)
+    service = UserService(user_repository=repository, auth_manager=FakeHashManager())
+
+    with pytest.raises(NotFoundError):
+        await service.delete(id=UUID("80895f4e-a730-4f22-86b0-cbf37f4c8325"))
+
+
+async def test_user_service_delete_success(db_session: AsyncSession) -> None:
+    repository = UserRepository(session=db_session)
+    service = UserService(user_repository=repository, auth_manager=FakeHashManager())
+    created = await service.create(
+        schema=CreateUserDTO(username="delete_me", plain_password="secret"),
+    )
+
+    deleted = await service.delete(id=created.id)
+    found = await repository.get(id=created.id)
+
+    assert deleted is True
+    assert found is None
+
+
+async def test_user_service_update_me_username_conflict(db_session: AsyncSession) -> None:
+    repository = UserRepository(session=db_session)
+    service = UserService(user_repository=repository, auth_manager=FakeHashManager())
+    user_1 = User(
+        username="alice",
+        email="alice@example.com",
+        hashed_password="hashed",
+        role=UserRole.USER,
+    )
+    user_2 = User(
+        username="bob",
+        email="bob@example.com",
+        hashed_password="hashed",
+        role=UserRole.USER,
+    )
+    db_session.add_all([user_1, user_2])
+    await db_session.commit()
+    await db_session.refresh(instance=user_1)
+
+    with pytest.raises(UserAlreadyExists):
+        await service.update_me(
+            id=user_1.id,
+            schema=UpdateUserDTO(username="bob"),
+        )
+
+
+async def test_user_service_update_me_email_conflict(db_session: AsyncSession) -> None:
+    repository = UserRepository(session=db_session)
+    service = UserService(user_repository=repository, auth_manager=FakeHashManager())
+    user_1 = User(
+        username="alice",
+        email="alice@example.com",
+        hashed_password="hashed",
+        role=UserRole.USER,
+    )
+    user_2 = User(
+        username="bob",
+        email="bob@example.com",
+        hashed_password="hashed",
+        role=UserRole.USER,
+    )
+    db_session.add_all([user_1, user_2])
+    await db_session.commit()
+    await db_session.refresh(instance=user_1)
+
+    with pytest.raises(UserEmailAlreadyExists):
+        await service.update_me(
+            id=user_1.id,
+            schema=UpdateUserDTO(email="bob@example.com"),
+        )
+
+
+async def test_user_service_update_me_password_requires_current_password(db_session: AsyncSession) -> None:
+    repository = UserRepository(session=db_session)
+    service = UserService(user_repository=repository, auth_manager=FakeHashManager())
+    user = User(
+        username="alice",
+        email="alice@example.com",
+        hashed_password="hashed",
+        role=UserRole.USER,
+    )
+    db_session.add(user)
+    await db_session.commit()
+    await db_session.refresh(instance=user)
+
+    with pytest.raises(ValidationError):
+        await service.update_me(
+            id=user.id,
+            schema=UpdateUserDTO(new_password="new-secret"),
+        )
+
+
+async def test_user_service_update_me_password_invalid_current_password(db_session: AsyncSession) -> None:
+    repository = UserRepository(session=db_session)
+    service = UserService(user_repository=repository, auth_manager=FakeHashManager(verify_ok=False))
+    user = User(
+        username="alice",
+        email="alice@example.com",
+        hashed_password="hashed",
+        role=UserRole.USER,
+    )
+    db_session.add(user)
+    await db_session.commit()
+    await db_session.refresh(instance=user)
+
+    with pytest.raises(InvalidCredentials):
+        await service.update_me(
+            id=user.id,
+            schema=UpdateUserDTO(current_password="wrong", new_password="new-secret"),
+        )
+
+
+async def test_user_service_update_me_password_requires_new_password(db_session: AsyncSession) -> None:
+    repository = UserRepository(session=db_session)
+    service = UserService(user_repository=repository, auth_manager=FakeHashManager())
+    user = User(
+        username="alice",
+        email="alice@example.com",
+        hashed_password="hashed",
+        role=UserRole.USER,
+    )
+    db_session.add(user)
+    await db_session.commit()
+    await db_session.refresh(instance=user)
+
+    with pytest.raises(ValidationError):
+        await service.update_me(
+            id=user.id,
+            schema=UpdateUserDTO(current_password="secret"),
+        )
+
+
+async def test_user_service_update_me_no_changes_returns_current_user(db_session: AsyncSession) -> None:
+    repository = UserRepository(session=db_session)
+    service = UserService(user_repository=repository, auth_manager=FakeHashManager())
+    user = User(
+        username="alice",
+        email="alice@example.com",
+        hashed_password="hashed",
+        role=UserRole.USER,
+    )
+    db_session.add(user)
+    await db_session.commit()
+    await db_session.refresh(instance=user)
+
+    result = await service.update_me(
+        id=user.id,
+        schema=UpdateUserDTO(),
+    )
+
+    assert result.id == user.id
+    assert result.username == "alice"
 
 
 def test_oauth_state_roundtrip() -> None:

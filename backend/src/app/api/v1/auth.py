@@ -55,6 +55,7 @@ async def github_login(
     state, code_verifier, cookie_value = create_oauth_state(
         secret=settings.auth.jwt_secret_key,
     )
+
     authorize_url = github_oauth_service.build_authorize_url(
         state=state,
         code_challenge=build_code_challenge(code_verifier=code_verifier),
@@ -89,6 +90,7 @@ async def github_callback(
     :return: redirect response
     """
     cookie_value = request.cookies.get(OAUTH_COOKIE_NAME)
+
     if not cookie_value:
         raise OAuthStateError
 
@@ -97,6 +99,7 @@ async def github_callback(
         cookie_value=cookie_value,
         state=payload.state,
     )
+
     if not code_verifier:
         raise OAuthStateError
 

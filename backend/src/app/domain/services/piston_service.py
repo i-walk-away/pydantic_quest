@@ -2,12 +2,15 @@ import asyncio
 import time
 
 import httpx
+from pydantic import ValidationError
 
 from src.app.core.exceptions.execution_exc import ExecutionInvalidOutput, ExecutionServiceUnavailable
+from src.app.domain.models.dto.execution.runner_result import RunnerExecutionResultDTO
+from src.app.domain.services.code_runner import CodeRunner
 from src.cfg.cfg import settings
 
 
-class PistonService:
+class PistonService(CodeRunner):
     def __init__(self) -> None:
         """
         Initialize piston service.
@@ -17,9 +20,12 @@ class PistonService:
         self.base_url = settings.execution.piston_url
         self._last_health_check = 0.0
 
-    async def execute(self, source_code: str) -> dict:
+    async def execute(self, source_code: str) -> RunnerExecutionResultDTO:
         """
         Execute code through the Piston API.
+
+        Health check and retry handling are centralized here so callers receive
+        one stable contract for transient runner failures.
 
         :param source_code: combined evaluation script and user code
 
@@ -56,8 +62,10 @@ class PistonService:
                     )
                 if response.status_code == 200:
                     try:
-                        return response.json()
-                    except ValueError as exc:
+                        payload = response.json()
+
+                        return RunnerExecutionResultDTO.model_validate(obj=payload)
+                    except (ValueError, ValidationError) as exc:
                         raise ExecutionInvalidOutput from exc
                 last_error = ExecutionServiceUnavailable()
             except httpx.RequestError as exc:
@@ -72,9 +80,13 @@ class PistonService:
         """
         Ensure Piston API is reachable.
 
+        The method uses TTL-based caching to avoid making a health-check call
+        before every user execution request.
+
         :return: None
         """
         now = time.time()
+
         if now - self._last_health_check < settings.execution.health_check_ttl_sec:
             return
 

@@ -9,13 +9,28 @@ from src.app.core.dependencies.services.execution_rate_limiter import (
 )
 from src.app.core.dependencies.services.piston import get_piston_service
 from src.app.domain.models.db.lesson import Lesson
+from src.app.domain.models.dto.execution.runner_result import RunnerExecutionResultDTO
 from src.app.domain.services.execution_rate_limiter import ExecutionRateLimiter
-from src.app.eval.types import USER_CODE_PLACEHOLDER
+
+CASES = [
+    {
+        "name": "valid_create",
+        "label": "valid create",
+        "script": "ok = True",
+        "hidden": False,
+    },
+    {
+        "name": "invalid_age",
+        "label": "invalid age",
+        "script": "ok = True",
+        "hidden": False,
+    },
+]
 
 
 class FakePistonService:
     @staticmethod
-    async def execute(*, source_code: str) -> dict:
+    async def execute(*, source_code: str) -> RunnerExecutionResultDTO:
         _ = source_code
         payload = {
             "ok": True,
@@ -24,35 +39,41 @@ class FakePistonService:
                 {"name": "invalid_age", "ok": True},
             ],
         }
-        return {
-            "run": {
-                "stdout": json.dumps(payload),
-                "stderr": "",
-                "status": None,
-                "code": 0,
-                "wall_time": 5,
+
+        return RunnerExecutionResultDTO.model_validate(
+            obj={
+                "run": {
+                    "stdout": json.dumps(payload),
+                    "stderr": "",
+                    "status": None,
+                    "code": 0,
+                    "wall_time": 5,
+                },
             },
-        }
+        )
 
 
 class FakePistonServiceInvalidOutput:
     @staticmethod
-    async def execute(*, source_code: str) -> dict:
+    async def execute(*, source_code: str) -> RunnerExecutionResultDTO:
         _ = source_code
-        return {
-            "run": {
-                "stdout": "not-json",
-                "stderr": "",
-                "status": None,
-                "code": 0,
-                "wall_time": 5,
+
+        return RunnerExecutionResultDTO.model_validate(
+            obj={
+                "run": {
+                    "stdout": "not-json",
+                    "stderr": "",
+                    "status": None,
+                    "code": 0,
+                    "wall_time": 5,
+                },
             },
-        }
+        )
 
 
 class FakePistonServiceWrongAnswer:
     @staticmethod
-    async def execute(*, source_code: str) -> dict:
+    async def execute(*, source_code: str) -> RunnerExecutionResultDTO:
         _ = source_code
         payload = {
             "ok": False,
@@ -61,52 +82,72 @@ class FakePistonServiceWrongAnswer:
                 {"name": "invalid_age", "ok": True},
             ],
         }
-        return {
-            "run": {
-                "stdout": json.dumps(payload),
-                "stderr": "",
-                "status": None,
-                "code": 0,
-                "wall_time": 5,
+
+        return RunnerExecutionResultDTO.model_validate(
+            obj={
+                "run": {
+                    "stdout": json.dumps(payload),
+                    "stderr": "",
+                    "status": None,
+                    "code": 0,
+                    "wall_time": 5,
+                },
             },
-        }
+        )
 
 
 class FakePistonServiceRuntimeError:
     @staticmethod
-    async def execute(*, source_code: str) -> dict:
+    async def execute(*, source_code: str) -> RunnerExecutionResultDTO:
         _ = source_code
-        return {
-            "run": {
-                "stdout": "",
-                "stderr": "boom",
-                "status": "RE",
-                "code": 1,
-                "wall_time": 5,
+
+        return RunnerExecutionResultDTO.model_validate(
+            obj={
+                "run": {
+                    "stdout": "",
+                    "stderr": "boom",
+                    "status": "RE",
+                    "code": 1,
+                    "wall_time": 5,
+                },
             },
-        }
+        )
+
+
+class FakePistonServiceRuntimeErrorEmptyStderr:
+    @staticmethod
+    async def execute(*, source_code: str) -> RunnerExecutionResultDTO:
+        _ = source_code
+
+        return RunnerExecutionResultDTO.model_validate(
+            obj={
+                "run": {
+                    "stdout": "",
+                    "stderr": "",
+                    "status": "RE",
+                    "code": 1,
+                    "wall_time": 5,
+                },
+            },
+        )
 
 
 class FakePistonServiceCompileError:
     @staticmethod
-    async def execute(*, source_code: str) -> dict:
+    async def execute(*, source_code: str) -> RunnerExecutionResultDTO:
         _ = source_code
-        return {
-            "compile": {
-                "stdout": "",
-                "stderr": "compile failed",
-                "status": "SG",
-                "code": None,
-                "wall_time": 5,
+
+        return RunnerExecutionResultDTO.model_validate(
+            obj={
+                "compile": {
+                    "stdout": "",
+                    "stderr": "compile failed",
+                    "status": "SG",
+                    "code": None,
+                    "wall_time": 5,
+                },
             },
-        }
-
-
-EVAL_SCRIPT = f"""{USER_CODE_PLACEHOLDER}
-import json
-
-print(json.dumps({{"ok": True, "cases": []}}))
-"""
+        )
 
 
 async def test_execution_run_success(
@@ -119,17 +160,13 @@ async def test_execution_run_success(
         name="Lesson 1",
         body_markdown="body",
         code_editor_default="",
-        eval_script=EVAL_SCRIPT,
-        sample_cases=[
-            {"name": "valid_create", "label": "valid create"},
-            {"name": "invalid_age", "label": "invalid age"},
-        ],
+        cases=CASES,
     )
     db_session.add(lesson)
     await db_session.commit()
     await db_session.refresh(lesson)
 
-    app.dependency_overrides[get_piston_service] = lambda: FakePistonService()
+    app.dependency_overrides[get_piston_service] = FakePistonService
 
     response = await client.post(
         "/api/v1/execute/run",
@@ -154,25 +191,20 @@ async def test_execution_invalid_output_returns_runtime_error(
         name="Lesson 3",
         body_markdown="body",
         code_editor_default="",
-        eval_script=EVAL_SCRIPT,
-        sample_cases=[
-            {"name": "valid_create", "label": "valid create"},
-            {"name": "invalid_age", "label": "invalid age"},
-        ],
+        cases=CASES,
     )
     db_session.add(lesson)
     await db_session.commit()
     await db_session.refresh(lesson)
 
-    app.dependency_overrides[get_piston_service] = lambda: FakePistonServiceInvalidOutput()
+    app.dependency_overrides[get_piston_service] = FakePistonServiceInvalidOutput
 
     response = await client.post(
         "/api/v1/execute/run",
         json={"lesson_id": str(lesson.id), "code": "class User: pass"},
     )
 
-    assert response.status_code == 200
-    assert response.json()["status"] == "runtime_error"
+    assert response.status_code == 503
 
     app.dependency_overrides.pop(get_piston_service, None)
 
@@ -187,17 +219,13 @@ async def test_execution_rate_limit(
         name="Lesson 2",
         body_markdown="body",
         code_editor_default="",
-        eval_script=EVAL_SCRIPT,
-        sample_cases=[
-            {"name": "valid_create", "label": "valid create"},
-            {"name": "invalid_age", "label": "invalid age"},
-        ],
+        cases=CASES,
     )
     db_session.add(lesson)
     await db_session.commit()
     await db_session.refresh(lesson)
 
-    app.dependency_overrides[get_piston_service] = lambda: FakePistonService()
+    app.dependency_overrides[get_piston_service] = FakePistonService
     limiter = ExecutionRateLimiter(max_requests=1, window_sec=3600)
     app.dependency_overrides[get_execution_rate_limiter] = lambda: limiter
 
@@ -222,17 +250,13 @@ async def test_execution_wrong_answer(
         name="Lesson 4",
         body_markdown="body",
         code_editor_default="",
-        eval_script=EVAL_SCRIPT,
-        sample_cases=[
-            {"name": "valid_create", "label": "valid create"},
-            {"name": "invalid_age", "label": "invalid age"},
-        ],
+        cases=CASES,
     )
     db_session.add(lesson)
     await db_session.commit()
     await db_session.refresh(lesson)
 
-    app.dependency_overrides[get_piston_service] = lambda: FakePistonServiceWrongAnswer()
+    app.dependency_overrides[get_piston_service] = FakePistonServiceWrongAnswer
 
     response = await client.post(
         "/api/v1/execute/run",
@@ -258,16 +282,13 @@ async def test_execution_runtime_error_includes_stderr(
         name="Lesson 5",
         body_markdown="body",
         code_editor_default="",
-        eval_script=EVAL_SCRIPT,
-        sample_cases=[
-            {"name": "valid_create", "label": "valid create"},
-        ],
+        cases=[CASES[0]],
     )
     db_session.add(lesson)
     await db_session.commit()
     await db_session.refresh(lesson)
 
-    app.dependency_overrides[get_piston_service] = lambda: FakePistonServiceRuntimeError()
+    app.dependency_overrides[get_piston_service] = FakePistonServiceRuntimeError
 
     response = await client.post(
         "/api/v1/execute/run",
@@ -292,16 +313,13 @@ async def test_execution_compile_error(
         name="Lesson 6",
         body_markdown="body",
         code_editor_default="",
-        eval_script=EVAL_SCRIPT,
-        sample_cases=[
-            {"name": "valid_create", "label": "valid create"},
-        ],
+        cases=[CASES[0]],
     )
     db_session.add(lesson)
     await db_session.commit()
     await db_session.refresh(lesson)
 
-    app.dependency_overrides[get_piston_service] = lambda: FakePistonServiceCompileError()
+    app.dependency_overrides[get_piston_service] = FakePistonServiceCompileError
 
     response = await client.post(
         "/api/v1/execute/run",
@@ -312,5 +330,33 @@ async def test_execution_compile_error(
     data = response.json()
     assert data["status"] == "compile_error"
     assert data["stderr"] == "compile failed"
+
+    app.dependency_overrides.pop(get_piston_service, None)
+
+
+async def test_execution_runtime_error_without_stderr_is_invalid_output(
+        client: httpx.AsyncClient,
+        db_session: AsyncSession,
+) -> None:
+    lesson = Lesson(
+        order=7,
+        slug="lesson-7",
+        name="Lesson 7",
+        body_markdown="body",
+        code_editor_default="",
+        cases=[CASES[0]],
+    )
+    db_session.add(lesson)
+    await db_session.commit()
+    await db_session.refresh(lesson)
+
+    app.dependency_overrides[get_piston_service] = FakePistonServiceRuntimeErrorEmptyStderr
+
+    response = await client.post(
+        "/api/v1/execute/run",
+        json={"lesson_id": str(lesson.id), "code": "class User: pass"},
+    )
+
+    assert response.status_code == 503
 
     app.dependency_overrides.pop(get_piston_service, None)

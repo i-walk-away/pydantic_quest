@@ -29,6 +29,7 @@ async def run_lesson_code(
 
     :return: execution result
     """
+
     return await code_execution_service.execute(
         lesson_id=data.lesson_id,
         code=data.code,

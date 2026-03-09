@@ -28,4 +28,5 @@ class LessonRepository(BaseRepository[Lesson]):
         :return: lesson or None
         """
         stmt = select(Lesson).where(Lesson.slug == slug)
+
         return await self.session.scalar(stmt)

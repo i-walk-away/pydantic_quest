@@ -5,7 +5,7 @@ from fastapi.security import HTTPAuthorizationCredentials
 from jwt import encode
 
 from src.app.core.dependencies.security.user import get_user_from_jwt, require_admin_user
-from src.app.core.exceptions.auth_exc import InvalidCredentials, Unauthorized
+from src.app.core.exceptions.auth_exc import AuthenticationRequired, Unauthorized
 from src.app.core.exceptions.base_exc import NotFoundError
 from src.app.domain.models.dto.user import UserDTO
 from src.app.domain.models.enums.role import UserRole
@@ -18,14 +18,17 @@ class FakeUserService:
         self.raise_missing = raise_missing
 
     async def get_by_username(self, username: str) -> UserDTO:
+
         if self.raise_missing:
             raise NotFoundError(
                 entity_type_str="User",
                 field_name="username",
                 field_value=username,
             )
+
         if self.user and self.user.username == username:
             return self.user
+
         raise NotFoundError(
             entity_type_str="User",
             field_name="username",
@@ -63,7 +66,7 @@ async def test_get_user_from_jwt_missing_user() -> None:
     token = _build_token(username="missing")
     creds = HTTPAuthorizationCredentials(scheme="Bearer", credentials=token)
 
-    with pytest.raises(InvalidCredentials):
+    with pytest.raises(AuthenticationRequired):
         await get_user_from_jwt(
             user_service=FakeUserService(user=None, raise_missing=True),
             jwt=creds,
@@ -73,7 +76,7 @@ async def test_get_user_from_jwt_missing_user() -> None:
 async def test_get_user_from_jwt_invalid_token() -> None:
     creds = HTTPAuthorizationCredentials(scheme="Bearer", credentials="invalid")
 
-    with pytest.raises(InvalidCredentials):
+    with pytest.raises(AuthenticationRequired):
         await get_user_from_jwt(
             user_service=FakeUserService(user=None),
             jwt=creds,

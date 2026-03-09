@@ -18,6 +18,25 @@ class InvalidCredentials(HTTPException):
         )
 
 
+class AuthenticationRequired(HTTPException):
+    """
+    Authentication token is missing or invalid.
+    """
+    status_code = 401
+    detail = "Authentication required."
+
+    def __init__(self) -> None:
+        """
+        Initialize authentication required error.
+
+        :return: None
+        """
+        super().__init__(
+            status_code=self.status_code,
+            detail=self.detail,
+        )
+
+
 class Unauthorized(HTTPException):
     """
     Access is forbidden for the current user.

@@ -33,8 +33,7 @@ const emptyValues: LessonFormValues = {
   title: "",
   bodyMarkdown: defaultMarkdown,
   codeEditorDefault: "",
-  evalScript: "",
-  sampleCases: [],
+  cases: [],
 };
 
 export const useLessonForm = (lesson: Lesson | null) => {
@@ -46,8 +45,7 @@ export const useLessonForm = (lesson: Lesson | null) => {
           title: lesson.title,
           bodyMarkdown: lesson.bodyMarkdown,
           codeEditorDefault: lesson.codeEditorDefault,
-          evalScript: lesson.evalScript,
-          sampleCases: lesson.sampleCases,
+          cases: lesson.cases,
         }
       : emptyValues
   );
@@ -64,8 +62,7 @@ export const useLessonForm = (lesson: Lesson | null) => {
       title: lesson.title,
       bodyMarkdown: lesson.bodyMarkdown,
       codeEditorDefault: lesson.codeEditorDefault,
-      evalScript: lesson.evalScript,
-      sampleCases: lesson.sampleCases,
+      cases: lesson.cases,
     });
   }, [lesson]);
 
@@ -83,8 +80,7 @@ export const useLessonForm = (lesson: Lesson | null) => {
       title: lesson.title,
       bodyMarkdown: lesson.bodyMarkdown,
       codeEditorDefault: lesson.codeEditorDefault,
-      evalScript: lesson.evalScript,
-      sampleCases: lesson.sampleCases,
+      cases: lesson.cases,
     } : emptyValues);
   }, [lesson]);
 
