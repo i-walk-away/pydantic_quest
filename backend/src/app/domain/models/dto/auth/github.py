@@ -14,6 +14,7 @@ class GithubOAuthCallbackDTO(ExtendedBaseModel):
     @classmethod
     def validate_non_blank(cls, value: str) -> str:
         normalized = value.strip()
+
         if not normalized:
             message = "oauth callback fields must not be empty."
             raise ValueError(message)
