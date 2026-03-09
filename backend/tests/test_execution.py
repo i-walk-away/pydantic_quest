@@ -166,7 +166,7 @@ async def test_execution_run_success(
     await db_session.commit()
     await db_session.refresh(lesson)
 
-    app.dependency_overrides[get_piston_service] = lambda: FakePistonService()
+    app.dependency_overrides[get_piston_service] = FakePistonService
 
     response = await client.post(
         "/api/v1/execute/run",
@@ -197,7 +197,7 @@ async def test_execution_invalid_output_returns_runtime_error(
     await db_session.commit()
     await db_session.refresh(lesson)
 
-    app.dependency_overrides[get_piston_service] = lambda: FakePistonServiceInvalidOutput()
+    app.dependency_overrides[get_piston_service] = FakePistonServiceInvalidOutput
 
     response = await client.post(
         "/api/v1/execute/run",
@@ -225,7 +225,7 @@ async def test_execution_rate_limit(
     await db_session.commit()
     await db_session.refresh(lesson)
 
-    app.dependency_overrides[get_piston_service] = lambda: FakePistonService()
+    app.dependency_overrides[get_piston_service] = FakePistonService
     limiter = ExecutionRateLimiter(max_requests=1, window_sec=3600)
     app.dependency_overrides[get_execution_rate_limiter] = lambda: limiter
 
@@ -256,7 +256,7 @@ async def test_execution_wrong_answer(
     await db_session.commit()
     await db_session.refresh(lesson)
 
-    app.dependency_overrides[get_piston_service] = lambda: FakePistonServiceWrongAnswer()
+    app.dependency_overrides[get_piston_service] = FakePistonServiceWrongAnswer
 
     response = await client.post(
         "/api/v1/execute/run",
@@ -288,7 +288,7 @@ async def test_execution_runtime_error_includes_stderr(
     await db_session.commit()
     await db_session.refresh(lesson)
 
-    app.dependency_overrides[get_piston_service] = lambda: FakePistonServiceRuntimeError()
+    app.dependency_overrides[get_piston_service] = FakePistonServiceRuntimeError
 
     response = await client.post(
         "/api/v1/execute/run",
@@ -319,7 +319,7 @@ async def test_execution_compile_error(
     await db_session.commit()
     await db_session.refresh(lesson)
 
-    app.dependency_overrides[get_piston_service] = lambda: FakePistonServiceCompileError()
+    app.dependency_overrides[get_piston_service] = FakePistonServiceCompileError
 
     response = await client.post(
         "/api/v1/execute/run",
@@ -350,7 +350,7 @@ async def test_execution_runtime_error_without_stderr_is_invalid_output(
     await db_session.commit()
     await db_session.refresh(lesson)
 
-    app.dependency_overrides[get_piston_service] = lambda: FakePistonServiceRuntimeErrorEmptyStderr()
+    app.dependency_overrides[get_piston_service] = FakePistonServiceRuntimeErrorEmptyStderr
 
     response = await client.post(
         "/api/v1/execute/run",

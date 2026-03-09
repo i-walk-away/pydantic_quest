@@ -22,7 +22,7 @@ async def run_sync() -> dict[str, int | bool]:
     async with session_factory() as session:
         repository = LessonRepository(session=session)
         loader = LessonsLoader(
-            root_dir=Path(settings.lessons_dir).resolve(),
+            root_dir=Path(settings.lessons_dir),
             validator=LessonsContentValidator(),
         )
         service = LessonSyncService(

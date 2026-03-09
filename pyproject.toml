@@ -17,7 +17,7 @@ dependencies = [
     "sqlalchemy>=2.0.0",
     "uvicorn>=0.40.0",
     "cryptography>=46.0.3",
-    "ruff>=0.14.14",
+    "ruff==0.15.5",
 ]
 
 [project.optional-dependencies]
