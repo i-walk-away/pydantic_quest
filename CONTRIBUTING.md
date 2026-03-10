@@ -12,17 +12,63 @@ If you want to add a new lesson to pydantic quest, do this:
     * `lesson.yaml`
     * `theory.md`
     * `starter.py`
-    * `cases.yaml`
+    * `cases.yaml` -- *for theory-only lessons with no coding assignment, leave this file empty*
 3. Head to [lessons/index.yaml](lessons/index.yaml) and add the following:
 
 ```yaml
   - slug: dash-separated-lesson-name
-    order: <integer>
+    order: "<order-path>"
+    no_code: false   # or `true` if there is no assignment intended for the lesson
 ```
 
-The "order" field changes the order in which lessons appear in pydantic quest.
-If you're not sure, just use whatever highest order already exists in index and
-add +1 to it. I will reorder everything myself if needed :)
+The `slug` must exactly match the lesson directory name in [lessons/](lessons/).
+For example, this:
+
+```yaml
+  - slug: field-validators
+    order: "1.1"
+```
+
+must correspond to this directory:
+
+```text
+lessons/field-validators/
+```
+
+The `order` field controls lesson position in the UI and now supports
+hierarchical numbering.
+
+Valid examples:
+
+```yaml
+  - slug: validators
+    order: "1"
+  - slug: field-validators
+    order: "1.1"
+  - slug: model-validators
+    order: "1.2"
+  - slug: models
+    order: "2"
+  - slug: basemodel
+    order: "2.1"
+```
+
+Rules:
+
+- use positive numeric segments separated by dots
+- like this: `"1"`, `"1.1"`, `"2.3.4"`
+- every order value must be unique
+- set `no_code: true` for theory-only lessons with no coding task
+
+Sorting is numeric by segment, so lessons appear like:
+
+- `1`
+- `1.1`
+- `1.2`
+- `2`
+
+If you're not sure where a lesson should go, just add it near the right section
+and i can reorder things myself later :)
 
 ## Explanation of the 4 neccessary files
 
@@ -58,6 +104,8 @@ Test cases for your lesson. Just refer to [`lessons/lesson-template/cases.yaml`]
 You can find
 a *lot* of information there about how it works and how exactly to design your own test cases.
 Please inform me if it is still not very clear.
+If the lesson is marked `no_code: true`, this file is still required for consistency,
+but it can be empty, `{}`, or `cases: null`. The `run` button will be disabled in the UI.
 
 ## Contributor checklist
 

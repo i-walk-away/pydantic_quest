@@ -11,7 +11,7 @@ from src.app.domain.services.lesson_sync_importer import LessonSyncImporter
 from src.app.domain.services.lesson_sync_service import LessonSyncService
 
 
-def _write_lesson_files(root: Path, slug: str, order: int) -> None:
+def _write_lesson_files(root: Path, slug: str, order: str) -> None:
     lesson_dir = root / slug
     lesson_dir.mkdir(parents=True, exist_ok=True)
 
@@ -68,9 +68,10 @@ async def test_sync_lessons_endpoint(
     assert lessons_response.status_code == 200
     lessons = lessons_response.json()
     assert len(lessons) >= 1
-    first = lessons[0]
-    assert len(first["cases"]) >= 1
-    assert len(first["sample_cases"]) >= 1
+    coding_lessons = [lesson for lesson in lessons if not lesson["no_code"]]
+    assert len(coding_lessons) >= 1
+    assert len(coding_lessons[0]["cases"]) >= 1
+    assert len(coding_lessons[0]["sample_cases"]) >= 1
 
 
 async def test_sync_lessons_endpoint_dry_run(
@@ -94,7 +95,7 @@ async def test_sync_lessons_deletes_missing(
     root_dir = tmp_path / "lessons"
     root_dir.mkdir(parents=True)
 
-    _write_lesson_files(root=root_dir, slug="lesson-one", order=1)
+    _write_lesson_files(root=root_dir, slug="lesson-one", order="1")
 
     repository = LessonRepository(session=db_session)
     loader = LessonsLoader(
@@ -111,7 +112,7 @@ async def test_sync_lessons_deletes_missing(
     first_result = await service.sync(delete_missing=True)
     assert first_result.created == 1
 
-    _write_lesson_files(root=root_dir, slug="lesson-two", order=1)
+    _write_lesson_files(root=root_dir, slug="lesson-two", order="1.1")
     second_result = await service.sync(delete_missing=True)
 
     assert second_result.created == 1
@@ -120,3 +121,4 @@ async def test_sync_lessons_deletes_missing(
     lessons = await repository.get_all()
     assert len(lessons) == 1
     assert lessons[0].slug == "lesson-two"
+    assert lessons[0].order == "1.1"

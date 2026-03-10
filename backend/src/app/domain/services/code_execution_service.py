@@ -60,6 +60,15 @@ class CodeExecutionService:
             cases=lesson.cases,
         )
 
+        if lesson.no_code:
+            return ExecutionResultDTO(
+                status=ExecutionStatus.RUNTIME_ERROR,
+                cases=[],
+                stderr="This lesson does not have a coding task.",
+                stdout=None,
+                duration_ms=None,
+            )
+
         if not lesson.cases:
             return ExecutionResultDTO(
                 status=ExecutionStatus.RUNTIME_ERROR,

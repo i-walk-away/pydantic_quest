@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef, useState, type ReactElement } from "react";
+import { useEffect, useMemo, useRef, useState, type CSSProperties, type ReactElement } from "react";
 import { Link, useLocation, useNavigate, useParams } from "react-router-dom";
 
 import logoUrl from "@shared/assets/logo.png";
@@ -125,7 +125,8 @@ export const QuestPage = (): ReactElement => {
       sampleCases: [],
       createdAt: new Date(0),
       updatedAt: null,
-      order: 1,
+      order: "1",
+      noCode: false,
     }),
     [fallbackCode, fallbackMarkdown]
   );
@@ -148,7 +149,8 @@ export const QuestPage = (): ReactElement => {
     () => renderMarkdown(activeLesson.bodyMarkdown),
     [activeLesson.bodyMarkdown]
   );
-  const lessonLabel = `lesson ${String(activeLesson.order).padStart(2, "0")}`;
+  const lessonLabel = `lesson ${activeLesson.order}`;
+  const isNoCodeLesson = activeLesson.noCode;
   const activeLessonIndex = lessons.findIndex((lesson) => lesson.id === activeLesson.id);
   const isAtFirstLesson = lessons.length > 0 && activeLessonIndex <= 0;
   const isAtLastLesson = lessons.length > 0 && activeLessonIndex >= lessons.length - 1;
@@ -516,6 +518,14 @@ export const QuestPage = (): ReactElement => {
     }
   };
 
+  const handleReset = (): void => {
+    setCode(defaultEditorCode);
+    setRunResult(null);
+    setRunError(null);
+    setLastRunLessonId(null);
+    setIsStdoutOpen(false);
+  };
+
   useEffect(() => {
     if (runResult?.status !== "accepted") {
       return;
@@ -814,6 +824,11 @@ export const QuestPage = (): ReactElement => {
                   key={lesson.id}
                   type="button"
                   onClick={() => handleLessonSelect(lesson.id)}
+                  style={
+                    {
+                      "--lesson-depth": String(Math.max(lesson.order.split(".").length - 1, 0)),
+                    } as CSSProperties
+                  }
                   className={
                     lesson.id === activeLesson.id
                       ? "lesson-list__row is-active"
@@ -890,7 +905,7 @@ export const QuestPage = (): ReactElement => {
             <Button
               variant="ghost"
               type="button"
-              className="btn--compact btn--text"
+              className="btn--compact btn--text btn--text-nav-prev"
               onClick={handlePreviousLesson}
               disabled={lessons.length === 0 || isAtFirstLesson}
             >
@@ -899,7 +914,7 @@ export const QuestPage = (): ReactElement => {
             <Button
               variant="ghost"
               type="button"
-              className="push-right btn--compact btn--text"
+              className="push-right btn--compact btn--text btn--text-nav-next"
               onClick={handleNextLesson}
               disabled={lessons.length === 0 || isAtLastLesson}
             >
@@ -1058,7 +1073,7 @@ export const QuestPage = (): ReactElement => {
               variant="ghost"
               type="button"
               className="push-right btn--text btn--text-accent"
-              onClick={() => setCode(defaultEditorCode)}
+              onClick={handleReset}
             >
               reset
             </Button>
@@ -1067,8 +1082,9 @@ export const QuestPage = (): ReactElement => {
               type="button"
               className="btn--text btn--text-accent"
               onClick={handleRun}
-              disabled={isRunning}
+              disabled={isRunning || isNoCodeLesson}
               data-testid="run-button"
+              title={isNoCodeLesson ? "This lesson does not have a coding task." : undefined}
             >
               run
             </Button>

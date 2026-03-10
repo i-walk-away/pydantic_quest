@@ -1,5 +1,17 @@
 lessons:
-  - slug: intro-model
+  - slug: introduction
     order: 1
-  - slug: lesson-template
+    no_code: true
+
+  - slug: pydantic
+    order: 1.1
+    no_code: true
+
+  - slug: intro-model
     order: 2
+    no_code: false
+
+  - slug: lesson-template
+    order: 2.1
+    no_code: false
+

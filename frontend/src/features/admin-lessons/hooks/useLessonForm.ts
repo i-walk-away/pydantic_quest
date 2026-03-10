@@ -28,7 +28,7 @@ class User(BaseModel):
 `;
 
 const emptyValues: LessonFormValues = {
-  order: 1,
+  order: "1",
   slug: "",
   title: "",
   bodyMarkdown: defaultMarkdown,

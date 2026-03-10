@@ -22,7 +22,7 @@ async def _create_user(db_session: AsyncSession, username: str) -> User:
     return user
 
 
-async def _create_lesson(db_session: AsyncSession, *, order: int, slug: str) -> Lesson:
+async def _create_lesson(db_session: AsyncSession, *, order: str, slug: str) -> Lesson:
     lesson = Lesson(
         order=order,
         slug=slug,
@@ -42,7 +42,7 @@ async def test_mark_completed_is_idempotent(db_session: AsyncSession) -> None:
     repository = LessonProgressRepository(session=db_session)
     service = LessonProgressService(progress_repository=repository)
     user = await _create_user(db_session=db_session, username="progress_user")
-    lesson = await _create_lesson(db_session=db_session, order=1, slug="lesson-1")
+    lesson = await _create_lesson(db_session=db_session, order="1", slug="lesson-1")
 
     await service.mark_completed(user_id=user.id, lesson_id=lesson.id)
     await service.mark_completed(user_id=user.id, lesson_id=lesson.id)
@@ -57,8 +57,8 @@ async def test_get_completed_lesson_ids_returns_only_requested_user(db_session: 
     service = LessonProgressService(progress_repository=repository)
     user_1 = await _create_user(db_session=db_session, username="progress_user_1")
     user_2 = await _create_user(db_session=db_session, username="progress_user_2")
-    lesson_1 = await _create_lesson(db_session=db_session, order=1, slug="lesson-1")
-    lesson_2 = await _create_lesson(db_session=db_session, order=2, slug="lesson-2")
+    lesson_1 = await _create_lesson(db_session=db_session, order="1", slug="lesson-1")
+    lesson_2 = await _create_lesson(db_session=db_session, order="2", slug="lesson-2")
 
     await service.mark_completed(user_id=user_1.id, lesson_id=lesson_1.id)
     await service.mark_completed(user_id=user_2.id, lesson_id=lesson_2.id)
@@ -73,8 +73,8 @@ async def test_reset_progress_deletes_only_requested_user_rows(db_session: Async
     service = LessonProgressService(progress_repository=repository)
     user_1 = await _create_user(db_session=db_session, username="progress_user_1")
     user_2 = await _create_user(db_session=db_session, username="progress_user_2")
-    lesson_1 = await _create_lesson(db_session=db_session, order=1, slug="lesson-1")
-    lesson_2 = await _create_lesson(db_session=db_session, order=2, slug="lesson-2")
+    lesson_1 = await _create_lesson(db_session=db_session, order="1", slug="lesson-1")
+    lesson_2 = await _create_lesson(db_session=db_session, order="2", slug="lesson-2")
 
     await service.mark_completed(user_id=user_1.id, lesson_id=lesson_1.id)
     await service.mark_completed(user_id=user_2.id, lesson_id=lesson_2.id)

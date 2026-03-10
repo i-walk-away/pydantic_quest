@@ -1,25 +1,23 @@
 from pydantic import Field, field_validator
 
+from src.app.domain.lesson_order import normalize_lesson_order
 from src.app.domain.models.dto.extended_basemodel import ExtendedBaseModel
 from src.app.domain.models.dto.lesson.case import LessonCaseDTO
 
 
 class CreateLessonDTO(ExtendedBaseModel):
     name: str
-    order: int
+    order: str
+    no_code: bool = False
     slug: str
     body_markdown: str = Field(default="body")
     code_editor_default: str = Field(default="")
     cases: list[LessonCaseDTO] = Field(default_factory=list)
 
-    @field_validator("order")
+    @field_validator("order", mode="before")
     @classmethod
-    def validate_order(cls, value: int) -> int:
-        if value < 1:
-            message = "order must be positive."
-            raise ValueError(message)
-
-        return value
+    def validate_order(cls, value: str | int | float) -> str:
+        return normalize_lesson_order(value=value)
 
     @field_validator("name", "slug", "body_markdown")
     @classmethod

@@ -14,7 +14,10 @@ class LessonProgress(Base):
     )
 
     user_id: Mapped[UUID] = mapped_column(ForeignKey("users.id"), index=True)
-    lesson_id: Mapped[UUID] = mapped_column(ForeignKey("lessons.id"), index=True)
+    lesson_id: Mapped[UUID] = mapped_column(
+        ForeignKey("lessons.id", ondelete="CASCADE"),
+        index=True,
+    )
     completed_at: Mapped[datetime] = mapped_column(
         DateTime(),
         server_default=func.now(),

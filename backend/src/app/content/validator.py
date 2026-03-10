@@ -1,4 +1,5 @@
 from src.app.content.models import LessonsIndexFile
+from src.app.domain.lesson_order import lesson_order_key
 
 
 class LessonsContentValidator:
@@ -24,12 +25,10 @@ class LessonsContentValidator:
 
             seen_slugs.add(item.slug)
 
-            if item.order < 1:
-                message = f"lesson order must be positive: {item.slug}"
-                raise ValueError(message)
-
             if item.order in seen_orders:
                 message = f"duplicate lesson order in index: {item.order}"
                 raise ValueError(message)
 
             seen_orders.add(item.order)
+
+        _ = sorted(lesson_order_key(item.order) for item in index_file.lessons)

@@ -2,13 +2,14 @@ export interface LessonApiResponse {
   id: string;
   slug: string;
   name: string;
+  no_code: boolean;
   body_markdown: string;
   code_editor_default: string;
   cases: LessonCase[] | null;
   sample_cases: LessonSampleCase[] | null;
   created_at: string;
   updated_at: string | null;
-  order: number;
+  order: string;
 }
 
 export interface LessonCase {
@@ -27,18 +28,20 @@ export interface Lesson {
   id: string;
   slug: string;
   title: string;
+  noCode: boolean;
   bodyMarkdown: string;
   codeEditorDefault: string;
   cases: LessonCase[];
   sampleCases: LessonSampleCase[];
   createdAt: Date;
   updatedAt: Date | null;
-  order: number;
+  order: string;
 }
 
 export interface LessonFormValues {
-  order: number;
+  order: string;
   slug: string;
+  noCode?: boolean;
   title: string;
   bodyMarkdown: string;
   codeEditorDefault: string;
@@ -46,8 +49,9 @@ export interface LessonFormValues {
 }
 
 export interface LessonPayload {
-  order: number;
+  order: string;
   slug: string;
+  no_code?: boolean;
   name: string;
   body_markdown: string;
   code_editor_default: string;
@@ -59,6 +63,7 @@ export const mapLesson = (response: LessonApiResponse): Lesson => {
     id: response.id,
     slug: response.slug,
     title: response.name,
+    noCode: response.no_code,
     bodyMarkdown: response.body_markdown,
     codeEditorDefault: response.code_editor_default,
     cases: response.cases ?? [],
@@ -75,6 +80,7 @@ export const mapLessonPayload = (
   return {
     order: values.order,
     slug: values.slug,
+    no_code: values.noCode ?? false,
     name: values.title,
     body_markdown: values.bodyMarkdown,
     code_editor_default: values.codeEditorDefault,

@@ -2,12 +2,14 @@ from datetime import datetime
 
 from pydantic import field_validator
 
+from src.app.domain.lesson_order import normalize_lesson_order
 from src.app.domain.models.dto.extended_basemodel import ExtendedBaseModel
 from src.app.domain.models.dto.lesson.case import LessonCaseDTO
 
 
 class UpdateLessonDTO(ExtendedBaseModel):
-    order: int | None = None
+    order: str | None = None
+    no_code: bool | None = None
     slug: str | None = None
     name: str | None = None
     body_markdown: str | None = None
@@ -16,14 +18,13 @@ class UpdateLessonDTO(ExtendedBaseModel):
     created_at: datetime | None = None
     updated_at: datetime | None = None
 
-    @field_validator("order")
+    @field_validator("order", mode="before")
     @classmethod
-    def validate_order(cls, value: int | None) -> int | None:
-        if value is not None and value < 1:
-            message = "order must be positive."
-            raise ValueError(message)
+    def validate_order(cls, value: str | int | float | None) -> str | None:
+        if value is None:
+            return None
 
-        return value
+        return normalize_lesson_order(value=value)
 
     @field_validator("name", "slug", "body_markdown")
     @classmethod
