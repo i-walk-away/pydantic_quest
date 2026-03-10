@@ -9,6 +9,7 @@ from src.app.content.models import (
     LoadedLesson,
 )
 from src.app.content.validator import LessonsContentValidator
+from src.app.domain.lesson_order import lesson_order_key
 
 LESSON_META_FILENAME = "lesson.yaml"
 LESSON_THEORY_FILENAME = "theory.md"
@@ -62,7 +63,7 @@ class LessonsLoader:
                 ),
             )
 
-        lessons.sort(key=lambda item: item.order)
+        lessons.sort(key=lambda item: lesson_order_key(item.order))
 
         return lessons
 

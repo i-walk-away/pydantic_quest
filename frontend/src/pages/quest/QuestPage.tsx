@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef, useState, type ReactElement } from "react";
+import { useEffect, useMemo, useRef, useState, type CSSProperties, type ReactElement } from "react";
 import { Link, useLocation, useNavigate, useParams } from "react-router-dom";
 
 import logoUrl from "@shared/assets/logo.png";
@@ -125,7 +125,7 @@ export const QuestPage = (): ReactElement => {
       sampleCases: [],
       createdAt: new Date(0),
       updatedAt: null,
-      order: 1,
+      order: "1",
     }),
     [fallbackCode, fallbackMarkdown]
   );
@@ -148,7 +148,7 @@ export const QuestPage = (): ReactElement => {
     () => renderMarkdown(activeLesson.bodyMarkdown),
     [activeLesson.bodyMarkdown]
   );
-  const lessonLabel = `lesson ${String(activeLesson.order).padStart(2, "0")}`;
+  const lessonLabel = `lesson ${activeLesson.order}`;
   const activeLessonIndex = lessons.findIndex((lesson) => lesson.id === activeLesson.id);
   const isAtFirstLesson = lessons.length > 0 && activeLessonIndex <= 0;
   const isAtLastLesson = lessons.length > 0 && activeLessonIndex >= lessons.length - 1;
@@ -814,6 +814,11 @@ export const QuestPage = (): ReactElement => {
                   key={lesson.id}
                   type="button"
                   onClick={() => handleLessonSelect(lesson.id)}
+                  style={
+                    {
+                      "--lesson-depth": String(Math.max(lesson.order.split(".").length - 1, 0)),
+                    } as CSSProperties
+                  }
                   className={
                     lesson.id === activeLesson.id
                       ? "lesson-list__row is-active"

@@ -2,6 +2,7 @@ from uuid import UUID
 
 from src.app.core.exceptions.base_exc import NotFoundError
 from src.app.core.exceptions.lesson_exc import LessonOrderInvalid, LessonSlugConflict
+from src.app.domain.lesson_order import lesson_order_key, normalize_lesson_order
 from src.app.domain.models.db.lesson import Lesson
 from src.app.domain.models.dto.lesson import CreateLessonDTO, LessonDTO, UpdateLessonDTO
 from src.app.domain.repositories.lesson_repository import LessonRepository
@@ -53,7 +54,7 @@ class LessonService:
         """
         lessons = await self.repository.get_all()
 
-        ordered_lessons = sorted(lessons, key=lambda lesson: lesson.order)
+        ordered_lessons = sorted(lessons, key=lambda lesson: lesson_order_key(lesson.order))
 
         return [lesson.to_dto() for lesson in ordered_lessons]
 
@@ -168,7 +169,7 @@ class LessonService:
 
         raise LessonSlugConflict
 
-    async def _validate_order(self, order: int, exclude_id: UUID | None) -> None:
+    async def _validate_order(self, order: str, exclude_id: UUID | None) -> None:
         """
         Validate lesson order.
 
@@ -177,9 +178,7 @@ class LessonService:
 
         :return: None
         """
-
-        if order < 1:
-            raise LessonOrderInvalid
+        normalized_order = normalize_lesson_order(value=order)
 
         lessons = await self.repository.get_all()
         orders = []
@@ -189,12 +188,7 @@ class LessonService:
                 continue
             orders.append(lesson.order)
 
-        max_order = max(orders, default=0)
-
-        if order > max_order + 1:
-            raise LessonOrderInvalid
-
-        if order in orders:
+        if normalized_order in orders:
             raise LessonOrderInvalid
 
     async def _require_lesson(self, id: UUID) -> Lesson:

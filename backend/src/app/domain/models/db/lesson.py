@@ -1,6 +1,6 @@
 from datetime import datetime
 
-from sqlalchemy import DateTime, Integer, JSON, String, Text, func
+from sqlalchemy import DateTime, JSON, String, Text, func
 from sqlalchemy.orm import Mapped, mapped_column
 
 from src.app.domain.models.db import Base
@@ -10,7 +10,7 @@ from src.app.domain.models.dto.lesson import LessonCaseDTO, LessonDTO, LessonSam
 class Lesson(Base):
     __tablename__ = "lessons"
 
-    order: Mapped[int] = mapped_column(Integer())
+    order: Mapped[str] = mapped_column(String(64))
     slug: Mapped[str] = mapped_column(String(255), unique=True)
     name: Mapped[str] = mapped_column(String(255), default="Lesson name")
     body_markdown: Mapped[str] = mapped_column(Text(), default="body")

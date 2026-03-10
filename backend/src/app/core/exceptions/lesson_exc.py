@@ -25,7 +25,7 @@ class LessonOrderInvalid(HTTPException):
     Lesson order is invalid.
     """
     status_code = 422
-    detail = "Lesson order must be sequential with no gaps."
+    detail = "Lesson order must be unique and use a dotted path like 1 or 2.3."
 
     def __init__(self) -> None:
         """

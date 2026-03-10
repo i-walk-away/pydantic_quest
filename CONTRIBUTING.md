@@ -17,12 +17,45 @@ If you want to add a new lesson to pydantic quest, do this:
 
 ```yaml
   - slug: dash-separated-lesson-name
-    order: <integer>
+    order: "<order-path>"
 ```
 
-The "order" field changes the order in which lessons appear in pydantic quest.
-If you're not sure, just use whatever highest order already exists in index and
-add +1 to it. I will reorder everything myself if needed :)
+The `order` field controls lesson position in the UI and now supports
+hierarchical numbering.
+
+Valid examples:
+
+```yaml
+  - slug: validators
+    order: "1"
+  - slug: field-validators
+    order: "1.1"
+  - slug: model-validators
+    order: "1.2"
+  - slug: models
+    order: "2"
+  - slug: basemodel
+    order: "2.1"
+```
+
+Rules:
+
+- use positive numeric segments separated by dots
+- good: `"1"`, `"1.1"`, `"2.3.4"`
+- bad: `"0"`, `"01"`, `"1.0"`, `"1..2"`, `"1.a"`
+- every order must be unique
+- quote dotted values in YAML, for example `"1.1"`, even though the loader will
+  normalize unquoted numeric values too
+
+Sorting is numeric by segment, so lessons appear like:
+
+- `1`
+- `1.1`
+- `1.2`
+- `2`
+
+If you're not sure where a lesson should go, just add it near the right section
+and I can reorder things later.
 
 ## Explanation of the 4 neccessary files
 

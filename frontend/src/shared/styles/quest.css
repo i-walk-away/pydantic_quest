@@ -238,12 +238,13 @@
 }
 
 .lesson-list__row {
+  --lesson-depth: 0;
   display: grid;
   grid-template-columns: 26px 1fr 18px;
   gap: 10px;
   align-items: center;
   min-height: 32px;
-  padding: 6px 10px 6px 8px;
+  padding: 6px 10px 6px calc(8px + (var(--lesson-depth) * 20px));
   border-radius: 4px;
   background: transparent;
   color: var(--text-muted);

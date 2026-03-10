@@ -3,6 +3,7 @@ from uuid import UUID
 
 from pydantic import field_validator
 
+from src.app.domain.lesson_order import normalize_lesson_order
 from src.app.domain.models.dto.extended_basemodel import ExtendedBaseModel
 from src.app.domain.models.dto.lesson.case import LessonCaseDTO
 from src.app.domain.models.dto.lesson.sample_case import LessonSampleCaseDTO
@@ -10,7 +11,7 @@ from src.app.domain.models.dto.lesson.sample_case import LessonSampleCaseDTO
 
 class LessonDTO(ExtendedBaseModel):
     id: UUID
-    order: int
+    order: str
     slug: str
     name: str
     body_markdown: str
@@ -20,14 +21,10 @@ class LessonDTO(ExtendedBaseModel):
     created_at: datetime
     updated_at: datetime | None
 
-    @field_validator("order")
+    @field_validator("order", mode="before")
     @classmethod
-    def validate_order(cls, value: int) -> int:
-        if value < 1:
-            message = "order must be positive."
-            raise ValueError(message)
-
-        return value
+    def validate_order(cls, value: str | int | float) -> str:
+        return normalize_lesson_order(value=value)
 
     @field_validator("slug", "name", "body_markdown")
     @classmethod

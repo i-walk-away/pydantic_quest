@@ -4,6 +4,7 @@ from pathlib import Path
 
 from pydantic import ConfigDict, field_validator, model_validator
 
+from src.app.domain.lesson_order import normalize_lesson_order
 from src.app.domain.models.dto.extended_basemodel import ExtendedBaseModel
 
 
@@ -11,7 +12,7 @@ class LessonIndexItem(ExtendedBaseModel):
     model_config = ConfigDict(extra="forbid")
 
     slug: str
-    order: int
+    order: str
 
     @field_validator("slug")
     @classmethod
@@ -23,14 +24,10 @@ class LessonIndexItem(ExtendedBaseModel):
 
         return normalized
 
-    @field_validator("order")
+    @field_validator("order", mode="before")
     @classmethod
-    def validate_order(cls, value: int) -> int:
-        if value < 1:
-            message = "order must be positive."
-            raise ValueError(message)
-
-        return value
+    def validate_order(cls, value: str | int | float) -> str:
+        return normalize_lesson_order(value=value)
 
 
 class LessonsIndexFile(ExtendedBaseModel):
@@ -104,21 +101,17 @@ class LoadedLesson(ExtendedBaseModel):
     model_config = ConfigDict(extra="forbid")
 
     slug: str
-    order: int
+    order: str
     name: str
     body_markdown: str
     code_editor_default: str
     cases: list[LessonCaseFileItem]
     source_dir: Path
 
-    @field_validator("order")
+    @field_validator("order", mode="before")
     @classmethod
-    def validate_order(cls, value: int) -> int:
-        if value < 1:
-            message = "order must be positive."
-            raise ValueError(message)
-
-        return value
+    def validate_order(cls, value: str | int | float) -> str:
+        return normalize_lesson_order(value=value)
 
     @field_validator("slug", "name", "body_markdown")
     @classmethod

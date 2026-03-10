@@ -8,7 +8,7 @@ export interface LessonApiResponse {
   sample_cases: LessonSampleCase[] | null;
   created_at: string;
   updated_at: string | null;
-  order: number;
+  order: string;
 }
 
 export interface LessonCase {
@@ -33,11 +33,11 @@ export interface Lesson {
   sampleCases: LessonSampleCase[];
   createdAt: Date;
   updatedAt: Date | null;
-  order: number;
+  order: string;
 }
 
 export interface LessonFormValues {
-  order: number;
+  order: string;
   slug: string;
   title: string;
   bodyMarkdown: string;
@@ -46,7 +46,7 @@ export interface LessonFormValues {
 }
 
 export interface LessonPayload {
-  order: number;
+  order: string;
   slug: string;
   name: string;
   body_markdown: string;

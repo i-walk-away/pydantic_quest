@@ -53,6 +53,35 @@ ValidationError: username must not be empty
 
 ---
 
+## Lesson order in `lessons/index.yaml`
+
+The lesson list supports hierarchical numbering.
+
+Use an `order` path like:
+
+```yaml
+lessons:
+  - slug: validators
+    order: "1"
+  - slug: field-validators
+    order: "1.1"
+  - slug: model-validators
+    order: "1.2"
+  - slug: models
+    order: "2"
+```
+
+Rules:
+
+- each segment must be a positive integer
+- use dots for nesting
+- every order must be unique
+- quote dotted values like `"1.1"` in YAML
+
+Sorting is numeric by segment, so `1.10` comes after `1.2`, not before it.
+
+---
+
 ## How to write a good lesson
 
 ### 1) Define one learning objective

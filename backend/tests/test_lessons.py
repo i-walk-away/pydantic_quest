@@ -1,7 +1,7 @@
 import httpx
 
 
-def _lesson_payload(order: int, slug: str) -> dict:
+def _lesson_payload(order: str, slug: str) -> dict:
     return {
         "name": f"Lesson {order}",
         "order": order,
@@ -29,7 +29,7 @@ async def test_get_all_lessons_empty(client: httpx.AsyncClient) -> None:
 async def test_create_lesson_requires_auth(client: httpx.AsyncClient) -> None:
     response = await client.post(
         "/api/v1/lessons/create",
-        json=_lesson_payload(order=1, slug="lesson-1"),
+        json=_lesson_payload(order="1", slug="lesson-1"),
     )
 
     assert response.status_code == 401
@@ -41,7 +41,7 @@ async def test_create_lesson_forbidden_for_user(
 ) -> None:
     response = await client.post(
         "/api/v1/lessons/create",
-        json=_lesson_payload(order=1, slug="lesson-1"),
+        json=_lesson_payload(order="1", slug="lesson-1"),
         headers=user_headers,
     )
 
@@ -54,7 +54,7 @@ async def test_create_update_delete_lesson_admin(
 ) -> None:
     create_response = await client.post(
         "/api/v1/lessons/create",
-        json=_lesson_payload(order=1, slug="lesson-1"),
+        json=_lesson_payload(order="1", slug="lesson-1"),
         headers=admin_headers,
     )
 
@@ -63,12 +63,12 @@ async def test_create_update_delete_lesson_admin(
 
     update_response = await client.put(
         f"/api/v1/lessons/{lesson['id']}",
-        json=_lesson_payload(order=1, slug="lesson-1-updated"),
+        json=_lesson_payload(order="1.1", slug="lesson-1-updated"),
         headers=admin_headers,
     )
 
     assert update_response.status_code == 200
-    assert update_response.json()["order"] == 1
+    assert update_response.json()["order"] == "1.1"
 
     delete_response = await client.delete(
         f"/api/v1/lessons/{lesson['id']}",
@@ -90,7 +90,7 @@ async def test_create_lesson_rejects_duplicate_case_names(
         client: httpx.AsyncClient,
         admin_headers: dict[str, str],
 ) -> None:
-    payload = _lesson_payload(order=1, slug="lesson-dup-cases")
+    payload = _lesson_payload(order="1", slug="lesson-dup-cases")
     payload["cases"] = [
         {
             "name": "same_case",
@@ -119,7 +119,7 @@ async def test_create_lesson_rejects_blank_case_script(
         client: httpx.AsyncClient,
         admin_headers: dict[str, str],
 ) -> None:
-    payload = _lesson_payload(order=2, slug="lesson-blank-case")
+    payload = _lesson_payload(order="2", slug="lesson-blank-case")
     payload["cases"] = [
         {
             "name": "valid_name",

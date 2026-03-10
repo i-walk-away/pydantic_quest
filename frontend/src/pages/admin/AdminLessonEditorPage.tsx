@@ -45,17 +45,13 @@ export const AdminLessonEditorPage = (): ReactElement => {
   }, [lessons, lessonId, values.slug]);
 
   const orderError = useMemo(() => {
-    const order = values.order;
-    if (!Number.isFinite(order) || order < 1) {
-      return "Order must be at least 1.";
+    const order = values.order.trim();
+    if (!/^[1-9]\d*(\.[1-9]\d*)*$/.test(order)) {
+      return "Order must look like 1, 1.1, or 2.3.4.";
     }
     const otherOrders = lessons
       .filter((lesson) => lesson.id !== lessonId)
       .map((lesson) => lesson.order);
-    const maxOrder = otherOrders.length ? Math.max(...otherOrders) : 0;
-    if (order > maxOrder + 1) {
-      return `Order must be between 1 and ${maxOrder + 1}.`;
-    }
     if (otherOrders.includes(order)) {
       return "Order already in use.";
     }
@@ -183,10 +179,8 @@ export const AdminLessonEditorPage = (): ReactElement => {
           <label className="field">
             <span className="field__label">Order</span>
             <Input
-              type="number"
-              min={1}
               value={values.order}
-              onChange={(event) => updateField("order", Number(event.target.value))}
+              onChange={(event) => updateField("order", event.target.value)}
             />
             {orderError ? <div className="field__error">{orderError}</div> : null}
           </label>

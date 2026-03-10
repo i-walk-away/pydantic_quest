@@ -37,7 +37,7 @@ def test_execution_request_rejects_blank_code() -> None:
 def test_create_lesson_rejects_duplicate_case_names() -> None:
     with pytest.raises(ValidationError):
         CreateLessonDTO(
-            order=1,
+            order="1",
             slug="intro",
             name="Intro",
             body_markdown="body",
@@ -51,7 +51,20 @@ def test_create_lesson_rejects_duplicate_case_names() -> None:
 
 def test_update_lesson_rejects_non_positive_order() -> None:
     with pytest.raises(ValidationError):
-        UpdateLessonDTO(order=0)
+        UpdateLessonDTO(order="0")
+
+
+def test_create_lesson_accepts_hierarchical_order() -> None:
+    dto = CreateLessonDTO(
+        order="2.1",
+        slug="base-model",
+        name="BaseModel",
+        body_markdown="body",
+        code_editor_default="",
+        cases=[],
+    )
+
+    assert dto.order == "2.1"
 
 
 def test_github_email_requires_address_format() -> None:
