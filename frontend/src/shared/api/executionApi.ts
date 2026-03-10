@@ -1,8 +1,15 @@
 import { apiRequest } from "@shared/api/apiClient";
-import { type ExecutionResult } from "@shared/model/execution";
+import {
+  type CodeAnalysisResult,
+  type ExecutionResult,
+} from "@shared/model/execution";
 
 interface ExecutionRequest {
   lesson_id: string;
+  code: string;
+}
+
+interface CodeAnalysisRequest {
   code: string;
 }
 
@@ -14,5 +21,19 @@ export const runLessonCode = async (lessonId: string, code: string): Promise<Exe
       lesson_id: lessonId,
       code: code,
     } satisfies ExecutionRequest,
+  });
+};
+
+export const analyzeLessonCode = async (
+  code: string,
+  signal?: AbortSignal
+): Promise<CodeAnalysisResult> => {
+  return apiRequest<CodeAnalysisResult>({
+    path: "/api/v1/execute/analyze",
+    method: "POST",
+    signal: signal,
+    body: {
+      code: code,
+    } satisfies CodeAnalysisRequest,
   });
 };

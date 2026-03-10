@@ -3,12 +3,16 @@ import { Link, useLocation, useNavigate, useParams } from "react-router-dom";
 
 import logoUrl from "@shared/assets/logo.png";
 import { buildGithubLoginUrl, loginUser, signupUser } from "@shared/api/authApi";
-import { runLessonCode } from "@shared/api/executionApi";
+import { analyzeLessonCode, runLessonCode } from "@shared/api/executionApi";
 import { fetchLessons } from "@shared/api/lessonApi";
 import { fetchUserProgress } from "@shared/api/userApi";
 import { clearAuthToken, getAuthRole, getAuthUsername, setAuthToken } from "@shared/lib/auth";
 import { renderMarkdown } from "@shared/lib/markdown/renderMarkdown";
-import { type ExecutionResult } from "@shared/model/execution";
+import { useLatestRequest } from "@shared/lib/useLatestRequest";
+import {
+  type CodeAnalysisDiagnostic,
+  type ExecutionResult,
+} from "@shared/model/execution";
 import { type Lesson } from "@shared/model/lesson";
 import { Button } from "@shared/ui/Button";
 import { LazyCodeEditor } from "@shared/ui/LazyCodeEditor";
@@ -24,7 +28,7 @@ export const QuestPage = (): ReactElement => {
   const lessonBodyRef = useRef<HTMLDivElement | null>(null);
   const [isLessonListOpen, setIsLessonListOpen] = useState(false);
   const [isSampleCasesOpen, setIsSampleCasesOpen] = useState(false);
-  const [splitPercent, setSplitPercent] = useState(55);
+  const [splitPercent, setSplitPercent] = useState(47);
   const [isDragging, setIsDragging] = useState(false);
   const [authMode, setAuthMode] = useState<AuthMode>("login");
   const [isAuthOpen, setIsAuthOpen] = useState(false);
@@ -43,8 +47,13 @@ export const QuestPage = (): ReactElement => {
   const [runResult, setRunResult] = useState<ExecutionResult | null>(null);
   const [runError, setRunError] = useState<string | null>(null);
   const [isRunning, setIsRunning] = useState(false);
+  const [isStdoutOpen, setIsStdoutOpen] = useState(false);
+  const [analysisDiagnostics, setAnalysisDiagnostics] = useState<CodeAnalysisDiagnostic[]>([]);
+  const [analysisError, setAnalysisError] = useState<string | null>(null);
+  const [isAnalyzing, setIsAnalyzing] = useState(false);
+  const [isAnalysisOpen, setIsAnalysisOpen] = useState(false);
   const [lastRunLessonId, setLastRunLessonId] = useState<string | null>(null);
-  const [isTracebackCollapsed, setIsTracebackCollapsed] = useState(false);
+  const analysisRef = useRef<HTMLDivElement | null>(null);
   const [completedSlugs, setCompletedSlugs] = useState<string[]>(() => {
     if (getAuthUsername()) {
       return [];
@@ -77,6 +86,7 @@ export const QuestPage = (): ReactElement => {
     []
   );
   const [code, setCode] = useState(fallbackCode);
+  const { run: runAnalysisRequest, abort: abortAnalysisRequest } = useLatestRequest();
   const fallbackMarkdown = useMemo(
     () =>
       [
@@ -273,10 +283,93 @@ export const QuestPage = (): ReactElement => {
     setCode(defaultEditorCode);
     setRunResult(null);
     setRunError(null);
+    setAnalysisDiagnostics([]);
+    setAnalysisError(null);
+    setIsAnalyzing(false);
+    setIsAnalysisOpen(false);
     setIsSampleCasesOpen(false);
-    setIsTracebackCollapsed(false);
     setLastRunLessonId(null);
+    setIsStdoutOpen(false);
   }, [defaultEditorCode, activeLesson.id]);
+
+  useEffect(() => {
+    const trimmedCode = code.trim();
+
+    if (!trimmedCode) {
+      setAnalysisDiagnostics([]);
+      setAnalysisError(null);
+      setIsAnalyzing(false);
+      abortAnalysisRequest();
+      return;
+    }
+
+    const timer = window.setTimeout(() => {
+      setIsAnalyzing(true);
+      void runAnalysisRequest((signal) => analyzeLessonCode(code, signal))
+        .then((result) => {
+          if (!result) {
+            return;
+          }
+
+          setAnalysisDiagnostics(result.diagnostics);
+          setAnalysisError(null);
+        })
+        .catch((error: unknown) => {
+          const message =
+            error instanceof Error ? error.message : "Static analysis is unavailable.";
+
+          setAnalysisDiagnostics([]);
+          setAnalysisError(message);
+        })
+        .finally(() => {
+          setIsAnalyzing(false);
+        });
+    }, 1000);
+
+    return () => {
+      window.clearTimeout(timer);
+    };
+  }, [abortAnalysisRequest, code, runAnalysisRequest]);
+
+  useEffect(() => {
+    if (analysisDiagnostics.length > 0 || analysisError) {
+      return;
+    }
+
+    setIsAnalysisOpen(false);
+  }, [analysisDiagnostics.length, analysisError]);
+
+  useEffect(() => {
+    if (!isAnalysisOpen) {
+      return;
+    }
+
+    const handlePointerDown = (event: PointerEvent): void => {
+      if (!analysisRef.current) {
+        return;
+      }
+
+      if (analysisRef.current.contains(event.target as Node)) {
+        return;
+      }
+
+      setIsAnalysisOpen(false);
+    };
+
+    const handleKeyDown = (event: KeyboardEvent): void => {
+      if (event.key === "Escape") {
+        setIsAnalysisOpen(false);
+      }
+    };
+
+    document.addEventListener("pointerdown", handlePointerDown);
+    document.addEventListener("keydown", handleKeyDown);
+
+    return () => {
+      document.removeEventListener("pointerdown", handlePointerDown);
+      document.removeEventListener("keydown", handleKeyDown);
+    };
+  }, [isAnalysisOpen]);
 
   useEffect(() => {
     if (!isUserMenuOpen) {
@@ -411,7 +504,6 @@ export const QuestPage = (): ReactElement => {
     }
     setIsRunning(true);
     setRunError(null);
-    setIsTracebackCollapsed(false);
     setLastRunLessonId(activeLesson.id);
     try {
       const result = await runLessonCode(activeLesson.id, code);
@@ -456,6 +548,10 @@ export const QuestPage = (): ReactElement => {
     });
   }, [activeLesson.slug, runResult, currentUser, activeLesson.id, lastRunLessonId]);
 
+  useEffect(() => {
+    setIsStdoutOpen(false);
+  }, [runResult?.stdout, runResult?.status]);
+
   const runStatusLabel = useMemo(() => {
     if (isRunning) {
       return "running";
@@ -470,7 +566,7 @@ export const QuestPage = (): ReactElement => {
       return "passed";
     }
     if (runResult.status === "wrong_answer") {
-      return "failed";
+      return "some test cases failed";
     }
     if (runResult.status === "compile_error") {
       return "compile error";
@@ -488,11 +584,11 @@ export const QuestPage = (): ReactElement => {
     if (runResult?.status === "accepted") {
       return "status status--success";
     }
-    if (runResult?.status && runResult.status !== "wrong_answer") {
+    if (runError || runResult?.status) {
       return "status status--error";
     }
     return "status";
-  }, [runResult]);
+  }, [runError, runResult]);
 
   const executionHint = useMemo(() => {
     const stderr = runResult?.stderr?.trim();
@@ -502,6 +598,74 @@ export const QuestPage = (): ReactElement => {
     const firstLine = stderr.split("\n")[0]?.trim();
     return firstLine || stderr;
   }, [runResult?.stderr]);
+
+  const failedVisibleCases = useMemo(() => {
+    return (runResult?.cases ?? []).filter((item) => !item.ok);
+  }, [runResult?.cases]);
+
+  const passedVisibleCount = useMemo(() => {
+    return (runResult?.cases ?? []).filter((item) => item.ok).length;
+  }, [runResult?.cases]);
+
+  const executionSummary = useMemo(() => {
+    if (runError) {
+      return runError;
+    }
+
+    if (!runResult) {
+      return null;
+    }
+
+    if (runResult.status === "accepted") {
+      return `${passedVisibleCount} test case${passedVisibleCount === 1 ? "" : "s"} passed.`;
+    }
+
+    return "Execution failed.";
+  }, [failedVisibleCases.length, passedVisibleCount, runError, runResult]);
+
+  const analysisIndicator = useMemo(() => {
+    if (analysisError) {
+      return {
+        label: "!",
+        className: "analysis-indicator analysis-indicator--warning",
+        title: analysisError,
+      };
+    }
+
+    if (isAnalyzing) {
+      return {
+        label: "...",
+        className: "analysis-indicator",
+        title: "Static type checker is running.",
+      };
+    }
+
+    if (analysisDiagnostics.length === 0) {
+      return {
+        label: "✓",
+        className: "analysis-indicator analysis-indicator--ok",
+        title: "Static type checker found no errors in this code.",
+      };
+    }
+
+    const errorCount = analysisDiagnostics.filter((item) => item.severity === "error").length;
+    const warningCount = analysisDiagnostics.filter((item) => item.severity === "warning").length;
+    const parts: string[] = [];
+
+    if (errorCount > 0) {
+      parts.push(`${errorCount} error${errorCount === 1 ? "" : "s"}`);
+    }
+
+    if (warningCount > 0) {
+      parts.push(`${warningCount} warning${warningCount === 1 ? "" : "s"}`);
+    }
+
+    return {
+      label: "▲",
+      className: "analysis-indicator analysis-indicator--warning",
+      title: `Static type checker found ${parts.join(", ")}.`,
+    };
+  }, [analysisDiagnostics, analysisError, isAnalyzing]);
 
   useEffect(() => {
     if (!isSampleCasesOpen || !lessonBodyRef.current) {
@@ -689,19 +853,27 @@ export const QuestPage = (): ReactElement => {
                       type="button"
                       className="btn--compact btn--text"
                       disabled={isLessonListOpen}
+                      data-testid="test-cases-toggle"
                     >
-                      sample cases
+                      test cases
                     </Button>
                     {isSampleCasesOpen && (
                       <div className="lesson-samples__body">
+                        <p className="lesson-samples__intro">
+                          These are example test cases you can use as guidance while writing the
+                          solution. Hidden checks also run when you press run.
+                        </p>
                         {activeLesson.sampleCases.length === 0 ? (
-                          <div className="muted">No sample cases yet.</div>
+                          <div className="muted">No public test cases for this lesson yet.</div>
                         ) : (
                           <div className="lesson-samples__list">
                             {activeLesson.sampleCases.map((sampleCase, index) => (
                               <div key={sampleCase.name} className="lesson-samples__row">
                                 <span className="lesson-samples__index">{index + 1}</span>
-                                <span className="lesson-samples__label">{sampleCase.label}</span>
+                                <div className="lesson-samples__content">
+                                  <span className="lesson-samples__label">{sampleCase.label}</span>
+                                  <span className="lesson-samples__hint">Try to make this pass.</span>
+                                </div>
                               </div>
                             ))}
                           </div>
@@ -746,60 +918,133 @@ export const QuestPage = (): ReactElement => {
         <section className="panel panel--code">
           <div className="panel__header">
             <h2 className="panel__title">Code editor</h2>
-            <span className="panel__meta">python 3.12</span>
+            <div className="panel__meta-group" ref={analysisRef}>
+              <span className="panel__meta">python 3.12</span>
+              <button
+                type="button"
+                className={analysisIndicator.className}
+                title={analysisIndicator.title}
+                aria-label={analysisIndicator.title}
+                data-testid="analysis-indicator"
+                onClick={() => {
+                  if (analysisDiagnostics.length === 0 && !analysisError) {
+                    return;
+                  }
+
+                  setIsAnalysisOpen((prev) => !prev);
+                }}
+              >
+                {analysisIndicator.label}
+              </button>
+              {isAnalysisOpen && (analysisDiagnostics.length > 0 || analysisError) ? (
+                <div className="analysis-popover" data-testid="analysis-popover">
+                  {analysisError ? (
+                    <div className="analysis-banner">{analysisError}</div>
+                  ) : null}
+                  {analysisDiagnostics.length > 0 ? (
+                    <div className="analysis-list" data-testid="analysis-list">
+                      {analysisDiagnostics.slice(0, 5).map((item, index) => (
+                        <div
+                          key={`${item.line}:${item.column}:${item.name ?? "diagnostic"}:${index}`}
+                          className={
+                            item.severity === "error"
+                              ? "analysis-item analysis-item--error"
+                              : "analysis-item"
+                          }
+                        >
+                          <span className="analysis-item__location">
+                            L{item.line}:C{item.column}
+                          </span>
+                          <span className="analysis-item__message">{item.message}</span>
+                        </div>
+                      ))}
+                    </div>
+                  ) : null}
+                </div>
+              ) : null}
+            </div>
           </div>
 
           <div className="code-editor">
-            <LazyCodeEditor value={code} onChange={setCode} className="code-editor__surface" />
+            <LazyCodeEditor
+              value={code}
+              onChange={setCode}
+              diagnostics={analysisDiagnostics}
+              className="code-editor__surface"
+              ariaLabel="lesson code editor"
+            />
           </div>
 
           {(runResult || runError) ? (
-            <div className="execution-results">
+            <div className="execution-results" data-testid="execution-results">
               {runError ? <div className="execution-error">{runError}</div> : null}
-              {runResult?.cases.length ? (
+              {executionSummary && runResult?.status === "accepted" ? (
+                <div
+                  className="execution-summary execution-summary--success"
+                  data-testid="execution-summary"
+                >
+                  {executionSummary}
+                </div>
+              ) : null}
+              {runResult?.status === "wrong_answer" && failedVisibleCases.length > 0 ? (
                 <div className="execution-cases">
-                  {runResult.cases.map((caseResult) => (
+                  {failedVisibleCases.map((caseResult, index) => (
                     <div
-                      key={caseResult.name}
-                      className={
-                        caseResult.ok
-                          ? "execution-case execution-case--ok"
-                          : "execution-case execution-case--fail"
-                      }
+                      key={`${caseResult.name}:${index}`}
+                      className="execution-case execution-case--fail"
                     >
-                      <div className="execution-case__meta">
-                        <span className="execution-case__label">{caseResult.label}</span>
-                        <span className="execution-case__name">{caseResult.name}</span>
-                      </div>
-                      <span className="execution-case__status">
-                        {caseResult.ok ? "ok" : "fail"}
+                      <span className="execution-case__status">fix this</span>
+                      <span className="execution-case__reason">
+                        {caseResult.reason ?? caseResult.label}
                       </span>
-                      {caseResult.reason ? (
-                        <span className="execution-case__reason">{caseResult.reason}</span>
-                      ) : null}
                     </div>
                   ))}
                 </div>
               ) : null}
-              {runResult?.stderr ? (
+              {runResult?.status === "wrong_answer" &&
+              failedVisibleCases.length === 0 &&
+              passedVisibleCount > 0 ? (
+                <div className="execution-hint">
+                  Hidden checks still fail. Use the public test cases and static type diagnostics
+                  to narrow the problem down.
+                </div>
+              ) : null}
+              {runResult?.stdout && runResult.status === "accepted" ? (
                 <div className="execution-trace">
                   <button
                     type="button"
                     className="execution-trace__toggle"
-                    onClick={() => setIsTracebackCollapsed((prev) => !prev)}
+                    data-testid="stdout-toggle"
+                    onClick={() => setIsStdoutOpen((prev) => !prev)}
+                    aria-expanded={isStdoutOpen}
                   >
-                    {isTracebackCollapsed ? "show traceback" : "hide traceback"}
+                    <span className="execution-trace__chevron" aria-hidden="true">
+                      {isStdoutOpen ? "−" : "+"}
+                    </span>
+                    <span className="execution-trace__label">show terminal output</span>
                   </button>
-                  {!isTracebackCollapsed ? (
-                    <pre className="execution-output">{runResult.stderr}</pre>
+                  {isStdoutOpen ? (
+                    <pre className="execution-output" data-testid="stdout-output">
+                      {runResult.stdout}
+                    </pre>
                   ) : null}
                 </div>
               ) : null}
-              {runResult?.status === "runtime_error" ? (
-                <div className="execution-hint">{executionHint ?? "Check syntax and imports in your code."}</div>
+              {runResult?.stderr ? (
+                <div className="execution-trace" data-testid="execution-trace">
+                  <div className="execution-trace__label">traceback</div>
+                  <pre className="execution-output">{runResult.stderr}</pre>
+                </div>
               ) : null}
-              {runResult?.status === "compile_error" ? (
-                <div className="execution-hint">{executionHint ?? "Check syntax errors in your code."}</div>
+              {runResult?.status === "runtime_error" && !runResult.stderr ? (
+                <div className="execution-hint">
+                  {executionHint ?? "Check syntax and imports in your code."}
+                </div>
+              ) : null}
+              {runResult?.status === "compile_error" && !runResult.stderr ? (
+                <div className="execution-hint">
+                  {executionHint ?? "Check syntax errors in your code."}
+                </div>
               ) : null}
             </div>
           ) : null}
@@ -823,6 +1068,7 @@ export const QuestPage = (): ReactElement => {
               className="btn--text btn--text-accent"
               onClick={handleRun}
               disabled={isRunning}
+              data-testid="run-button"
             >
               run
             </Button>
