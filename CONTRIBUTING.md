@@ -38,7 +38,7 @@ Change the `title` field to the title of your lesson.
 
 ### 2. `theory.md`
 
-The contents of this file is the lesson *body*: what the user sees on the
+The contents of this file is the lesson *body:* what the user sees on the
 left side of the screen when your lesson is selected.
 Populate it with theoretical information and an assignment.
 Refer to `theory.md` file of the `lesson-template` lesson to see available
