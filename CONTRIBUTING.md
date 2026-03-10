@@ -50,7 +50,7 @@ and general recommendations on designing a good lesson body.
 The contents of this python script is what will be displayed to the user in the code editor
 by default in your lesson.
 The user will then build upon your starter script in order to complete the assignment.
-Refer to [lessons/lesson-template/starter.py](lessons/lesson-template/starter.py) for more insight.
+Refer to [lessons/lesson-template/starter.py](lessons/lesson-template/starter.py) for better insight.
 
 ### 4. `cases.yaml`
 
