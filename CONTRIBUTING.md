@@ -9,10 +9,10 @@ If you want to add a new lesson to pydantic quest, do this:
 1. Create a new folder in [lessons/](lessons/)
 2. Populate the folder with 4 neccessary files. You can copy them from
    [lessons/lesson-template/](lessons/lesson-template/):
-    * lesson.yaml
-    * theory.md
-    * starter.py
-    * cases.yaml
+    * `lesson.yaml`
+    * `theory.md`
+    * `starter.py`
+    * `cases.yaml`
 3. Head to [lessons/index.yaml](lessons/index.yaml) and add the following:
 
 ```yaml
