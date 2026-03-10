@@ -21,16 +21,19 @@ async def run_sync() -> dict[str, int | bool]:
     """
     async with session_factory() as session:
         repository = LessonRepository(session=session)
+
         loader = LessonsLoader(
             root_dir=Path(settings.lessons_dir),
             validator=LessonsContentValidator(),
         )
+
         service = LessonSyncService(
             loader=loader,
             lesson_repository=repository,
             diff_builder=LessonSyncDiffBuilder(),
             importer=LessonSyncImporter(lesson_repository=repository),
         )
+
         result = await service.sync(delete_missing=True)
 
         return result.model_dump()
