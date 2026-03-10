@@ -27,7 +27,7 @@ class ExecutionServiceUnavailable(HTTPException):
     status_code = 503
     detail = "Code execution service unavailable."
 
-    def __init__(self) -> None:
+    def __init__(self, detail: str | None = None) -> None:
         """
         Initialize execution service unavailable error.
 
@@ -35,7 +35,7 @@ class ExecutionServiceUnavailable(HTTPException):
         """
         super().__init__(
             status_code=self.status_code,
-            detail=self.detail,
+            detail=detail or self.detail,
         )
 
 

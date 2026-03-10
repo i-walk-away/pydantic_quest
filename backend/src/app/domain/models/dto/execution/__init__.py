@@ -1,3 +1,10 @@
+from src.app.domain.models.dto.execution.code_analysis_diagnostic import (
+    CodeAnalysisDiagnosticDTO,
+)
+from src.app.domain.models.dto.execution.code_analysis_request import (
+    CodeAnalysisRequestDTO,
+)
+from src.app.domain.models.dto.execution.code_analysis_result import CodeAnalysisResultDTO
 from src.app.domain.models.dto.execution.evaluator_output import (
     EvaluatorCaseOutputDTO,
     EvaluatorOutputDTO,
@@ -11,6 +18,9 @@ from src.app.domain.models.dto.execution.runner_result import (
 )
 
 __all__ = [
+    "CodeAnalysisDiagnosticDTO",
+    "CodeAnalysisRequestDTO",
+    "CodeAnalysisResultDTO",
     "EvaluatorCaseOutputDTO",
     "EvaluatorOutputDTO",
     "ExecutionCaseDTO",

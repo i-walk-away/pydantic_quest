@@ -8,11 +8,11 @@ from src.app.domain.services.piston_service import PistonService
 
 
 class FakeResponse:
-    def __init__(self, status_code: int, payload: dict | None = None) -> None:
+    def __init__(self, status_code: int, payload: dict | list[dict] | None = None) -> None:
         self.status_code = status_code
         self._payload = payload
 
-    def json(self) -> dict:
+    def json(self) -> dict | list[dict]:
         if self._payload is None:
             message = "invalid json"
             raise ValueError(message)
@@ -88,7 +88,10 @@ class RecorderClient:
 
 
 async def test_piston_service_execute_success(monkeypatch: pytest.MonkeyPatch) -> None:
-    response = FakeResponse(status_code=200, payload={"run": {"stdout": "{}", "stderr": "", "code": 0}})
+    response = FakeResponse(
+        status_code=200,
+        payload={"run": {"stdout": "{}", "stderr": "", "code": 0, "signal": None, "time": 0.1}},
+    )
     monkeypatch.setattr("src.app.domain.services.piston_service.httpx.AsyncClient", lambda **_: FakeClient(response))
 
     service = PistonService()
@@ -99,7 +102,7 @@ async def test_piston_service_execute_success(monkeypatch: pytest.MonkeyPatch) -
 
 
 async def test_piston_service_execute_invalid_output(monkeypatch: pytest.MonkeyPatch) -> None:
-    response = FakeResponse(status_code=200, payload=None)
+    response = FakeResponse(status_code=200, payload={"stdout": "{}"})
     monkeypatch.setattr("src.app.domain.services.piston_service.httpx.AsyncClient", lambda **_: FakeClient(response))
 
     service = PistonService()
@@ -116,10 +119,32 @@ async def test_piston_service_execute_service_unavailable(monkeypatch: pytest.Mo
         await service.execute(source_code="print('ok')")
 
 
+async def test_piston_service_compile_error(monkeypatch: pytest.MonkeyPatch) -> None:
+    response = FakeResponse(
+        status_code=200,
+        payload={
+            "compile": {
+                "stdout": "",
+                "stderr": "compile failed",
+                "code": 1,
+                "signal": None,
+                "time": 0.1,
+            },
+        },
+    )
+    monkeypatch.setattr("src.app.domain.services.piston_service.httpx.AsyncClient", lambda **_: FakeClient(response))
+
+    service = PistonService()
+    result = await service.execute(source_code="print('ok')")
+
+    assert result.compile is not None
+    assert result.compile.status == "SG"
+
+
 async def test_piston_service_retries_request_errors(monkeypatch: pytest.MonkeyPatch) -> None:
     success_response = FakeResponse(
         status_code=200,
-        payload={"run": {"stdout": "{}", "stderr": "", "code": 0}},
+        payload={"run": {"stdout": "{}", "stderr": "", "code": 0, "signal": None, "time": 0.1}},
     )
     recorder = Recorder(
         post_effects=[httpx.RequestError("boom"), success_response],
@@ -145,7 +170,7 @@ async def test_piston_service_retries_request_errors(monkeypatch: pytest.MonkeyP
 async def test_piston_service_health_check_uses_ttl_cache(monkeypatch: pytest.MonkeyPatch) -> None:
     success_response = FakeResponse(
         status_code=200,
-        payload={"run": {"stdout": "{}", "stderr": "", "code": 0}},
+        payload={"run": {"stdout": "{}", "stderr": "", "code": 0, "signal": None, "time": 0.1}},
     )
     recorder = Recorder(
         post_effects=[success_response, success_response],

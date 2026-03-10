@@ -4,11 +4,13 @@ import httpx
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from main import app
+from src.app.core.dependencies.services.code_analysis import get_code_analysis_service
 from src.app.core.dependencies.services.execution_rate_limiter import (
     get_execution_rate_limiter,
 )
 from src.app.core.dependencies.services.piston import get_piston_service
 from src.app.domain.models.db.lesson import Lesson
+from src.app.domain.models.dto.execution.code_analysis_result import CodeAnalysisResultDTO
 from src.app.domain.models.dto.execution.runner_result import RunnerExecutionResultDTO
 from src.app.domain.services.execution_rate_limiter import ExecutionRateLimiter
 
@@ -150,6 +152,28 @@ class FakePistonServiceCompileError:
         )
 
 
+class FakeCodeAnalysisService:
+    @staticmethod
+    async def analyze(*, code: str) -> CodeAnalysisResultDTO:
+        _ = code
+
+        return CodeAnalysisResultDTO.model_validate(
+            {
+                "diagnostics": [
+                    {
+                        "line": 1,
+                        "column": 10,
+                        "stop_line": 1,
+                        "stop_column": 13,
+                        "severity": "error",
+                        "message": "`str` is not assignable to `int`",
+                        "name": "bad-assignment",
+                    },
+                ],
+            },
+        )
+
+
 async def test_execution_run_success(
         client: httpx.AsyncClient,
         db_session: AsyncSession,
@@ -179,6 +203,22 @@ async def test_execution_run_success(
     assert len(data["cases"]) == 2
 
     app.dependency_overrides.pop(get_piston_service, None)
+
+
+async def test_execution_analyze_success(client: httpx.AsyncClient) -> None:
+    app.dependency_overrides[get_code_analysis_service] = FakeCodeAnalysisService
+
+    response = await client.post(
+        "/api/v1/execute/analyze",
+        json={"code": 'age: int = "18"'},
+    )
+
+    assert response.status_code == 200
+    data = response.json()
+    assert len(data["diagnostics"]) == 1
+    assert data["diagnostics"][0]["severity"] == "error"
+
+    app.dependency_overrides.pop(get_code_analysis_service, None)
 
 
 async def test_execution_invalid_output_returns_runtime_error(

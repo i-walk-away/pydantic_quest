@@ -68,11 +68,14 @@ jobs:
       GITHUB_EMAILS_URL: https://api.github.com/user/emails
       PISTON_URL: http://piston:2000
       PISTON_LANGUAGE: python
-      PISTON_VERSION: 3.12
+      PISTON_VERSION: 3.12.0
+      PISTON_DISABLE_NETWORKING: true
       PISTON_RUN_TIMEOUT_MS: 10000
       PISTON_COMPILE_TIMEOUT_MS: 10000
       PISTON_RUN_MEMORY_LIMIT_BYTES: 134217728
       PISTON_COMPILE_MEMORY_LIMIT_BYTES: 134217728
+      PISTON_OUTPUT_MAX_SIZE: 16000
+      PISTON_MAX_FILE_SIZE: 200000
       EXECUTION_MAX_OUTPUT_CHARS: 16000
       EXECUTION_MAX_USER_CODE_CHARS: 20000
       EXECUTION_MAX_EVAL_SCRIPT_CHARS: 60000
@@ -98,3 +101,33 @@ jobs:
 
       - name: Run tests
         run: uv run pytest
+
+  frontend-e2e:
+    runs-on: ubuntu-latest
+    needs:
+      - approval
+    if: |
+      always() &&
+      (github.event_name != 'pull_request' || needs.approval.result == 'success')
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+          cache-dependency-path: frontend/package-lock.json
+
+      - name: Install frontend dependencies
+        run: npm ci
+        working-directory: frontend
+
+      - name: Install Playwright browser
+        run: npx playwright install --with-deps chromium
+        working-directory: frontend
+
+      - name: Run frontend smoke e2e
+        run: npm run test:e2e
+        working-directory: frontend
