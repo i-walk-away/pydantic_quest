@@ -17,7 +17,7 @@ If you want to add a new lesson to pydantic quest, do this:
 
 ```yaml
   - slug: dash-separated-lesson-name
-    order: "<order-path>"
+    order: <order>
     no_code: false   # or `true` if there is no assignment intended for the lesson
 ```
 
@@ -26,7 +26,8 @@ For example, this:
 
 ```yaml
   - slug: field-validators
-    order: "1.1"
+    order: 1.1
+    no_code: false
 ```
 
 must correspond to this directory:
@@ -36,21 +37,31 @@ lessons/field-validators/
 ```
 
 The `order` field controls lesson position in the UI and now supports
-hierarchical numbering.
+hierarchical numbering. 
+Lesson `4.1` will be a child of lesson `4`. The UI will represent that. 
 
 Valid examples:
 
 ```yaml
   - slug: validators
-    order: "1"
+    order: 1
+    no_code: true
+
   - slug: field-validators
-    order: "1.1"
+    order: 1.1
+    no_code: false
+
   - slug: model-validators
-    order: "1.2"
+    order: 1.2
+    no_code: false
+
   - slug: models
-    order: "2"
+    order: 2
+    no_code: true
+
   - slug: basemodel
-    order: "2.1"
+    order: 2.1
+    no_code: false
 ```
 
 Rules:
