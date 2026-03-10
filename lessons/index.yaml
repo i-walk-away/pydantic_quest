@@ -1,5 +1,7 @@
 lessons:
-  - slug: intro-model
+  - slug: introduction
     order: 1
-  - slug: lesson-template
+  - slug: intro-model
     order: 2
+  - slug: lesson-template
+    order: 2.1

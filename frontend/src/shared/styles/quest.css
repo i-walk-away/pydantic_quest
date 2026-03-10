@@ -240,11 +240,11 @@
 .lesson-list__row {
   --lesson-depth: 0;
   display: grid;
-  grid-template-columns: 26px 1fr 18px;
+  grid-template-columns: max-content 1fr 18px;
   gap: 10px;
   align-items: center;
   min-height: 32px;
-  padding: 6px 10px 6px calc(8px + (var(--lesson-depth) * 20px));
+  padding: 6px 10px 6px calc(8px + (var(--lesson-depth) * 24px));
   border-radius: 4px;
   background: transparent;
   color: var(--text-muted);
@@ -281,6 +281,8 @@
   color: var(--md-typeset-a-color);
   text-align: right;
   font-family: "IBM Plex Mono", monospace;
+  white-space: nowrap;
+  min-width: 0;
 }
 
 .lesson-list__title {
@@ -392,10 +394,20 @@
 }
 
 .quest-scene .btn--text::before {
-  content: "›";
+  content: ">";
   color: var(--md-typeset-a-color);
   margin-right: 6px;
-  font-size: 0.85rem;
+  font-size: 0.9rem;
+  font-weight: 400;
+  display: inline-block;
+}
+
+.quest-scene .btn--text-nav-prev::before {
+  transform: rotate(180deg);
+}
+
+.quest-scene .btn--text-nav-next::before {
+  transform: none;
 }
 
 .quest-scene .btn--text:hover:not(:disabled) {

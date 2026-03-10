@@ -8,6 +8,7 @@ from src.app.domain.models.dto.lesson.case import LessonCaseDTO
 class CreateLessonDTO(ExtendedBaseModel):
     name: str
     order: str
+    no_code: bool = False
     slug: str
     body_markdown: str = Field(default="body")
     code_editor_default: str = Field(default="")

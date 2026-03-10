@@ -87,6 +87,7 @@ class LessonSyncDiffBuilder:
 
         return (
                 existing.order == payload.order
+                and existing.no_code == payload.no_code
                 and existing.name == payload.name
                 and existing.body_markdown == payload.body_markdown
                 and existing.code_editor_default == payload.code_editor_default

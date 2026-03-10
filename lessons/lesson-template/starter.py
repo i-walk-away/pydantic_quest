@@ -4,7 +4,6 @@ from pydantic import BaseModel
 class UserProfile(BaseModel):
     pass
 
-
 # INFORMATION FOR CONTRIBUTORS
 
 # this script is what will be displayed
@@ -33,4 +32,3 @@ class UserProfile(BaseModel):
 # if you think it does not meet the recommendations provided
 # in this commented block. i am happy to help making it better :)
 # delete this commented block in your lesson starter.
-

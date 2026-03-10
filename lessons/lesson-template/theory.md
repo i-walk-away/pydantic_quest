@@ -1,21 +1,45 @@
+Lesson body template
+
+## How to write a good lesson body
+
+The first lesson in the topic should be a general explanation of the concept. For example:
+
+```
+1. Validators           <--- if you are creating this (first lesson in the topic)
+  1.1. Field validators
+  1.2. Model validators
+```
+
+The lesson body for the main lesson in the topic should define and explain the general idea
+behind the concept in question.
+
+Like this:
+
+"Validators are used for validating data. The rest of the body will explain the general idea
+behind pydantic's validators. There are field validators, model validators and a bunch
+of other things. There will be headers like 'Why use them', 'Examples' without dwelling too
+much into details and so on."
+
+---
+
 ## Markdown formatting showcase
 
-Regular paragraph text should explain intent first, then constraints.
+Regular paragraph text. I will now populate this paragraph with a bunch of words.
+I can't think of anything else to write. I hope you like my website.
 
 ### Emphasis
 
-- **bold** for critical constraints
-- *italic* for nuance
+- To emphasise on a certain word, prefer *italic* over **bold**, as it is a bit nicer for the eye
 - `inline code` for symbols, field names, and function calls
 
 ### Lists
 
-1. use numbered lists for step-by-step tasks
-2. keep each item short and explicit
-3. include acceptance criteria in plain language
+1. numeric list
+2. oi mate pretty rad list innit
+3. thank you!
 
-- use bullet lists for examples and notes
-- keep one idea per bullet
+* bullet lists are not indented for some reason
+* le cats are truly a gift to our wicked world
 
 ### Code blocks
 
@@ -39,57 +63,20 @@ class UserProfile(BaseModel):
 
 ### Expected output block
 
-This block has cool custom rendering in the ui. Use it to define the expected output:
+This block has cool custom rendering in the ui.
+It's unlikely you will ever need it, but it exists
 
 ```expected_output
 ValidationError: username must not be empty
 ```
 
-### Blockquote
-
-> Use blockquotes for hints, warnings, or notes.
-
 ### Horizontal rule
 
 ---
 
-## Lesson order in `lessons/index.yaml`
+### Blockquote
 
-The lesson list supports hierarchical numbering.
+> "Blockquotes", - (c) Robert J. Oppenheimer
 
-Use an `order` path like:
 
-```yaml
-lessons:
-  - slug: validators
-    order: "1"
-  - slug: field-validators
-    order: "1.1"
-  - slug: model-validators
-    order: "1.2"
-  - slug: models
-    order: "2"
-```
 
-Rules:
-
-- each segment must be a positive integer
-- use dots for nesting
-- every order must be unique
-- quote dotted values like `"1.1"` in YAML
-
-Sorting is numeric by segment, so `1.10` comes after `1.2`, not before it.
-
----
-
-## How to write a good lesson
-
-### 1) Define one learning objective
-
-Good:
-
-- "Use `field_validator` to reject blank strings."
-
-Too broad:
-
-- "Learn Pydantic validators."

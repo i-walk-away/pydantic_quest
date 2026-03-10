@@ -249,6 +249,34 @@ async def test_execution_invalid_output_returns_runtime_error(
     app.dependency_overrides.pop(get_piston_service, None)
 
 
+async def test_execution_no_code_lesson_rejects_run(
+        client: httpx.AsyncClient,
+        db_session: AsyncSession,
+) -> None:
+    lesson = Lesson(
+        order="4",
+        no_code=True,
+        slug="lesson-4",
+        name="Lesson 4",
+        body_markdown="body",
+        code_editor_default="",
+        cases=[],
+    )
+    db_session.add(lesson)
+    await db_session.commit()
+    await db_session.refresh(lesson)
+
+    response = await client.post(
+        "/api/v1/execute/run",
+        json={"lesson_id": str(lesson.id), "code": "print('hello')"},
+    )
+
+    assert response.status_code == 200
+    data = response.json()
+    assert data["status"] == "runtime_error"
+    assert data["stderr"] == "This lesson does not have a coding task."
+
+
 async def test_execution_rate_limit(
         client: httpx.AsyncClient,
         db_session: AsyncSession,

@@ -5,6 +5,7 @@ const lessonPayload = [
     id: "lesson-1",
     slug: "intro",
     name: "Intro lesson",
+    no_code: false,
     body_markdown: "# Intro lesson\n\nDefine a valid `User` model.",
     code_editor_default:
       'from pydantic import BaseModel\n\nclass User(BaseModel):\n    name: str\n    age: int\n',
@@ -208,4 +209,63 @@ test("code runner shows runtime traceback details", async ({ page }) => {
   await expect(page.getByTestId("execution-trace")).toBeVisible();
   await expect(page.getByText("RuntimeError: boom")).toBeVisible();
   await expect(page.locator(".status__label")).toHaveText("runtime error");
+});
+
+test("reset clears execution state and traceback", async ({ page }) => {
+  await mockLessons(page);
+  await mockAnalysis(page);
+
+  await page.route("**/api/v1/execute/run", async (route) => {
+    await route.fulfill({
+      status: 200,
+      contentType: "application/json",
+      body: JSON.stringify({
+        status: "runtime_error",
+        cases: [],
+        stderr:
+          'Traceback (most recent call last):\n  File "main.py", line 4, in <module>\n    raise RuntimeError("boom")\nRuntimeError: boom\n',
+        stdout: null,
+        duration_ms: 9,
+      }),
+    });
+  });
+
+  await page.goto("/");
+  await page.getByTestId("run-button").click();
+
+  await expect(page.getByTestId("execution-trace")).toBeVisible();
+  await expect(page.locator(".status__label")).toHaveText("runtime error");
+
+  await page.getByRole("button", { name: "reset" }).click();
+
+  await expect(page.getByTestId("execution-results")).toHaveCount(0);
+  await expect(page.locator(".status__label")).toHaveText("idle");
+});
+
+test("no-code lesson disables run button", async ({ page }) => {
+  await page.route("**/api/v1/lessons/get_all", async (route) => {
+    await route.fulfill({
+      status: 200,
+      contentType: "application/json",
+      body: JSON.stringify([
+        {
+          ...lessonPayload[0],
+          id: "lesson-2",
+          slug: "theory-only",
+          name: "Theory only lesson",
+          no_code: true,
+          cases: [],
+          sample_cases: [],
+        },
+      ]),
+    });
+  });
+  await mockAnalysis(page);
+
+  await page.goto("/");
+
+  await expect(
+    page.locator(".panel--lesson").getByRole("heading", { name: "Theory only lesson" }).first()
+  ).toBeVisible();
+  await expect(page.getByTestId("run-button")).toBeDisabled();
 });

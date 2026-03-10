@@ -12,6 +12,7 @@ from src.app.domain.models.dto.lesson.sample_case import LessonSampleCaseDTO
 class LessonDTO(ExtendedBaseModel):
     id: UUID
     order: str
+    no_code: bool = False
     slug: str
     name: str
     body_markdown: str

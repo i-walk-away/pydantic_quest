@@ -12,12 +12,27 @@ If you want to add a new lesson to pydantic quest, do this:
     * `lesson.yaml`
     * `theory.md`
     * `starter.py`
-    * `cases.yaml`
+    * `cases.yaml` -- *note: for theory-only lessons with no coding assignment, `cases.yaml` is not required*
 3. Head to [lessons/index.yaml](lessons/index.yaml) and add the following:
 
 ```yaml
   - slug: dash-separated-lesson-name
     order: "<order-path>"
+    no_code: false   # or `true` if there is no assignment intended for the lesson
+```
+
+The `slug` must exactly match the lesson directory name in [lessons/](lessons/).
+For example, this:
+
+```yaml
+  - slug: field-validators
+    order: "1.1"
+```
+
+must correspond to this directory:
+
+```text
+lessons/field-validators/
 ```
 
 The `order` field controls lesson position in the UI and now supports
@@ -41,11 +56,9 @@ Valid examples:
 Rules:
 
 - use positive numeric segments separated by dots
-- good: `"1"`, `"1.1"`, `"2.3.4"`
-- bad: `"0"`, `"01"`, `"1.0"`, `"1..2"`, `"1.a"`
-- every order must be unique
-- quote dotted values in YAML, for example `"1.1"`, even though the loader will
-  normalize unquoted numeric values too
+- like this: `"1"`, `"1.1"`, `"2.3.4"`
+- every order value must be unique
+- set `no_code: true` for theory-only lessons with no coding task
 
 Sorting is numeric by segment, so lessons appear like:
 
@@ -55,7 +68,7 @@ Sorting is numeric by segment, so lessons appear like:
 - `2`
 
 If you're not sure where a lesson should go, just add it near the right section
-and I can reorder things later.
+and i can reorder things myself later :)
 
 ## Explanation of the 4 neccessary files
 
@@ -91,11 +104,13 @@ Test cases for your lesson. Just refer to [`lessons/lesson-template/cases.yaml`]
 You can find
 a *lot* of information there about how it works and how exactly to design your own test cases.
 Please inform me if it is still not very clear.
+If the lesson is marked `no_code: true`, this file is optional and the `run` button will be disabled in the UI.
 
 ## Contributor checklist
 
 Before opening a PR:
 
-1. verify `lesson.yaml`, `theory.md`, `starter.py`, and `cases.yaml` exist in your new lesson folder
+1. verify `lesson.yaml`, `theory.md`, and `starter.py` exist in your new lesson folder. `cases.yaml` is not required for
+   purely theoretical lessons
 2. verify lesson slug is added to [lessons/index.yaml](lessons/index.yaml)
 3. confirm each visible case has clear `label` and useful `reason`

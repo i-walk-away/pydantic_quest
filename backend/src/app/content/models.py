@@ -13,6 +13,7 @@ class LessonIndexItem(ExtendedBaseModel):
 
     slug: str
     order: str
+    no_code: bool = False
 
     @field_validator("slug")
     @classmethod
@@ -102,6 +103,7 @@ class LoadedLesson(ExtendedBaseModel):
 
     slug: str
     order: str
+    no_code: bool = False
     name: str
     body_markdown: str
     code_editor_default: str

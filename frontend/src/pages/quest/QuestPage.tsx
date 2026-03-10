@@ -126,6 +126,7 @@ export const QuestPage = (): ReactElement => {
       createdAt: new Date(0),
       updatedAt: null,
       order: "1",
+      noCode: false,
     }),
     [fallbackCode, fallbackMarkdown]
   );
@@ -149,6 +150,7 @@ export const QuestPage = (): ReactElement => {
     [activeLesson.bodyMarkdown]
   );
   const lessonLabel = `lesson ${activeLesson.order}`;
+  const isNoCodeLesson = activeLesson.noCode;
   const activeLessonIndex = lessons.findIndex((lesson) => lesson.id === activeLesson.id);
   const isAtFirstLesson = lessons.length > 0 && activeLessonIndex <= 0;
   const isAtLastLesson = lessons.length > 0 && activeLessonIndex >= lessons.length - 1;
@@ -514,6 +516,14 @@ export const QuestPage = (): ReactElement => {
     } finally {
       setIsRunning(false);
     }
+  };
+
+  const handleReset = (): void => {
+    setCode(defaultEditorCode);
+    setRunResult(null);
+    setRunError(null);
+    setLastRunLessonId(null);
+    setIsStdoutOpen(false);
   };
 
   useEffect(() => {
@@ -895,7 +905,7 @@ export const QuestPage = (): ReactElement => {
             <Button
               variant="ghost"
               type="button"
-              className="btn--compact btn--text"
+              className="btn--compact btn--text btn--text-nav-prev"
               onClick={handlePreviousLesson}
               disabled={lessons.length === 0 || isAtFirstLesson}
             >
@@ -904,7 +914,7 @@ export const QuestPage = (): ReactElement => {
             <Button
               variant="ghost"
               type="button"
-              className="push-right btn--compact btn--text"
+              className="push-right btn--compact btn--text btn--text-nav-next"
               onClick={handleNextLesson}
               disabled={lessons.length === 0 || isAtLastLesson}
             >
@@ -1063,7 +1073,7 @@ export const QuestPage = (): ReactElement => {
               variant="ghost"
               type="button"
               className="push-right btn--text btn--text-accent"
-              onClick={() => setCode(defaultEditorCode)}
+              onClick={handleReset}
             >
               reset
             </Button>
@@ -1072,8 +1082,9 @@ export const QuestPage = (): ReactElement => {
               type="button"
               className="btn--text btn--text-accent"
               onClick={handleRun}
-              disabled={isRunning}
+              disabled={isRunning || isNoCodeLesson}
               data-testid="run-button"
+              title={isNoCodeLesson ? "This lesson does not have a coding task." : undefined}
             >
               run
             </Button>

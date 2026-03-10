@@ -48,13 +48,14 @@ class LessonsLoader:
         for index_item in index_file.lessons:
             lesson_dir = self.root_dir / index_item.slug
             lesson_meta = self._load_meta(lesson_dir=lesson_dir)
-            lesson_cases = self._load_cases(lesson_dir=lesson_dir)
+            lesson_cases = self._load_cases(lesson_dir=lesson_dir, no_code=index_item.no_code)
             theory = self._read_text(path=lesson_dir / LESSON_THEORY_FILENAME)
             starter_code = self._read_text(path=lesson_dir / LESSON_STARTER_FILENAME)
             lessons.append(
                 LoadedLesson(
                     slug=index_item.slug,
                     order=index_item.order,
+                    no_code=index_item.no_code,
                     name=lesson_meta.title,
                     body_markdown=theory,
                     code_editor_default=starter_code,
@@ -79,15 +80,21 @@ class LessonsLoader:
 
         return LessonMetaFile.model_validate(obj=payload)
 
-    def _load_cases(self, lesson_dir: Path) -> LessonCasesFile:
+    def _load_cases(self, lesson_dir: Path, *, no_code: bool) -> LessonCasesFile:
         """
         Load lesson cases file.
 
         :param lesson_dir: lesson directory path
+        :param no_code: lesson has no coding task
 
         :return: lesson cases
         """
-        payload = self._read_yaml(path=lesson_dir / LESSON_CASES_FILENAME)
+        cases_path = lesson_dir / LESSON_CASES_FILENAME
+
+        if no_code and not cases_path.exists():
+            return LessonCasesFile(cases=[])
+
+        payload = self._read_yaml(path=cases_path)
 
         return LessonCasesFile.model_validate(obj=payload)
 

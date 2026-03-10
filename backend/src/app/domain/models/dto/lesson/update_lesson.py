@@ -9,6 +9,7 @@ from src.app.domain.models.dto.lesson.case import LessonCaseDTO
 
 class UpdateLessonDTO(ExtendedBaseModel):
     order: str | None = None
+    no_code: bool | None = None
     slug: str | None = None
     name: str | None = None
     body_markdown: str | None = None
