@@ -1,5 +1,3 @@
-# Intro: BaseModel and validation
-
 Create a `User` model with fields:
 
 - name: `str`

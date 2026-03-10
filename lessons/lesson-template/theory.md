@@ -1,20 +1,63 @@
-# Lesson Authoring Template
+# Contributing
 
-This lesson exists as a **reference template** for contributors.
+Table of contents!
 
-Use it to copy structure, formatting, and test-case style when creating new lessons.
+## Adding new lessons to pydantic quest
 
-## Fast start (5 minutes)
+If you want to add a new lesson to pydantic quest, do this:
 
-If you are adding a lesson for the first time, do this:
+1. Create a new folder in `/lessons/`
+2. Populate the folder with 4 neccessary files (just copy and paste them from `lesson-template` lesson):
+    * lesson.yaml
+    * theory.md
+    * starter.py
+    * cases.yaml
+3. Head to `lessons/index.yaml` and add the following:
 
-1. copy `lessons/lesson-template` to `lessons/<your-slug>`
-2. update `title` in `lesson.yaml`
-3. add your lesson in `lessons/index.yaml` with the next `order`
-4. replace theory/starter/cases content
-5. run lessons sync and open the lesson in UI
+```yaml
+  - slug: dash-separated-lesson-name
+    order: <integer>
+```
 
-If all visible cases show up and run correctly, your lesson is wired properly.
+The "order" field changes the order in which lessons appear in pydantic quest.
+If you're not sure, just use whatever highest order already exists in index and
+add +1 to it. I will reorder everything myself if needed :)
+
+## Explanation of the 4 neccessary files
+
+### 1. `lesson.yaml`
+
+This file currently only defines the name of the lesson. The file has the following structure:
+
+```yaml
+title: "Your lesson title goes here"
+```
+
+Change the `title` field to the title of your lesson.
+
+### 2. `theory.md`
+
+The contents of this file is the lesson *body*: what the user sees on the
+left side of the screen when your lesson is selected.
+Populate it with theoretical information and an assignment.
+Refer to `theory.md` file of the `lesson-template` lesson to see available
+custom formatting (on top of existing Markdown formatting)
+and general recommendations on designing a good lesson body.
+
+### 3. `starter.py`
+
+The contents of this python script is what will be displayed to the user in the code editor
+by default in your lesson.
+The user will then build upon your starter script in order to complete the assignment.
+Refer to `starter.py` of `lesson-template` for more better insight.
+
+### 4. `cases.yaml`
+
+Test cases for your lesson. Just refer to the `cases.yaml` of `lesson-template`. You can find
+a *lot* of information there about how it works and how exactly to design your own test cases.
+Please inform me if it is still not very clear.
+
+###################################
 
 ## Markdown formatting showcase
 
