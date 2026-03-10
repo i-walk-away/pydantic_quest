@@ -1,10 +1,7 @@
-name: ci
+name: ci-main
 
 on:
   push:
-    branches:
-      - main
-  pull_request:
     branches:
       - main
 
@@ -12,22 +9,8 @@ permissions:
   contents: read
 
 jobs:
-  approval:
-    if: github.event_name == 'pull_request'
-    runs-on: ubuntu-latest
-    environment:
-      name: ci
-    steps:
-      - name: Await approval
-        run: echo "approved"
-
   lint:
     runs-on: ubuntu-latest
-    needs:
-      - approval
-    if: |
-      always() &&
-      (github.event_name != 'pull_request' || needs.approval.result == 'success')
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -40,11 +23,6 @@ jobs:
 
   backend-tests:
     runs-on: ubuntu-latest
-    needs:
-      - approval
-    if: |
-      always() &&
-      (github.event_name != 'pull_request' || needs.approval.result == 'success')
     env:
       UV_PYTHON: 3.12
       DB_HOST: localhost
@@ -104,11 +82,6 @@ jobs:
 
   frontend-e2e:
     runs-on: ubuntu-latest
-    needs:
-      - approval
-    if: |
-      always() &&
-      (github.event_name != 'pull_request' || needs.approval.result == 'success')
     steps:
       - name: Checkout
         uses: actions/checkout@v4
