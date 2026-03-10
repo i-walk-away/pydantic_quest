@@ -33,7 +33,7 @@ def upgrade() -> None:
         sa.Column('id', sa.Uuid(), nullable=False),
         sa.PrimaryKeyConstraint('id'),
         sa.UniqueConstraint('slug')
-        )
+    )
     op.create_table(
         'users',
         sa.Column('username', sa.String(length=255), nullable=False),
@@ -46,7 +46,7 @@ def upgrade() -> None:
         sa.UniqueConstraint('email'),
         sa.UniqueConstraint('github_id'),
         sa.UniqueConstraint('username')
-        )
+    )
     op.create_table(
         'lesson_progress',
         sa.Column('user_id', sa.Uuid(), nullable=False),
@@ -57,7 +57,7 @@ def upgrade() -> None:
         sa.ForeignKeyConstraint(['user_id'], ['users.id'], ),
         sa.PrimaryKeyConstraint('id'),
         sa.UniqueConstraint('user_id', 'lesson_id', name='uq_lesson_progress_user_lesson')
-        )
+    )
     op.create_index(op.f('ix_lesson_progress_lesson_id'), 'lesson_progress', ['lesson_id'], unique=False)
     op.create_index(op.f('ix_lesson_progress_user_id'), 'lesson_progress', ['user_id'], unique=False)
     # ### end Alembic commands ###

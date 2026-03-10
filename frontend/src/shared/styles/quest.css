@@ -220,7 +220,7 @@
 
 .markdown code {
   font-family: "IBM Plex Mono", monospace;
-  color: var(--md-typeset-a-color);
+  color: var(--inline-code-color);
 }
 
 .markdown ul {

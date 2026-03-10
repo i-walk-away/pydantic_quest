@@ -12,7 +12,7 @@ If you want to add a new lesson to pydantic quest, do this:
     * `lesson.yaml`
     * `theory.md`
     * `starter.py`
-    * `cases.yaml` -- *note: for theory-only lessons with no coding assignment, `cases.yaml` is not required*
+    * `cases.yaml` -- *for theory-only lessons with no coding assignment, leave this file empty*
 3. Head to [lessons/index.yaml](lessons/index.yaml) and add the following:
 
 ```yaml
@@ -104,13 +104,13 @@ Test cases for your lesson. Just refer to [`lessons/lesson-template/cases.yaml`]
 You can find
 a *lot* of information there about how it works and how exactly to design your own test cases.
 Please inform me if it is still not very clear.
-If the lesson is marked `no_code: true`, this file is optional and the `run` button will be disabled in the UI.
+If the lesson is marked `no_code: true`, this file is still required for consistency,
+but it can be empty, `{}`, or `cases: null`. The `run` button will be disabled in the UI.
 
 ## Contributor checklist
 
 Before opening a PR:
 
-1. verify `lesson.yaml`, `theory.md`, and `starter.py` exist in your new lesson folder. `cases.yaml` is not required for
-   purely theoretical lessons
+1. verify `lesson.yaml`, `theory.md`, `starter.py`, and `cases.yaml` exist in your new lesson folder
 2. verify lesson slug is added to [lessons/index.yaml](lessons/index.yaml)
 3. confirm each visible case has clear `label` and useful `reason`

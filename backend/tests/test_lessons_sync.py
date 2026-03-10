@@ -68,9 +68,10 @@ async def test_sync_lessons_endpoint(
     assert lessons_response.status_code == 200
     lessons = lessons_response.json()
     assert len(lessons) >= 1
-    first = lessons[0]
-    assert len(first["cases"]) >= 1
-    assert len(first["sample_cases"]) >= 1
+    coding_lessons = [lesson for lesson in lessons if not lesson["no_code"]]
+    assert len(coding_lessons) >= 1
+    assert len(coding_lessons[0]["cases"]) >= 1
+    assert len(coding_lessons[0]["sample_cases"]) >= 1
 
 
 async def test_sync_lessons_endpoint_dry_run(

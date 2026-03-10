@@ -192,7 +192,7 @@ def test_loader_sorts_hierarchical_orders(tmp_path: Path) -> None:
     assert [lesson.slug for lesson in lessons] == ["validators", "validators-field", "models"]
 
 
-def test_loader_allows_missing_cases_file_for_no_code_lesson(tmp_path: Path) -> None:
+def test_loader_requires_cases_file_for_no_code_lesson(tmp_path: Path) -> None:
     root_dir = tmp_path / "lessons"
     root_dir.mkdir(parents=True)
     lesson_dir = root_dir / "theory-only"
@@ -213,6 +213,73 @@ def test_loader_allows_missing_cases_file_for_no_code_lesson(tmp_path: Path) -> 
     (lesson_dir / "lesson.yaml").write_text("title: Theory only\n", encoding="utf-8")
     (lesson_dir / "theory.md").write_text("# theory\n", encoding="utf-8")
     (lesson_dir / "starter.py").write_text("# no code task\n", encoding="utf-8")
+
+    loader = LessonsLoader(
+        root_dir=root_dir,
+        validator=LessonsContentValidator(),
+    )
+
+    with pytest.raises(FileNotFoundError):
+        loader.load()
+
+
+def test_loader_allows_empty_cases_mapping_for_no_code_lesson(tmp_path: Path) -> None:
+    root_dir = tmp_path / "lessons"
+    root_dir.mkdir(parents=True)
+    lesson_dir = root_dir / "theory-only"
+    lesson_dir.mkdir(parents=True, exist_ok=True)
+
+    (root_dir / "index.yaml").write_text(
+        "\n".join(
+            [
+                "lessons:",
+                "  - slug: theory-only",
+                '    order: "1"',
+                "    no_code: true",
+                "",
+            ],
+        ),
+        encoding="utf-8",
+    )
+    (lesson_dir / "lesson.yaml").write_text("title: Theory only\n", encoding="utf-8")
+    (lesson_dir / "theory.md").write_text("# theory\n", encoding="utf-8")
+    (lesson_dir / "starter.py").write_text("# no code task\n", encoding="utf-8")
+    (lesson_dir / "cases.yaml").write_text("{}\n", encoding="utf-8")
+
+    loader = LessonsLoader(
+        root_dir=root_dir,
+        validator=LessonsContentValidator(),
+    )
+
+    lessons = loader.load()
+
+    assert len(lessons) == 1
+    assert lessons[0].no_code is True
+    assert lessons[0].cases == []
+
+
+def test_loader_allows_null_cases_for_no_code_lesson(tmp_path: Path) -> None:
+    root_dir = tmp_path / "lessons"
+    root_dir.mkdir(parents=True)
+    lesson_dir = root_dir / "theory-only"
+    lesson_dir.mkdir(parents=True, exist_ok=True)
+
+    (root_dir / "index.yaml").write_text(
+        "\n".join(
+            [
+                "lessons:",
+                "  - slug: theory-only",
+                '    order: "1"',
+                "    no_code: true",
+                "",
+            ],
+        ),
+        encoding="utf-8",
+    )
+    (lesson_dir / "lesson.yaml").write_text("title: Theory only\n", encoding="utf-8")
+    (lesson_dir / "theory.md").write_text("# theory\n", encoding="utf-8")
+    (lesson_dir / "starter.py").write_text("# no code task\n", encoding="utf-8")
+    (lesson_dir / "cases.yaml").write_text("cases: null\n", encoding="utf-8")
 
     loader = LessonsLoader(
         root_dir=root_dir,

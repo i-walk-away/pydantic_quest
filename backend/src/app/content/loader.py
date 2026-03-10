@@ -91,10 +91,13 @@ class LessonsLoader:
         """
         cases_path = lesson_dir / LESSON_CASES_FILENAME
 
-        if no_code and not cases_path.exists():
-            return LessonCasesFile(cases=[])
-
         payload = self._read_yaml(path=cases_path)
+
+        if no_code:
+            raw_cases = payload.get("cases")
+
+            if raw_cases is None:
+                return LessonCasesFile(cases=[])
 
         return LessonCasesFile.model_validate(obj=payload)
 

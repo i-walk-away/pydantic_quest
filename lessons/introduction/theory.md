@@ -1,13 +1,24 @@
-## Welcome!
-
-This is a short preamble explaining the idea behind the course itself and the interface.
+## Preamble
 
 The quest consists of several lessons that will teach you the capabilites of Pydantic -
 data validation library for Python. It's (hopefully) beginner friendly,
 while still being useful to those already familiar with the library.
 
-## Progression
+You can unfold the lesson list by clicking on the
+> `>` LESSON 1
 
-There is no progression system per se. You can unfold the lesson list by clicking on the
-`>`LESSON 1 on the top right of this window, see what's there and jump stright to the
+on the top right of this window, see what's there and jump stright to the
 lesson you're interested in. Or complete them in order, which is recommended for beginners.
+
+## Interface hints
+
+To your right is the code editor. It's backed up by an actual code execution engine and runs python 3.12.
+You will use it to complete assignments for practical lessons. For theoretical lessons, like this one, code runner is
+disabled.
+
+Pressing `reset` returns the code editor to its original state, in case you mess up!
+
+At the bottom of each lesson, there will be `test cases` list. Unfold it to see how your
+submitted code will be tested to ensure that you've completed the assignment correctly.
+
+Thank you and i hope you like it!
