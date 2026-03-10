@@ -2,7 +2,7 @@
 
 Free interactive course on Pydantic v2.
 
-It is designed to teach you the capabilities of pydantic - a validation library for python. It's (hopefully) beginner friendly, while still being useful for thoae already familiar with the library.
+It is designed to teach you the capabilities of pydantic - a validation library for python. It's (hopefully) beginner friendly, while still being useful to those already familiar with the library.
 
 
 
