@@ -115,8 +115,9 @@ Test cases for your lesson. Just refer to [`lessons/lesson-template/cases.yaml`]
 You can find
 a *lot* of information there about how it works and how exactly to design your own test cases.
 Please inform me if it is still not very clear.
+
 If the lesson is marked `no_code: true`, this file is still required for consistency,
-but it can be empty, `{}`, or `cases: null`. The `run` button will be disabled in the UI.
+but it can be empty. The `run` button below the code editor will be disabled in the UI.
 
 ## Contributor checklist
 
