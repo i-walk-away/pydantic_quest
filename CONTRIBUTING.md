@@ -41,7 +41,7 @@ Change the `title` field to the title of your lesson.
 The contents of this file is the lesson *body:* what the user sees on the
 left side of the screen when your lesson is selected.
 Populate it with theoretical information and an assignment.
-Refer to [theory.md](lessons/lesson-template/theory.md) to see available
+Refer to [lessons/lesson-template/theory.md](lessons/lesson-template/theory.md) to see available
 custom formatting (on top of existing Markdown formatting)
 and general recommendations on designing a good lesson body.
 
