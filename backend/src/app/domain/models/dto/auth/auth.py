@@ -11,6 +11,7 @@ class LoginCredentials(ExtendedBaseModel):
     @classmethod
     def validate_username(cls, value: str) -> str:
         normalized = value.strip()
+
         if not normalized:
             message = "username must not be empty."
             raise ValueError(message)
@@ -44,6 +45,7 @@ class LoginResponse(ExtendedBaseModel):
     @classmethod
     def validate_token_type(cls, value: str) -> str:
         normalized = value.strip().lower()
+
         if not normalized:
             message = "token_type must not be empty."
             raise ValueError(message)

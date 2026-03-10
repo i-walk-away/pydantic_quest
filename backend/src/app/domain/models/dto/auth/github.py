@@ -53,6 +53,7 @@ class GithubUserDTO(ExtendedBaseModel):
     @classmethod
     def validate_login(cls, value: str) -> str:
         normalized = value.strip()
+
         if not normalized:
             message = "login must not be empty."
             raise ValueError(message)
@@ -72,6 +73,7 @@ class GithubEmailDTO(ExtendedBaseModel):
     @classmethod
     def validate_email(cls, value: str) -> str:
         normalized = value.strip()
+
         if "@" not in normalized:
             message = "email must be a valid address."
             raise ValueError(message)

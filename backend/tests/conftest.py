@@ -80,8 +80,10 @@ async def async_engine() -> AsyncGenerator[AsyncEngine]:
         connect_args={"check_same_thread": False},
         poolclass=StaticPool,
     )
+
     async with engine.begin() as conn:
         await conn.run_sync(Base.metadata.create_all)
+
     yield engine
     await engine.dispose()
 
