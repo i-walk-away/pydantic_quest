@@ -185,21 +185,23 @@ There are some ways to work around this issue. Let's start by simply modifying o
 values are of correct types:
 
 ```python
-def calculate_age(data: UserFormDTO) -> str | None:
-    if not isinstance(data.age, int):
-        return None
+def calculate_age(data: UserFormDTO) -> str:
+    if not isinstance(data.age, int):  # check if data.age is not an instance of class 'int'
+        raise TypeError(f'{data.age} is not an integer!')  # if so, exit early with an error 
 
     response = f"{data.username} will be {data.age + 1} years old next year!"
     return response
 ```
 
-This doesn't look like much improvement, since our broken data still makes it to our business logic layer. However
-imagine if our function performed some expensive operations on this data instead of a simple addition:
+Although broken data still makes it into our business logic layer, this small check prevents our function from wasting
+time on trying to perform operations on an invalid input data. Well, in our simple example, the difference between
+exiting early and crashing on `age + 1` is negligible. However imagine if our function performed some expensive
+operations on this data instead of a simple integer addition:
 
 ```python
 def calculate_age(data: UserFormDTO) -> str | None:
     if not isinstance(data.age, int):
-        return None
+        raise TypeError(f'{data.age} is not an integer!')
 
     ages = very_large_database_of_ages.get_average_age()  # expensive DB operation
 
@@ -207,12 +209,12 @@ def calculate_age(data: UserFormDTO) -> str | None:
     return response
 ```
 
-Then we actually want our function to fail before it does this expensive operation to not waste time and resources on
-something that will fail anyway.
+Then we actually want our function to fail before it does this expensive operation. Why waste time and resources on
+something that is doomed to fail anyway?
 
-Did we solve our problem? Well... Kinda. The code didn't get much uglier while still meeting our requirement of failing
-before an expensive operation. But this solution doesn't scale very well. What if we need multiple checks? And if they
-are not as simple?
+But did our little `isinstance()` check solve the problem? Well... Kind of. The code now meets our requirement of failing
+before an expensive operation. But this solution doesn't **scale** very well. What if we needed multiple checks? And if
+they were not as simple?
 
 Example below is *a little bit* exaggerated, but it does show the problem with scaling.
 
@@ -255,12 +257,15 @@ def find_old_people(data: list[UserFormDTO]) -> list[str] | None:
 
 That's a lot of checks! And a bunch of problems too:
 
-1. We will often have to reimplement the same checks for different business logic functions
-2. Data validation itself is *beyond the scope* of business logic layer. This is a violation of the Single Responsibility
-   Principle. The data has to be validated before it reaches business logic layer.
+1. We will likely have to reimplement the same checks for different functions inside business logic layer (violates
+   _DRY_ - Don't Repeat Yourself principle)
+2. Instead of only doing its job - finding old people in a list - our `find_old_people()` function also handles complex
+   data validation (violates _SRP_ - Single Responsibility Principle)
+3. Data validation itself is *beyond the scope* of business logic layer. It's not business layer's responsibility to
+   check if the data was valid (violates the principles of clean architecture)
 
-It looks like validating data in our function doesn't cut it. There is a better way though - and it's to implement data
-validation in our *model istelf* - in `UserFormDTO` class.
+Looks like validating data inside the function doesn't cut it. There is a better way though - and it's to implement data
+validation in our *model istelf* - in the `UserFormDTO` class.
 
 ### Validating data in the model class
 
@@ -298,7 +303,7 @@ If we now try to instantiate a `UserFormDTO` with invalid data, a `TypeError` wi
 
 ```python
 try:
-    user = UserFormDTO(username="Alice", age="30")  # invalid age type, expected 'int'
+    user = UserFormDTO(username="Alice", age="30")  # invalid age type
 except TypeError as e:
     print(f"Error: {e}")
 ```
@@ -308,7 +313,7 @@ TypeError: age must be int, got str
 ```
 
 Now our business function no longer has to care about the validity of the input data, becuase our Data Transfer Object
-itself handles validation on *class level*:
+itself handles validation at *class level*:
 
 ```python
 def calculate_age(data: UserFormDTO) -> str:
@@ -323,8 +328,8 @@ This approach is significantly better.
 
 1. Business logic layer can always safely assume that it will receive valid data and doesn't have to check it itself
 2. All validation logic is isolated within our model
-3. Invalid data is rejected at the earliest moment possible (unless you're holding the user at gunpoint, preventing them
-   from eveng submitting broken data)
+3. Invalid data is rejected at the earliest possible moment (unless you're holding the user at gunpoint, preventing them
+   from even _submitting_ broken data)
 4. We can add more complex validation logic to our model without changing anything else
 
 On top of basic type validation, we can also validate some business rules too:
@@ -441,7 +446,7 @@ age
 ```
 
 Pydantic sees the `int` type hint of our `age` field and throws a `ValidationError` at us for trying to instantiate a
-`UserFormDTO` with a wrong type. Our type *hints* now become type *requirements* with no extra syntax!
+`UserFormDTO` with a wrong type. Our type *hints* now become type *requirements* with no extra syntax.
 
 ### Validators
 
@@ -506,7 +511,7 @@ class UserFormDTO(BaseModel):
     username: str
     age: int
 
-    @field_validator('age')  # field validator runs after Pydantic's internal field type validation
+    @field_validator('age') 
     @classmethod
     def validate_age(cls, value: int) -> int:
         """
