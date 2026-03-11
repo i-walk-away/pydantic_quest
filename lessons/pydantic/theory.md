@@ -51,12 +51,9 @@ calculate_age_next_year("18")  # ValueError: we passed a string here, can't add 
 This code crashes only when `+ 1` is attempted.
 The function did not reject the value and attempted to work with it, even though the value was wrong for the job.
 
-That is bad:
-
-- Python lets values move through the program very freely
-- mistakes are often discovered late
-- the error may happen far away from where the bad data first entered the system
-- also ABSOLUTELY UNREADABLE code
+That is not very convenient. Python lets values move through the program very freely, and the errors may happen far away
+from where the bad data first entered the system. Also untyped code is *absolutely*
+unreadable.
 
 That makes debugging harder, especially in larger applications.
 
@@ -257,7 +254,6 @@ That's a lot of checks! And a bunch of problems too:
 1. We will often have to reimplement the same checks for different business logic functions
 2. Data validation itself is *beyond the scope* of business logic layer. This is a violation of the Single Responsibility
    Principle. The data has to be validated before it reaches business logic layer.
-
 
 It looks like validating data in our function doesn't cut it. There is a better way though - and it's to implement data
 validation in our *model istelf* - in `UserFormDTO` class. 
