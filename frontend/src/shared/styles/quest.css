@@ -19,6 +19,10 @@
   user-select: none;
 }
 
+.layout--code-hidden {
+  grid-template-columns: minmax(0, 1fr);
+}
+
 .layout__divider {
   position: relative;
   border-radius: 999px;
@@ -68,12 +72,12 @@
 }
 
 .quest-scene .panel__header {
-  align-items: flex-start;
+  align-items: center;
   flex-shrink: 0;
 }
 
 .quest-scene .panel__header .btn {
-  margin-top: 4px;
+  margin-top: 0;
 }
 
 .quest-scene .panel__footer {
@@ -100,6 +104,15 @@
 
 .quest-scene .panel__header h2.panel__title {
   font-size: 1.25rem;
+}
+
+.panel__header-actions {
+  display: inline-flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 10px;
+  flex-wrap: wrap;
+  min-width: 0;
 }
 
 .panel__meta {
@@ -391,6 +404,15 @@
   position: relative;
   border-radius: 0;
   background: transparent;
+}
+
+.quest-scene .btn--header-control {
+  font-weight: 400;
+  color: var(--text-muted);
+}
+
+.quest-scene .btn--header-control::before {
+  display: none;
 }
 
 .quest-scene .btn--text::before {
@@ -883,6 +905,10 @@
   .layout {
     grid-template-columns: 1fr;
     overflow: auto;
+  }
+
+  .layout--code-hidden {
+    grid-template-columns: 1fr;
   }
 
   .panel--lesson,

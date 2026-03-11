@@ -28,7 +28,8 @@ export const QuestPage = (): ReactElement => {
   const lessonBodyRef = useRef<HTMLDivElement | null>(null);
   const [isLessonListOpen, setIsLessonListOpen] = useState(false);
   const [isSampleCasesOpen, setIsSampleCasesOpen] = useState(false);
-  const [splitPercent, setSplitPercent] = useState(47);
+  const [isCodeEditorHidden, setIsCodeEditorHidden] = useState(false);
+  const [splitPercent, setSplitPercent] = useState(51);
   const [isDragging, setIsDragging] = useState(false);
   const [authMode, setAuthMode] = useState<AuthMode>("login");
   const [isAuthOpen, setIsAuthOpen] = useState(false);
@@ -783,34 +784,56 @@ export const QuestPage = (): ReactElement => {
       </header>
 
       <main
-        className={isDragging ? "layout layout--dragging" : "layout"}
+        className={
+          isCodeEditorHidden
+            ? "layout layout--code-hidden"
+            : isDragging
+              ? "layout layout--dragging"
+              : "layout"
+        }
         ref={layoutRef}
-        style={{
-          gridTemplateColumns: `calc(${splitPercent}% - 1px) 2px calc(${100 - splitPercent}% - 1px)`,
-        }}
+        style={
+          isCodeEditorHidden
+            ? undefined
+            : {
+                gridTemplateColumns: `calc(${splitPercent}% - 1px) 2px calc(${100 - splitPercent}% - 1px)`,
+              }
+        }
       >
         <section className="panel panel--lesson">
           <div className="panel__header">
             <h1 className="panel__title">{activeLesson.title}</h1>
-            <button
-              type="button"
-              className="lesson-toggle"
-              onClick={() => setIsLessonListOpen((prev) => !prev)}
-              aria-expanded={isLessonListOpen}
-            >
-              <span
-                className={
-                  isLessonListOpen
-                    ? "lesson-toggle__chevron lesson-toggle__chevron--open"
-                    : "lesson-toggle__chevron"
-                }
-                aria-hidden="true"
+            <div className="panel__header-actions">
+              {isCodeEditorHidden ? (
+                <Button
+                  variant="ghost"
+                  type="button"
+                  className="btn--compact btn--text btn--header-control"
+                  onClick={() => setIsCodeEditorHidden(false)}
+                >
+                  show code editor
+                </Button>
+              ) : null}
+              <button
+                type="button"
+                className="lesson-toggle"
+                onClick={() => setIsLessonListOpen((prev) => !prev)}
+                aria-expanded={isLessonListOpen}
               >
-                {">"}
-              </span>
-              <span className="lesson-toggle__label">{lessonLabel}</span>
-              {isLessonCompleted ? <span className="lesson-toggle__check">✓</span> : null}
-            </button>
+                <span
+                  className={
+                    isLessonListOpen
+                      ? "lesson-toggle__chevron lesson-toggle__chevron--open"
+                      : "lesson-toggle__chevron"
+                  }
+                  aria-hidden="true"
+                >
+                  {">"}
+                </span>
+                <span className="lesson-toggle__label">{lessonLabel}</span>
+                {isLessonCompleted ? <span className="lesson-toggle__check">✓</span> : null}
+              </button>
+            </div>
           </div>
 
           {isLessonListOpen ? (
@@ -923,60 +946,73 @@ export const QuestPage = (): ReactElement => {
           </div>
         </section>
 
-        <div
-          className="layout__divider"
-          role="separator"
-          aria-orientation="vertical"
-          onPointerDown={() => setIsDragging(true)}
-        />
+        {!isCodeEditorHidden ? (
+          <div
+            className="layout__divider"
+            role="separator"
+            aria-orientation="vertical"
+            onPointerDown={() => setIsDragging(true)}
+          />
+        ) : null}
 
-        <section className="panel panel--code">
+        {!isCodeEditorHidden ? (
+          <section className="panel panel--code">
           <div className="panel__header">
             <h2 className="panel__title">Code editor</h2>
-            <div className="panel__meta-group" ref={analysisRef}>
-              <span className="panel__meta">python 3.12</span>
-              <button
-                type="button"
-                className={analysisIndicator.className}
-                title={analysisIndicator.title}
-                aria-label={analysisIndicator.title}
-                data-testid="analysis-indicator"
-                onClick={() => {
-                  if (analysisDiagnostics.length === 0 && !analysisError) {
-                    return;
-                  }
+            <div className="panel__header-actions">
+              <div className="panel__meta-group" ref={analysisRef}>
+                <span className="panel__meta">python 3.12</span>
+                <button
+                  type="button"
+                  className={analysisIndicator.className}
+                  title={analysisIndicator.title}
+                  aria-label={analysisIndicator.title}
+                  data-testid="analysis-indicator"
+                  onClick={() => {
+                    if (analysisDiagnostics.length === 0 && !analysisError) {
+                      return;
+                    }
 
-                  setIsAnalysisOpen((prev) => !prev);
-                }}
+                    setIsAnalysisOpen((prev) => !prev);
+                  }}
+                >
+                  {analysisIndicator.label}
+                </button>
+                {isAnalysisOpen && (analysisDiagnostics.length > 0 || analysisError) ? (
+                  <div className="analysis-popover" data-testid="analysis-popover">
+                    {analysisError ? (
+                      <div className="analysis-banner">{analysisError}</div>
+                    ) : null}
+                    {analysisDiagnostics.length > 0 ? (
+                      <div className="analysis-list" data-testid="analysis-list">
+                        {analysisDiagnostics.slice(0, 5).map((item, index) => (
+                          <div
+                            key={`${item.line}:${item.column}:${item.name ?? "diagnostic"}:${index}`}
+                            className={
+                              item.severity === "error"
+                                ? "analysis-item analysis-item--error"
+                                : "analysis-item"
+                            }
+                          >
+                            <span className="analysis-item__location">
+                              L{item.line}:C{item.column}
+                            </span>
+                            <span className="analysis-item__message">{item.message}</span>
+                          </div>
+                        ))}
+                      </div>
+                    ) : null}
+                  </div>
+                ) : null}
+              </div>
+              <Button
+                variant="ghost"
+                type="button"
+                className="btn--compact btn--text btn--header-control"
+                onClick={() => setIsCodeEditorHidden(true)}
               >
-                {analysisIndicator.label}
-              </button>
-              {isAnalysisOpen && (analysisDiagnostics.length > 0 || analysisError) ? (
-                <div className="analysis-popover" data-testid="analysis-popover">
-                  {analysisError ? (
-                    <div className="analysis-banner">{analysisError}</div>
-                  ) : null}
-                  {analysisDiagnostics.length > 0 ? (
-                    <div className="analysis-list" data-testid="analysis-list">
-                      {analysisDiagnostics.slice(0, 5).map((item, index) => (
-                        <div
-                          key={`${item.line}:${item.column}:${item.name ?? "diagnostic"}:${index}`}
-                          className={
-                            item.severity === "error"
-                              ? "analysis-item analysis-item--error"
-                              : "analysis-item"
-                          }
-                        >
-                          <span className="analysis-item__location">
-                            L{item.line}:C{item.column}
-                          </span>
-                          <span className="analysis-item__message">{item.message}</span>
-                        </div>
-                      ))}
-                    </div>
-                  ) : null}
-                </div>
-              ) : null}
+                hide
+              </Button>
             </div>
           </div>
 
@@ -1089,7 +1125,8 @@ export const QuestPage = (): ReactElement => {
               run
             </Button>
           </div>
-        </section>
+          </section>
+        ) : null}
       </main>
 
       {isAuthOpen ? (
