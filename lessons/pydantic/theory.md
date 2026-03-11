@@ -168,11 +168,12 @@ broken from the very beginning. When _exactly_ will our program fail?
 4. The age is calculated <-------- *runtime error upon trying to add 1 to a string*
 5. ...
 
-The broken data made quite a long jorney through our program before something. It shouldn't have even **reached** the
-business logic layer and instead should've been rejected by the API layer on step 2, becuase the data was broken:
+The broken data made quite a long jorney through our program before something exploded. It shouldn't have even
+**reached** the business logic layer and instead should've been rejected by the API layer on step 2, becuase the data was
+broken:
 
 1. User sends `username: "Alice"` and `age: "Albania"` to our API -- ✓
-2. API layer builds a UserFormDTO out of this data <----- *Validation error: couldn't assign `{age: Albania}` to
+2. API layer builds a UserFormDTO out of this data <----- *Validation error: couldn't assign `"Albania"` to
    `UserFormDTO.age`, because UserFormDTO expects age to be an integer and user sent string instead*
 
 Statically typed language like Java would fail with a runtime error on step 2. But Python allows that.
