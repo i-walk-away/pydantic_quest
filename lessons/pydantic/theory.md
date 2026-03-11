@@ -26,7 +26,7 @@ var = "string"  # var now references a string object
 
 In statically typed languages like Java this woudln't work:
 
-```
+```java
 int x = 12;   // x is declared as integer
 x = "hello";  // compile error - x can only hold integers
 ```
