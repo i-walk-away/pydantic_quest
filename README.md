@@ -5,7 +5,7 @@ Free interactive course on Pydantic v2.
 It is designed to teach you the capabilities of pydantic - a validation library for python. It's (hopefully) beginner
 friendly, while still being useful to those already familiar with the library.
 
-# What is wrong with the official documentation? (note: last section)
+# What is wrong with the official documentation?
 
 Absolutely nothing, this courae is just another way to learn the library, that might fit better with different people's
 learning styles.
@@ -18,4 +18,3 @@ and courses, where technical information can be presented in a different, more f
 Pydantic is basically industry standard now, but a lot of people only use the basic basemodel difinitions, some simple
 validators and nothing more. Even while working on this very project i realised that pydantic has already solved a lot
 of things that i have been reinventing for years.
-
