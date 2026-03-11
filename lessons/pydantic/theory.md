@@ -45,7 +45,7 @@ def calculate_age_next_year(age):
     return age + 1
 
 
-calculate_age_next_year("18")  # we passed a string here
+calculate_age_next_year("18")  # ValueError: we passed a string here, can't add +1 to a str
 ```
 
 This code crashes only when `+ 1` is attempted.
