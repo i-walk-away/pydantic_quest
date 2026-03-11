@@ -18,9 +18,3 @@ and courses, where technical information can be presented in a different, more f
 Pydantic is basically industry standard now, but a lot of people only use the basic basemodel difinitions, some simple
 validators and nothing more. Even while working on this very project i realised that pydantic has already solved a lot
 of things that i have been reinventing for years.
-
-# AI usage notice
-
-The entirety of the frontend was AI generated. I don't even know the contents of my `frontend/` folder. Although the
-logo, layout and color scheme were designed by me, i don't know a thing about TypeScript. This note exists because i
-think such information should be disclosed.
