@@ -107,7 +107,7 @@ Enter your age: ...
 The user submits this data, your backend receives it, and then your code uses it.
 A simplified path looks like this:
 
-1. API layer receives `username` and `age` from the user
+1. API layer of our website receives `username` and `age` from the user
 2. business logic uses that data (calculates age + 1)
 3. the result is returned to the user
 
@@ -130,7 +130,8 @@ So when a user sends:
 {"username": "Adolf", "age": 20}
 ```
 
-we have a UserFormDTO object with `username`="Adolf" and `age`=20 and we can use this object in our business layer.
+we build a UserFormDTO object out of it, with `username`="Adolf" and `age`=20, and we can use this object in our business
+layer.
 
 Then your actual business logic may look like this:
 
