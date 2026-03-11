@@ -10,6 +10,21 @@ You can unfold the lesson list by clicking on the
 on the top right of this window, see what's there and jump stright to the
 lesson you're interested in. Or complete them in order, which is recommended for beginners.
 
+## What is wrong with the official Pydantic documentation?
+
+Absolutely nothing, this courae is just another way to learn the library, that might fit better with different people's
+learning styles.
+
+Pydantic's docs are great at showing you how to do things and what functionality exists in the API, but they leave the
+"why does this feature exist and what are its use cases" for you to figure out on your own.
+It's not a flaw, you don't want to flood your docs with stuff like this.
+But it does open an another way of learning pydantic - through tutorials and courses, where technical information can be
+presented in a different, more friendly way.
+
+Pydantic is basically industry standard now, but a lot of people only use the basic basemodel difinitions, some simple
+validators and nothing more. Even while working on this very project i realised that pydantic has already solved a lot
+of things that i have been reinventing for years.
+
 ## Interface hints
 
 To your right is the code editor. It's backed up by an actual code execution engine and runs python 3.12.

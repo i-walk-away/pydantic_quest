@@ -1,8 +1,16 @@
-# Contributing
+Table of contents:
 
-Table of contents!
+<!-- TOC -->
+* [Adding new lessons to Pydantic Quest](#adding-new-lessons-to-pydantic-quest)
+  * [Explanation of the 4 neccessary files](#explanation-of-the-4-neccessary-files)
+    * [1. `lesson.yaml`](#1-lessonyaml)
+    * [2. `theory.md`](#2-theorymd)
+    * [3. `starter.py`](#3-starterpy)
+    * [4. `cases.yaml`](#4-casesyaml)
+* [Contributor checklist](#contributor-checklist)
+<!-- TOC -->
 
-## Adding new lessons to pydantic quest
+# Adding new lessons to Pydantic Quest
 
 If you want to add a new lesson to pydantic quest, do this:
 
@@ -37,8 +45,8 @@ lessons/field-validators/
 ```
 
 The `order` field controls lesson position in the UI and now supports
-hierarchical numbering. 
-Lesson `4.1` will be a child of lesson `4`. The UI will represent that. 
+hierarchical numbering.
+Lesson `4.1` will be a child of lesson `4`. The UI will represent that.
 
 Valid examples:
 
@@ -119,7 +127,7 @@ Please inform me if it is still not very clear.
 If the lesson is marked `no_code: true`, this file is still required for consistency,
 but it can be empty. The `run` button below the code editor will be disabled in the UI.
 
-## Contributor checklist
+# Contributor checklist
 
 Before opening a PR:
 
