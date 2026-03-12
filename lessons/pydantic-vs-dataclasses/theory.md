@@ -84,7 +84,7 @@ is isolated from the implementation details of other app layers.
 
 Or is it?
 
-Oh-oh. But the `calculate_age()` function, as well as everything else in the business logic layer, expects the input data
+Uh-oh. But the `calculate_age()` function, as well as everything else in the business logic layer, expects the input data
 to inherit from Pydantic BaseModel! Suddenly we discover a flaw in our software architecture - a **leaked dependency**.
 
 // note to self: in the given example this did not break anything because no basemodel-specific methods were used. no
