@@ -216,7 +216,7 @@ But did our little `isinstance()` check solve the problem? Well... Kind of. The 
 before an expensive operation. But this solution doesn't **scale** very well. What if we needed multiple checks? And if
 they were not as simple?
 
-Example below is *a little bit* exaggerated, but it does show the problem with scaling.
+Example below is *a little bit* exaggerated, but it does show the problem with scaling. // note to self: raise exceptions instead of returning none
 
 ```python
 def find_old_people(data: list[UserFormDTO]) -> list[str] | None:
