@@ -7,6 +7,10 @@ lessons:
     order: 1.1
     no_code: true
 
+  - slug: pydantic-vs-dataclasses
+    order: 1.2
+    no_code: true
+
   - slug: intro-model
     order: 2
     no_code: false

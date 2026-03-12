@@ -511,7 +511,7 @@ class UserFormDTO(BaseModel):
     username: str
     age: int
 
-    @field_validator('age') 
+    @field_validator('age')
     @classmethod
     def validate_age(cls, value: int) -> int:
         """
