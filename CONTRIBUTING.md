@@ -1,15 +1,3 @@
-Table of contents:
-
-<!-- TOC -->
-* [Adding new lessons to Pydantic Quest](#adding-new-lessons-to-pydantic-quest)
-  * [Explanation of the 4 neccessary files](#explanation-of-the-4-neccessary-files)
-    * [1. `lesson.yaml`](#1-lessonyaml)
-    * [2. `theory.md`](#2-theorymd)
-    * [3. `starter.py`](#3-starterpy)
-    * [4. `cases.yaml`](#4-casesyaml)
-* [Contributor checklist](#contributor-checklist)
-<!-- TOC -->
-
 # Adding new lessons to Pydantic Quest
 
 If you want to add a new lesson to pydantic quest, do this:
