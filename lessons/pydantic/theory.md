@@ -216,7 +216,8 @@ But did our little `isinstance()` check solve the problem? Well... Kind of. The 
 before an expensive operation. But this solution doesn't **scale** very well. What if we needed multiple checks? And if
 they were not as simple?
 
-Example below is *a little bit* exaggerated, but it does show the problem with scaling. // note to self: raise exceptions instead of returning none
+Example below is *a little bit* exaggerated, but it does show the problem with scaling. // note to self: raise exceptions
+instead of returning none
 
 ```python
 def find_old_people(data: list[UserFormDTO]) -> list[str] | None:
@@ -446,7 +447,7 @@ age
 ```
 
 Pydantic sees the `int` type hint of our `age` field and throws a `ValidationError` at us for trying to instantiate a
-`UserFormDTO` with a wrong type. Our type *hints* now become type *requirements* with no extra syntax.
+`UserFormDTO` with a wrong age type. Our type *hints* now become type *requirements* with no extra syntax.
 
 ### Validators
 
