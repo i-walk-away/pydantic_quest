@@ -4,7 +4,7 @@ After the previous lesson, you might have gotten the impression that Pydantic mo
 to enforce strict typing, powerful validator syntax, de/serialization support - and they both serve generally the same
 purpose: to carry data between parts of your application.
 
-But Pydantic is not just an ultimate dataclass. In a real project, Pydantic models complement dataclasses, not replace
+But Pydantic is not just an ultimate dataclass. In a real project, Pydantic models _complement_ dataclasses, not replace
 them.
 
 What exactly are their respective use cases? And is there a difference in performance?
