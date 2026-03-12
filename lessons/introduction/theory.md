@@ -8,7 +8,7 @@ You can unfold the lesson list by clicking on the
 > `>` LESSON 1
 
 on the top right of this window, see what's there and jump stright to the
-lesson you're interested in. Or complete them in order, which is recommended for beginners.
+lesson you're interested in. Although i recommend you to complete them in order.
 
 ## What is wrong with the official Pydantic documentation?
 
