@@ -110,11 +110,17 @@ How can we achieve such isolation?
 A simple solution is to make sure that our presentation layer emits simple dataclasses, not BaseModels or other
 third-party models. Business logic then should expect dataclasses as inputs and return dataclasses too.
 
+1. User sends some data
+2. API layer validates it by trying to construct a Pydantic model out of it
+3. If data is confirmed to be valid, construct a simple dataclass with the same field names and values
+4. Pass the clean dataclass as an argument to a function in the business logic layer
+
 Such an approach allows us to change API frameworks and data validation libraries without having to even touch the other
-layers of the application, as per the Encapsulation principle of Object Oriented Programming. Pydantic, msgspec, a
-self-made library - it doesn't matter, as long as regular dataclasses are built from the validated data before being sent
-as inputs to the business logic layer, ensuring its isolation from the implementation details of the other code horrors
-that we've created.
+layers of the application, as per the Encapsulation principle of Object Oriented Programming.
+
+Pydantic, msgspec, a self-made library - it doesn't matter, as long as regular dataclasses are built from the validated
+data before being sent as inputs to the business logic layer, ensuring its isolation from the implementation details of
+the other parts of the codebase.
 
 ## Conclusion
 
