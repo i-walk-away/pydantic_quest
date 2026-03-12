@@ -11,11 +11,7 @@ lessons:
     order: 1.2
     no_code: true
 
-  - slug: intro-model
-    order: 2
-    no_code: false
-
   - slug: lesson-template
-    order: 2.1
+    order: 2
     no_code: false
 

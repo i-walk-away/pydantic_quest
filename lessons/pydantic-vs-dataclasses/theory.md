@@ -69,7 +69,7 @@ class UserFormDTO(BaseModel):
 
 This certainly makes our life easier. The API builds Pydantic models out of user data, ensuring its validity, and the
 business
-logic layer just expects those models as input, so it can only work with valid data.
+logic layer just expects instances of those models as input, so it can only work with valid data.
 
 ### Consequences
 
@@ -84,9 +84,13 @@ is isolated from the implementation details of other app layers.
 
 Or is it?
 
-Oh-oh. But the `calculate_age()` function, as well as everything else in the business logic layer, expects data to
-inherit
-from Pydantic BaseModel! Suddenly we discover a flaw in our software architecture - a **leaked dependency**.
+Uh-oh. But the `calculate_age()` function, as well as everything else in the business logic layer, expects the input data
+to inherit from Pydantic BaseModel! Suddenly we discover a flaw in our software architecture - a **leaked dependency**.
+
+// note to self: in the given example this did not break anything because no basemodel-specific methods were used. no
+runtime errors will occur in the business logic layer simply because the input data inhetits from something other than
+pydantic basemodel as long as the field names don't change and no basemodel methods are called in the function body. fix
+later
 
 ## Clean architecture
 
@@ -106,11 +110,17 @@ How can we achieve such isolation?
 A simple solution is to make sure that our presentation layer emits simple dataclasses, not BaseModels or other
 third-party models. Business logic then should expect dataclasses as inputs and return dataclasses too.
 
+1. User sends some data
+2. API layer validates it by trying to construct a Pydantic model out of it
+3. If data is confirmed to be valid, construct a simple dataclass with the same field names and values
+4. Pass the clean dataclass as an argument to a function in the business logic layer
+
 Such an approach allows us to change API frameworks and data validation libraries without having to even touch the other
-layers of the application, as per the Encapsulation principle of Object Oriented Programming. Pydantic, msgspec, a
-self-made library - it doesn't matter, as long as regular dataclasses are built from the validated data before being sent
-as inputs to the business logic layer, ensuring its isolation from the implementation details of the other code horrors
-that we've created.
+layers of the application, as per the Encapsulation principle of Object Oriented Programming.
+
+Pydantic, msgspec, a self-made library - it doesn't matter, as long as regular dataclasses are built from the validated
+data before being sent as inputs to the business logic layer, ensuring its isolation from the implementation details of
+the other parts of the codebase.
 
 ## Conclusion
 

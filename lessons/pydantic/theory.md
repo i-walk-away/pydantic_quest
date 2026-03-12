@@ -20,7 +20,7 @@ To be precise, it's not that the type of a variable changes - it's that in pytho
 type *at all*.
 
 ```python
-var = 12  # var references an integer object. it POINTS to an int object
+var = 12        # var references an integer object. it POINTS to an int object
 var = "string"  # var now references a string object
 ```
 
@@ -62,7 +62,7 @@ That makes debugging harder, especially in larger applications.
 Since Python 3.5, we can add *hints* about our variables' types:
 
 ```python
-x: int = 78  # x should be an integer
+x: int = 78                                # x should be an integer
 things: list[str] = ["stuff", "entities"]  # things should be a list of strings
 ```
 
@@ -107,11 +107,11 @@ Enter your age: ...
 The user submits this data, your backend receives it, and then your code uses it.
 A simplified path looks like this:
 
-1. API layer of our website receives `username` and `age` from the user
-2. business logic uses that data (calculates age + 1)
+1. we receive `username` and `age` from the user
+2. a part of our code uses that data (calculates age + 1)
 3. the result is returned to the user
 
-Now imagine your business logic expects a small object like this:
+Now imagine the function that does the actual work expects a small object like this:
 
 ```python
 @dataclass
@@ -130,10 +130,10 @@ So when a user sends:
 {"username": "Adolf", "age": 20}
 ```
 
-we build a UserFormDTO object out of it, with `username`="Adolf" and `age`=20, and we can use this object in our business
-layer.
+we build a UserFormDTO object out of it, with `username`="Adolf" and `age`=20, and then pass it to the funcion that uses
+it to calculate age.
 
-Then your actual business logic may look like this:
+Then the actual function may look like this:
 
 ```python
 def calculate_age(data: UserFormDTO) -> str:
@@ -143,9 +143,9 @@ def calculate_age(data: UserFormDTO) -> str:
 
 We can now see a less simplified path of our data:
 
-1. User sends `username` and `age` to our API
-2. API layer builds a `UserFormDTO` out of this data
-3. API layer calls `calculate_age` and passes the DTO as an argument to it
+1. User sends `username` and `age`
+2. we build a `UserFormDTO` out of this data
+3. we call `calculate_age` and pass the DTO as an argument to it
 4. The age is calculated
 5. the result is returned to the user
 
@@ -164,36 +164,36 @@ The user was a little bit silly and sent us 'Albania' as their age. This is clea
 broken from the very beginning. When _exactly_ will our program fail?
 
 1. User sends `username: "Alice"` and `age: "Albania"` to our API -- ✓
-2. API layer builds a UserFormDTO out of this data -- ✓
-3. API layer calls `calculate_age` and passes the DTO as an argument to it --- ✓
+2. We build a UserFormDTO out of this data -- ✓
+3. We call `calculate_age` and pass the DTO as an argument to it --- ✓
 4. The age is calculated <-------- *runtime error upon trying to add 1 to a string*
 5. ...
 
 The broken data made quite a long jorney through our program before something exploded. It shouldn't have even
-**reached** the business logic layer and instead should've been rejected by the API layer on step 2, becuase the data was
-broken:
+**reached** the actual function that uses it and instead should've been rejected immediately on step 2, becuase the data
+was broken:
 
 1. User sends `username: "Alice"` and `age: "Albania"` to our API -- ✓
-2. API layer builds a UserFormDTO out of this data <----- *Validation error: couldn't assign `"Albania"` to
-   `UserFormDTO.age`, because UserFormDTO expects age to be an integer and user sent string instead*
+2. We build a `UserFormDTO` out of this data <----- *Validation error: couldn't assign `"Albania"` to `UserFormDTO.age`,
+   because `UserFormDTO` expects age to be an integer and user sent string instead*
 
 Statically typed language like Java would fail with a runtime error on step 2. But Python allows that.
 
 ### Validating data in the business logic layer
 
-There are some ways to work around this issue. Let's start by simply modifying our business logic to check if the passed
+There are some ways to work around this issue. Let's start by simply modifying our function to check if the passed
 values are of correct types:
 
 ```python
 def calculate_age(data: UserFormDTO) -> str:
-    if not isinstance(data.age, int):  # check if data.age is not an instance of class 'int'
+    if not isinstance(data.age, int):                      # check if data.age is not an instance of class 'int'
         raise TypeError(f'{data.age} is not an integer!')  # if so, exit early with an error 
 
     response = f"{data.username} will be {data.age + 1} years old next year!"
     return response
 ```
 
-Although broken data still makes it into our business logic layer, this small check prevents our function from wasting
+Although broken data still makes it into the function that uses it, this small check prevents our function from wasting
 time on trying to perform operations on an invalid input data. Well, in our simple example, the difference between
 exiting early and crashing on `age + 1` is negligible. However imagine if our function performed some expensive
 operations on this data instead of a simple integer addition:
@@ -216,7 +216,9 @@ But did our little `isinstance()` check solve the problem? Well... Kind of. The 
 before an expensive operation. But this solution doesn't **scale** very well. What if we needed multiple checks? And if
 they were not as simple?
 
-Example below is *a little bit* exaggerated, but it does show the problem with scaling.
+Example below is *a little bit* exaggerated, but it does show the problem with scaling. 
+
+// note to self: raise exceptions instead of returning none
 
 ```python
 def find_old_people(data: list[UserFormDTO]) -> list[str] | None:
@@ -261,8 +263,8 @@ That's a lot of checks! And a bunch of problems too:
    _DRY_ - Don't Repeat Yourself principle)
 2. Instead of only doing its job - finding old people in a list - our `find_old_people()` function also handles complex
    data validation (violates _SRP_ - Single Responsibility Principle)
-3. Data validation itself is *beyond the scope* of business logic layer. It's not business layer's responsibility to
-   check if the data was valid (violates the principles of clean architecture)
+3. Data validation itself is *beyond the scope* of the code that should be doing the actual work. Its main job should not
+   be to check whether the input was valid in the first place
 
 Looks like validating data inside the function doesn't cut it. There is a better way though - and it's to implement data
 validation in our *model istelf* - in the `UserFormDTO` class.
@@ -312,7 +314,7 @@ except TypeError as e:
 TypeError: age must be int, got str
 ```
 
-Now our business function no longer has to care about the validity of the input data, becuase our Data Transfer Object
+Now our function no longer has to care about the validity of the input data, becuase our Data Transfer Object
 itself handles validation at *class level*:
 
 ```python
@@ -381,7 +383,9 @@ class UserFormDTO:
             raise ValueError(f"username must be at least 3 characters, got {len(self.username)}")
 ```
 
-Invalid types raise `TypeError` and invalid values raise `ValueError` and all of this happens in our API layer.
+Invalid types raise `TypeError` and invalid values raise `ValueError` and all of this happens before data reaches actual
+functions in the business logic layer.
+
 Oh, and we just invented **Pydantic**!
 
 ## Pydantic models
@@ -446,11 +450,11 @@ age
 ```
 
 Pydantic sees the `int` type hint of our `age` field and throws a `ValidationError` at us for trying to instantiate a
-`UserFormDTO` with a wrong type. Our type *hints* now become type *requirements* with no extra syntax.
+`UserFormDTO` with a wrong age type. Our type *hints* now become type *requirements* with no extra syntax.
 
 ### Validators
 
-We can also create simple methods for validating the actual values of our class attributes to enforce business rules.
+We can also create simple methods for validating the actual values of our model fields to enforce business rules.
 
 Flashback to our implementation:
 
