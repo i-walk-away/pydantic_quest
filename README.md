@@ -1,6 +1,6 @@
 # Pydantic Quest
 
-Free interactive course on Pydantic v2.
+Free interactive course on Pydantic v2. It is not yet released.
 
 It is designed to teach you the capabilities of pydantic - a validation library for python. It's (hopefully) beginner
 friendly, while still being useful to those already familiar with the library.
