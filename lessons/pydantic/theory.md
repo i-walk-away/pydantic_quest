@@ -451,7 +451,7 @@ Pydantic sees the `int` type hint of our `age` field and throws a `ValidationErr
 
 ### Validators
 
-We can also create simple methods for validating the actual values of our class attributes to enforce business rules.
+We can also create simple methods for validating the actual values of our model fields to enforce business rules.
 
 Flashback to our implementation:
 

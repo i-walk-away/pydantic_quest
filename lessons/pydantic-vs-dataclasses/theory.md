@@ -69,7 +69,7 @@ class UserFormDTO(BaseModel):
 
 This certainly makes our life easier. The API builds Pydantic models out of user data, ensuring its validity, and the
 business
-logic layer just expects those models as input, so it can only work with valid data.
+logic layer just expects instances of those models as input, so it can only work with valid data.
 
 ### Consequences
 
