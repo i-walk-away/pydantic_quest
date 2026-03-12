@@ -87,9 +87,9 @@ Or is it?
 Oh-oh. But the `calculate_age()` function, as well as everything else in the business logic layer, expects the input data
 to inherit from Pydantic BaseModel! Suddenly we discover a flaw in our software architecture - a **leaked dependency**.
 
-// note to self: in the given example this did not break anything because basemodel-specific methods were not used. no
-runtime errors will occur simply because input data has different type as long as the fields have the same name and no
-basemodel methods are called in the function body. fix later
+// note to self: in the given example this did not break anything because no basemodel-specific methods were used. no
+runtime errors will occur in the business logic layer simply because the type of the input data has changed as long as
+the field names don't change and no basemodel methods are called in the function body. fix later
 
 ## Clean architecture
 
