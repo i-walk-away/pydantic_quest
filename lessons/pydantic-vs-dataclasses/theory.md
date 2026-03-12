@@ -19,17 +19,18 @@ The website's code can be imagined as a system that consists of 3 **layers**:
 2. Business logic layer
 3. Repository layer
 
-_Presentation_ layer is basically what the end user sees - the API. It's where the user data is sent to.
+The _presentation_ layer is basically what the end user sees - the API. It's where the user data is sent.
 
-Afterwards comes the _business logic_. API layer sends user submitted data to functions in the business logic layer.
+Afterwards comes the _business logic_. The API layer sends user-submitted data to functions in the business logic layer.
 It's where all the actual stuff happens - for example, where the age is calculated. Building upon the example from the
-previous lesson, our API layer builds DTO objects from user data and passes them as arguments to functions in business
+previous lesson, our API layer builds DTO objects from user data and passes them as arguments to functions in the
+business
 layer.
 
-_Repository_ is a layer that handles database operations (although i simplified it a little). Whenever a function in
-business layer needs a connection to the database to create / read / update / delete an entity from it, it can
-access the database through the repository layer. Repository iself just provides simple public methods like `add()`,
-`get_by_id()` and the implementation is abstracted inside of it. We will omit this one, as it is beyond the scope
+The _repository_ is a layer that handles database operations (although I simplified it a little). Whenever a function in
+the business layer needs a connection to the database to create / read / update / delete an entity, it can
+access the database through the repository layer. The repository itself just provides simple public methods like `add()`
+and `get_by_id()`, while the implementation is abstracted inside it. We will omit this one, as it is beyond the scope
 of this lesson.
 
 A horizontal representation of the three layers makes more sense:
@@ -38,12 +39,12 @@ A horizontal representation of the three layers makes more sense:
 presentation <-> business logic <-> repository
 ```
 
-Only the presentation layer actually knows what the user wants. Business logic layer is just a set of functions that sit
-there, waiting to be used to apply business rules (like add +1 to someone's age). So when the user sends some data to our
-application, the API - which is our presentation - calls appropriate methods of the business logic layer and passes
-user data to them.
+Only the presentation layer actually knows what the user wants. The business logic layer is just a set of functions that
+sit there, waiting to be used to apply business rules (like adding +1 to someone's age). So when the user sends some data
+to our application, the API - which is our presentation layer - calls the appropriate methods of the business logic layer
+and passes user data to them.
 
-And let's make a mistake here. So we know that Pydantic is so great, it almost guarantees data integrity without much
+And let's make a mistake here. We know that Pydantic is so great that it almost guarantees data integrity without much
 effort from our side. Let's make all the business layer functions expect Pydantic-based DTOs as input data!
 
 ```python
@@ -66,23 +67,25 @@ class UserFormDTO(BaseModel):
     age: int
 ```
 
-This certainly makes our life easier. API builds Pydantic models out of user data, ensuring its validity, and business
-logic layer just expects those models as input data, so it can only work with valid data.
+This certainly makes our life easier. The API builds Pydantic models out of user data, ensuring its validity, and the
+business
+logic layer just expects those models as input, so it can only work with valid data.
 
 ### Consequences
 
 Then our website got bigger and bigger, age calculations became more complex, and after a while a new data API framework
-just dropped - **GangstAPI**, with a built in support for **msgspec** data validation library, which is faster and more
+just dropped - **GangstAPI**, with built-in support for the **msgspec** data validation library, which is faster and more
 lightweight!
 
 We now want to migrate the API layer to GangstAPI framework. Thankfully, since our application is divided into layers,
 we should be able to modify the presentation layer without having to change anything else. It doesn't matter how
-the presentation layer works exactly, as long the valid data sent to logic layer is valid, since business logic
+the presentation layer works exactly, as long as the data sent to the logic layer is valid, since the business logic
 is isolated from the implementation details of other app layers.
 
 Or is it?
 
-Oh-oh. But the `calculate_age()` function, as well as everything else in business logic layer, expects data to inherit
+Oh-oh. But the `calculate_age()` function, as well as everything else in the business logic layer, expects data to
+inherit
 from Pydantic BaseModel! Suddenly we discover a flaw in our software architecture - a **leaked dependency**.
 
 ## Clean architecture
@@ -91,10 +94,10 @@ As we established in the previous lesson, data validation is a responsibility of
 logic to safely assume that all inputs are valid by definition and ensure the validity itself elsewhere.
 
 It means that whatever data validation library we use, it's a dependency of the *API layer*. All layers of our
-website should ideally be CLUELESS about the implementation details of the the other layers. But we've made a mistake
+website should ideally be CLUELESS about the implementation details of the other layers. But we've made a mistake
 and have *leaked* an API layer dependency into our business logic, coupling together what should be isolated.
 
-For a large scale applications, a leaked dependency might mean additional weeks of labor to migrate to a new library.
+For large scale applications, a leaked dependency might mean additional weeks of labor to migrate to a new library.
 
 How can we achieve such isolation?
 
@@ -104,8 +107,8 @@ A simple solution is to make sure that our presentation layer emits simple datac
 third-party models. Business logic then should expect dataclasses as inputs and return dataclasses too.
 
 Such an approach allows us to change API frameworks and data validation libraries without having to even touch the other
-layers of the application, as per the Encapsulation principle of Object-Oriented Programming. Pydantic, msgspec, a
-self-made library — it doesn't matter, as long as regular dataclasses are built from the validated data before being sent
+layers of the application, as per the Encapsulation principle of Object Oriented Programming. Pydantic, msgspec, a
+self-made library - it doesn't matter, as long as regular dataclasses are built from the validated data before being sent
 as inputs to the business logic layer, ensuring its isolation from the implementation details of the other code horrors
 that we've created.
 
