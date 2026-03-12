@@ -27,7 +27,7 @@ previous lesson, our API layer builds DTO objects from user data and passes them
 business
 layer.
 
-The _repository_ is a layer that handles database operations (although I simplified it a little). Whenever a function in
+The _repository_ is a layer that handles database operations (although i simplified it a little). Whenever a function in
 the business layer needs a connection to the database to create / read / update / delete an entity, it can
 access the database through the repository layer. The repository itself just provides simple public methods like `add()`
 and `get_by_id()`, while the implementation is abstracted inside it. We will omit this one, as it is beyond the scope
