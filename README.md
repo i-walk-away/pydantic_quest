@@ -10,8 +10,8 @@ friendly, while still being useful to those already familiar with the library.
 Absolutely nothing, this courae is just another way to learn the library, that might fit better with different people's
 learning styles.
 
-Pydantic's docs are great at showing you how to do things and what functionality exists in the API, but they leave the "
-why does this feature exist and what are its use cases" for you to figure out on your own. It's not a flaw, you don't
+Pydantic's docs are great at showing you how to do things and what functionality exists in the API, but they leave the
+"why does this feature exist and what are its use cases" for you to figure out on your own. It's not a flaw, you don't
 want to flood your docs with stuff like this. But it does open an another way of learning pydantic - through tutorials
 and courses, where technical information can be presented in a different, more friendly way.
 
