@@ -13,25 +13,37 @@ What exactly are their respective use cases? And is there a difference in perfor
 
 Let's step back a little and expand our website example from the previous lesson.
 
-The website's code can be imagined as a system that consists of 3 **layers**:
+In software architecture, a _layer_ is just a part of the application with a specific responsibility.
+We divide the code into chunks that each have their own job.
+
+For example:
+
+- one part receives data from the user
+- one part performs the actual calculations and applies rules
+- one part talks to the database
+
+Those parts are called **layers**.
+
+The age calculating website's code can be imagined as a system that consists of 3 **layers**:
 
 1. Presentation layer
 2. Business logic layer
 3. Repository layer
 
-The _presentation_ layer is basically what the end user sees - the API. It's where the user data is sent.
+The _presentation_ layer is basically what the end user sees - the API (hence the reason i will oftern refer to it as
+an "API layer"). It's where the user data is sent.
+Its job is to receive input and return output. It is _not_ where the "age + 1" is calculated.
 
-Afterwards comes the _business logic_. The API layer sends user-submitted data to functions in the business logic layer.
-It's where all the actual stuff happens - for example, where the age is calculated. Building upon the example from the
-previous lesson, our API layer builds DTO objects from user data and passes them as arguments to functions in the
-business
-layer.
+Afterwards comes the _business logic layer_. It's just a set of functions that
+sit there, waiting to be used to apply business rules (like adding +1 to someone's age). So when the user sends some data
+to our application, the API - which is our presentation layer - calls the appropriate methods of the business logic layer
+and passes user data to them.
 
 The _repository_ is a layer that handles database operations (although i simplified it a little). Whenever a function in
 the business layer needs a connection to the database to create / read / update / delete an entity, it can
 access the database through the repository layer. The repository itself just provides simple public methods like `add()`
 and `get_by_id()`, while the implementation is abstracted inside it. We will omit this one, as it is beyond the scope
-of this lesson.
+of the current lesson.
 
 A horizontal representation of the three layers makes more sense:
 
@@ -39,10 +51,26 @@ A horizontal representation of the three layers makes more sense:
 presentation <-> business logic <-> repository
 ```
 
-Only the presentation layer actually knows what the user wants. The business logic layer is just a set of functions that
-sit there, waiting to be used to apply business rules (like adding +1 to someone's age). So when the user sends some data
-to our application, the API - which is our presentation layer - calls the appropriate methods of the business logic layer
-and passes user data to them.
+You might recall from the previous lesson the path that data moves through in our website:
+
+1. User sends `username` and `age`
+2. we build a `UserFormDTO` out of this data
+3. we call `calculate_age` and pass the DTO as an argument to it
+4. The age is calculated
+5. the result is returned to the user
+
+Now let's rewrite it using the newly learned layer terminology:
+
+1. User sends data to our presentation layer - the website API
+2. The presentation layer uses this data to construct a DTO
+3. The presentation layer calls a function from the business logic layer, like `calculate_age(data: UserFormDTO)`, and
+   passes this DTO as an argument to it
+4. The business logic layer evaluates the function and returns the result to the presentation layer
+5. The presentation layer sends the response back to the user
+
+
+So the presentation layer deals dorectly with raw user input. The business logic layer should ideally just receive
+clean data and do its job.
 
 And let's make a mistake here. We know that Pydantic is so great that it almost guarantees data integrity without much
 effort from our side. Let's make all the business layer functions expect Pydantic-based DTOs as input data!
