@@ -1,6 +1,6 @@
 ## The ultimate dataclass
 
-After the previous lesson, you might have gotten the impression that Pydantic models are just better dataclasses. Easier
+After the previous lesson, you might have gotten an impression that Pydantic models are just better dataclasses. Easier
 to enforce strict typing, powerful validator syntax, de/serialization support - and they both serve generally the same
 purpose: to carry data between parts of your application.
 
@@ -11,7 +11,7 @@ What exactly are their respective use cases? And is there a difference in perfor
 
 ## Software layers
 
-Let's step back a little and expand our website example from the previous lesson.
+Let's step back a little and expand our website example from the pydantic lesson.
 
 In software architecture, a _layer_ is just a part of the application with a specific responsibility.
 We divide the code into chunks that each have their own job.
@@ -31,27 +31,27 @@ The age calculating website's code can be imagined as a system that consists of 
 3. Repository layer
 
 The _presentation_ layer is basically what the end user sees - the API (hence the reason i will oftern refer to it as
-an "API layer"). It's where the user data is sent.
-Its job is to receive input and return output. It is _not_ where the "age + 1" is calculated.
+an "API layer"). It's where the user data is received. Users send HTTP requests over the internet and our application
+receives them here.
+Its job is to receive input and return output. It is _not_ where the "age + 1" is calculated, it's just a gate. We may
+have so-called "view functions" here, which serve one and only one purpose: to see what the user wants according to their
+HTTP request and call whatever function does what they want with the data that they've sent.
 
 Afterwards comes the _business logic layer_. It's just a set of functions that
 sit there, waiting to be used to apply business rules (like adding +1 to someone's age). So when the user sends some data
 to our application, the API - which is our presentation layer - calls the appropriate methods of the business logic layer
 and passes user data to them.
 
-The _repository_ is a layer that handles database operations (although i simplified it a little). Whenever a function in
-the business layer needs a connection to the database to create / read / update / delete an entity, it can
-access the database through the repository layer. The repository itself just provides simple public methods like `add()`
-and `get_by_id()`, while the implementation is abstracted inside it. We will omit this one, as it is beyond the scope
-of the current lesson.
+The _repository_ is a layer that handles database operations (although i simplified it a little).
+We will omit this one, as it is beyond the scope of the current lesson.
 
-A horizontal representation of the three layers makes more sense:
+A horizontal representation makes more sense:
 
 ```
-presentation <-> business logic <-> repository
+presentation <-> business logic
 ```
 
-You might recall from the previous lesson the path that data moves through in our website:
+You might recall from the pydantic lesson the path that data moves through in our website:
 
 1. User sends `username` and `age`
 2. we build a `UserFormDTO` out of this data
@@ -67,7 +67,6 @@ Now let's rewrite it using the newly learned layer terminology:
    passes this DTO as an argument to it
 4. The business logic layer evaluates the function and returns the result to the presentation layer
 5. The presentation layer sends the response back to the user
-
 
 So the presentation layer deals dorectly with raw user input. The business logic layer should ideally just receive
 clean data and do its job.
@@ -122,7 +121,7 @@ later
 
 ## Clean architecture
 
-As we established in the previous lesson, data validation is a responsibility of the API layer. We want our business
+As we established in the pydantic lesson, data validation is a responsibility of the API layer. We want our business
 logic to safely assume that all inputs are valid by definition and ensure the validity itself elsewhere.
 
 It means that whatever data validation library we use, it's a dependency of the *API layer*. All layers of our
