@@ -62,7 +62,7 @@ shape of the input and output between the two layers: what fields the input DTO 
 
 ## The tempting mistake
 
-So we know that Pydantic is great at validating data, and our business logic layer expects the inputs to be 
+So we know that Pydantic is great at validating data, and our business logic layer expects the inputs to be
 already validated. It's tempting to do this:
 
 ```python
@@ -82,7 +82,7 @@ class UserFormDTO(BaseModel):
 ```
 
 We validate data with Pydantic, and then our actual function expects an object that inherits from BaseModel, which
-is guaranteed to contain valid data. 
+is guaranteed to contain valid data.
 
 So what is the problem?
 
