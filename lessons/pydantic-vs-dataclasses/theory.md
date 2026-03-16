@@ -21,7 +21,7 @@ Enter your age: ...
 
 Then our app calculates how old they will be next year.
 
-You might recall what the path that this data takes looks like:
+You might recall the path that this data takes:
 
 1. User sends `username` and `age`
 2. We build a `UserFormDTO` out of this data
@@ -46,24 +46,27 @@ full of machines that do different things. There is an age calculating machine, 
 lot of others. This room is the business logic layer.
 
 So a man approaches the gate. This man - the user - wants to know his future, he has a special request: "what age will
-i be next year?". So he writes his age and name on a piece of paper and hands it to sir API Layer. It is then the guards
-responsibility to make sure that the submitted data is valid, before he then goes into the business logic layer and
-feeds the data into the age calculating machine. The output is then received by the guard and handed to the user.
+i be next year?". He writes down his age and name on a piece of paper and hands it to sir API Layer. It is then the guards
+responsibility to make sure that the submitted data is valid before he goes into the business logic layer and
+feeds the data into the age calculating machine. The output is then received by the guard and handed out to the user.
 
 The busiess logic layer is nothing but a collection of functions that can do different things. And the presentation
 layer is just a user-facing interface that accepts requests and knows which functions to call to achieve what the user
 wants.
-They have their own respective responsibilities. For example, we established in the previous lesson that data validation
+They have their own respective responsibilities. For example, as we established in the previous lesson, data validation
 is better handled *before* it reaches the actual machines.
 
 In an ideal world, these two layers are so isolated from each other that, as long as the _contract_ between them remains
 unchanged, one layer can be heavily rewritten without forcing ANY changes in the other. Here, _contract_ means the agreed
-shape of the input and output between the two layers: what fields the input DTO have, and what data is returned.
+shape of the input and output between the two layers: what fields the input DTOs have, and what data is returned.
 
 ## The tempting mistake
 
-So we know that Pydantic is great at validating data, and our business logic layer expects the inputs to be
-already validated. It's tempting to do this:
+So we know that:
+1. Pydantic is great at validating data
+2. our business logic layer expects the inputs to be already validated
+
+It's theredore tempting to do the following:
 
 ```python
 def calculate_age_next_year(data: UserFormDTO) -> int:
@@ -81,8 +84,7 @@ class UserFormDTO(BaseModel):
     age: int
 ```
 
-We validate data with Pydantic, and then our actual function expects an object that inherits from BaseModel, which
-is guaranteed to contain valid data.
+As you can see here, our actual function expects an object that inherits from BaseModel.  
 
 So what is the problem?
 
@@ -92,7 +94,7 @@ The problem is not that this code immediately explodes. In fact, it may work per
 
 The real problem is _architectural_.
 
-Our function that calculates the age is part of the business logic layer of the app. Its job is to just calculate the
+Our function that calculates the age is part of the business logic layer. Its job is to just calculate the
 age. The only thing that matters to a function in the business logic layer, is that the input data is valid, without
 having a slightest clue about _how_ that validation is enforced.
 
