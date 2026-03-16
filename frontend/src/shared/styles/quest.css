@@ -137,6 +137,7 @@
   min-width: 28px;
   height: 28px;
   font-size: 1.4rem;
+  line-height: 1;
   font-weight: 700;
   color: var(--text-muted);
   background: transparent;
@@ -147,12 +148,31 @@
   padding: 0;
 }
 
+.analysis-indicator__label {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  line-height: 1;
+}
+
+.analysis-indicator__label--pending {
+  font-weight: 500;
+  transform: translateY(-0.02em);
+}
+
 .analysis-indicator--ok {
   color: #6bd1a7;
 }
 
 .analysis-indicator--warning {
   color: #f3c86b;
+}
+
+.analysis-indicator__icon {
+  width: 1.02em;
+  height: 1.02em;
+  display: block;
+  transform: translateY(-0.02em);
 }
 
 .analysis-popover {
