@@ -11,7 +11,7 @@ lessons:
     order: 1.3
     no_code: true
 
-  - slug: lesson-template
+  - slug: basemodel
     order: 2
     no_code: false
 
