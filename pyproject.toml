@@ -36,6 +36,7 @@ src = ["backend/src"]
 exclude = [
     "backend/migrations",
     "backend/scripts",
+    "lessons",
     ".venv",
 ]
 

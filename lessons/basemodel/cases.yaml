@@ -1,1 +1,59 @@
 cases:
+  - name: valid_pirate
+    label: valid pirate
+    hidden: false
+    script: |
+      pirate = Pirate(name="Jack Sparrow", gold=125.5, crimes=["theft", "smuggling"])
+      ok = (
+          pirate.name == "Jack Sparrow"
+          and pirate.gold == 125.5
+          and pirate.crimes == ["theft", "smuggling"]
+      )
+      if not ok:
+          reason = "Pirate should accept valid name, gold, and crimes values"
+
+  - name: missing_crimes
+    label: crimes field is required
+    hidden: false
+    script: |
+      try:
+          Pirate(name="Jack Sparrow", gold=125.5)
+          ok = False
+          reason = "Pirate should require the crimes field"
+      except Exception:
+          ok = True
+
+  - name: reject_non_float_gold
+    label: reject non-float gold
+    hidden: false
+    script: |
+      try:
+          Pirate(name="Jack Sparrow", gold="a lot", crimes=["theft"])
+          ok = False
+          reason = "gold should reject values that cannot be parsed as a float"
+      except Exception:
+          ok = True
+
+  - name: reject_non_list_crimes
+    label: reject non-list crimes
+    hidden: false
+    script: |
+      try:
+          Pirate(name="Jack Sparrow", gold=125.5, crimes="theft")
+          ok = False
+          reason = "crimes should be a list of strings, not a single string"
+      except Exception:
+          ok = True
+
+  - name: valid_pirate_different_values
+    label: valid pirate with different values
+    hidden: true
+    script: |
+      pirate = Pirate(name="Anne Bonny", gold=7.25, crimes=["piracy"])
+      ok = (
+          pirate.name == "Anne Bonny"
+          and pirate.gold == 7.25
+          and pirate.crimes == ["piracy"]
+      )
+      if not ok:
+          reason = "Pirate should work for valid input values beyond the public example"
