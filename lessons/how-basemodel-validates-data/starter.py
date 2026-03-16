@@ -2,4 +2,6 @@ from pydantic import BaseModel
 
 
 class Pirate(BaseModel):
-    pass  # <-- replace with actual class body
+    name: str
+    gold: float
+    crimes: list[str]
