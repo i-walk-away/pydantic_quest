@@ -17,10 +17,10 @@ lessons:
 
   - slug: validation-errors
     order: 2.1
-    no_code: false
+    no_code: true
 
   - slug: type-coercion
     order: 2.2
-    no_code: false
+    no_code: true
 
 
