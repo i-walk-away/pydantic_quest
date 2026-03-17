@@ -19,4 +19,8 @@ lessons:
     order: 2.1
     no_code: false
 
+  - slug: type-coercion
+    order: 2.2
+    no_code: false
+
 

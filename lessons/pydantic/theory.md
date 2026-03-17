@@ -165,9 +165,9 @@ The user was a little bit silly and sent us 'Albania' as their age. This is clea
 broken from the very beginning. When _exactly_ will our program fail?
 
 1. User sends `username: "Alice"` and `age: "Albania"` to our API -- ✓
-2. We build a UserFormDTO out of this data -- ✓
+2. We build a UserFormDTO out of this data -- -- -- -- -- -- -- -- - ✓
 3. We call `calculate_age` and pass the DTO as an argument to it --- ✓
-4. The age is calculated <-------- *runtime error upon trying to add 1 to a string*
+4. The age is calculated <-------- X *runtime error upon trying to add 1 to a string*
 5. ...
 
 The broken data made quite a long jorney through our program before something exploded. It shouldn't have even
@@ -455,7 +455,7 @@ Pydantic sees the `int` type hint of our `age` field and throws a `ValidationErr
 
 ### Validators
 
-We can also create simple methods for validating the actual values of our model fields to enforce business rules.
+We can also create simple methods for validating the actual **values** of our model fields to enforce _business rules_.
 
 Flashback to our implementation:
 
