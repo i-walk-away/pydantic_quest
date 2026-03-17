@@ -20,7 +20,7 @@ lessons:
     no_code: true
 
   - slug: type-coercion
-    order: 2.2
+    order: 2.1.2
     no_code: true
 
 
