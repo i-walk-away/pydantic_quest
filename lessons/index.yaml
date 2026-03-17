@@ -15,7 +15,7 @@ lessons:
     order: 2
     no_code: false
 
-  - slug: how-basemodel-validates-data
+  - slug: validation-errors
     order: 2.1
     no_code: false
 
