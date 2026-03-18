@@ -20,6 +20,50 @@ import { Input } from "@shared/ui/Input";
 
 type AuthMode = "login" | "signup";
 
+const lessonCodeStorageKey = "pq:lesson-code";
+
+const loadSavedLessonCodeMap = (): Record<string, string> => {
+  if (typeof window === "undefined") {
+    return {};
+  }
+
+  try {
+    const raw = window.localStorage.getItem(lessonCodeStorageKey);
+    const parsed = raw ? JSON.parse(raw) : {};
+    return parsed && typeof parsed === "object" && !Array.isArray(parsed)
+      ? (parsed as Record<string, string>)
+      : {};
+  } catch {
+    return {};
+  }
+};
+
+const getSavedLessonCode = (lessonSlug: string): string | null => {
+  const map = loadSavedLessonCodeMap();
+  const value = map[lessonSlug];
+  return typeof value === "string" ? value : null;
+};
+
+const saveLessonCode = (lessonSlug: string, nextCode: string): void => {
+  if (typeof window === "undefined") {
+    return;
+  }
+
+  const map = loadSavedLessonCodeMap();
+  map[lessonSlug] = nextCode;
+  window.localStorage.setItem(lessonCodeStorageKey, JSON.stringify(map));
+};
+
+const clearSavedLessonCode = (lessonSlug: string): void => {
+  if (typeof window === "undefined") {
+    return;
+  }
+
+  const map = loadSavedLessonCodeMap();
+  delete map[lessonSlug];
+  window.localStorage.setItem(lessonCodeStorageKey, JSON.stringify(map));
+};
+
 export const QuestPage = (): ReactElement => {
   const { slug } = useParams();
   const location = useLocation();
@@ -87,6 +131,7 @@ export const QuestPage = (): ReactElement => {
     []
   );
   const [code, setCode] = useState(fallbackCode);
+  const [codeLessonSlug, setCodeLessonSlug] = useState("lesson-name");
   const { run: runAnalysisRequest, abort: abortAnalysisRequest } = useLatestRequest();
   const fallbackMarkdown = useMemo(
     () =>
@@ -283,7 +328,9 @@ export const QuestPage = (): ReactElement => {
   }, [lessons, navigate, showFallbackLesson, slug]);
 
   useEffect(() => {
-    setCode(defaultEditorCode);
+    const savedCode = getSavedLessonCode(activeLesson.slug);
+    setCode(savedCode ?? defaultEditorCode);
+    setCodeLessonSlug(activeLesson.slug);
     setRunResult(null);
     setRunError(null);
     setAnalysisDiagnostics([]);
@@ -294,6 +341,14 @@ export const QuestPage = (): ReactElement => {
     setLastRunLessonId(null);
     setIsStdoutOpen(false);
   }, [defaultEditorCode, activeLesson.id]);
+
+  useEffect(() => {
+    if (!activeLesson.slug || codeLessonSlug !== activeLesson.slug) {
+      return;
+    }
+
+    saveLessonCode(activeLesson.slug, code);
+  }, [activeLesson.slug, code, codeLessonSlug]);
 
   useEffect(() => {
     const trimmedCode = code.trim();
@@ -520,7 +575,9 @@ export const QuestPage = (): ReactElement => {
   };
 
   const handleReset = (): void => {
+    clearSavedLessonCode(activeLesson.slug);
     setCode(defaultEditorCode);
+    setCodeLessonSlug(activeLesson.slug);
     setRunResult(null);
     setRunError(null);
     setLastRunLessonId(null);
@@ -635,9 +692,22 @@ export const QuestPage = (): ReactElement => {
   }, [failedVisibleCases.length, passedVisibleCount, runError, runResult]);
 
   const analysisIndicator = useMemo(() => {
+    const warningIcon = (
+      <svg
+        className="analysis-indicator__icon"
+        viewBox="0 0 24 24"
+        aria-hidden="true"
+        focusable="false"
+      >
+        <path d="M12 4 20 19H4Z" fill="none" stroke="currentColor" strokeWidth="1.7" />
+        <path d="M12 9.2v4.8" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" />
+        <circle cx="12" cy="16.8" r="1.1" fill="currentColor" />
+      </svg>
+    );
+
     if (analysisError) {
       return {
-        label: "!",
+        label: warningIcon,
         className: "analysis-indicator analysis-indicator--warning",
         title: analysisError,
       };
@@ -645,7 +715,7 @@ export const QuestPage = (): ReactElement => {
 
     if (isAnalyzing) {
       return {
-        label: "...",
+        label: <span className="analysis-indicator__label analysis-indicator__label--pending">...</span>,
         className: "analysis-indicator",
         title: "Static type checker is running.",
       };
@@ -653,7 +723,7 @@ export const QuestPage = (): ReactElement => {
 
     if (analysisDiagnostics.length === 0) {
       return {
-        label: "✓",
+        label: <span className="analysis-indicator__label">✓</span>,
         className: "analysis-indicator analysis-indicator--ok",
         title: "Static type checker found no errors in this code.",
       };
@@ -672,7 +742,7 @@ export const QuestPage = (): ReactElement => {
     }
 
     return {
-      label: "▲",
+      label: warningIcon,
       className: "analysis-indicator analysis-indicator--warning",
       title: `Static type checker found ${parts.join(", ")}.`,
     };
@@ -804,16 +874,6 @@ export const QuestPage = (): ReactElement => {
           <div className="panel__header">
             <h1 className="panel__title">{activeLesson.title}</h1>
             <div className="panel__header-actions">
-              {isCodeEditorHidden ? (
-                <Button
-                  variant="ghost"
-                  type="button"
-                  className="btn--compact btn--text btn--header-control"
-                  onClick={() => setIsCodeEditorHidden(false)}
-                >
-                  show code editor
-                </Button>
-              ) : null}
               <button
                 type="button"
                 className="lesson-toggle"
@@ -833,6 +893,16 @@ export const QuestPage = (): ReactElement => {
                 <span className="lesson-toggle__label">{lessonLabel}</span>
                 {isLessonCompleted ? <span className="lesson-toggle__check">✓</span> : null}
               </button>
+              {isCodeEditorHidden ? (
+                <Button
+                  variant="ghost"
+                  type="button"
+                  className="btn--compact btn--text btn--header-control"
+                  onClick={() => setIsCodeEditorHidden(false)}
+                >
+                  show code editor
+                </Button>
+              ) : null}
             </div>
           </div>
 

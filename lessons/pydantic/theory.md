@@ -48,14 +48,12 @@ def calculate_age_next_year(age):
 calculate_age_next_year("18")  # ValueError: we passed a string here, can't add +1 to a str
 ```
 
-This code crashes only when `+ 1` is attempted.
+This code crashes only when `+ 1` is attempted, not when `age` of invalid *type* was passed to it.
 The function did not reject the value and attempted to work with it, even though the value was wrong for the job.
 
 That is not very convenient. Python lets values move through the program very freely, and the errors may happen far away
 from where the bad data first entered the system. Also untyped code is *absolutely*
 unreadable.
-
-That makes debugging harder, especially in larger applications.
 
 ### But what about type hints?
 
@@ -83,14 +81,17 @@ def calculate_age_next_year(age: int):
 calculate_age_next_year("18")  # <-- warning: Expected type 'int', got 'str' instead
 ```
 
-But they're called type *hints* for a reason. You can STILL go Rambo and do this:
+But they're called type *hints* for a reason. You can STILL go Rambo and run the code above, and it will still fail
+only when `"18 + 1 is attempted
+
+Or you can do this:
 
 ```python
 x: int = 78
 x = "Rambo"
 ```
 
-This is a valid python program that will not refuse to run. Correct typing is NOT enforced at runtime.
+This is a valid python program that will not refuse to run. Correct typing is NOT **enforced at runtime**.
 
 ### Data validation
 
@@ -108,10 +109,10 @@ The user submits this data, your backend receives it, and then your code uses it
 A simplified path looks like this:
 
 1. we receive `username` and `age` from the user
-2. a part of our code uses that data (calculates age + 1)
+2. that data used somewhere (`age + 1` is calculated)
 3. the result is returned to the user
 
-Now imagine the function that does the actual work expects a small object like this:
+Now imagine that user's input for this specific form is mapped to a small object like this:
 
 ```python
 @dataclass
@@ -164,9 +165,9 @@ The user was a little bit silly and sent us 'Albania' as their age. This is clea
 broken from the very beginning. When _exactly_ will our program fail?
 
 1. User sends `username: "Alice"` and `age: "Albania"` to our API -- ✓
-2. We build a UserFormDTO out of this data -- ✓
+2. We build a UserFormDTO out of this data -- -- -- -- -- -- -- -- - ✓
 3. We call `calculate_age` and pass the DTO as an argument to it --- ✓
-4. The age is calculated <-------- *runtime error upon trying to add 1 to a string*
+4. The age is calculated <-------- X *runtime error upon trying to add 1 to a string*
 5. ...
 
 The broken data made quite a long jorney through our program before something exploded. It shouldn't have even
@@ -454,7 +455,7 @@ Pydantic sees the `int` type hint of our `age` field and throws a `ValidationErr
 
 ### Validators
 
-We can also create simple methods for validating the actual values of our model fields to enforce business rules.
+We can also create simple methods for validating the actual **values** of our model fields to enforce _business rules_.
 
 Flashback to our implementation:
 
