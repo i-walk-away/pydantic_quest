@@ -595,20 +595,6 @@ export const QuestPage = (): ReactElement => {
     }
   };
 
-  const handleReset = (): void => {
-    clearSavedLessonCode(activeLesson.slug);
-    setCode(defaultEditorCode);
-    setCodeLessonSlug(activeLesson.slug);
-    setRunResult(null);
-    setRunError(null);
-    setLastRunLessonId(null);
-    setIsStdoutOpen(false);
-  };
-
-  useEffect(() => {
-    if (runResult?.status !== "accepted") {
-      return;
-    }
   const markActiveLessonCompleted = async (): Promise<void> => {
     if (!activeLesson.slug) {
       return;
@@ -640,7 +626,18 @@ export const QuestPage = (): ReactElement => {
     }
   };
 
+  const handleReset = (): void => {
+    clearSavedLessonCode(activeLesson.slug);
+    setCode(defaultEditorCode);
+    setCodeLessonSlug(activeLesson.slug);
+    setRunResult(null);
+    setRunError(null);
+    setLastRunLessonId(null);
+    setIsStdoutOpen(false);
+  };
+
   const handleQuizAnswerSelect = (questionIndex: number, optionIndex: number): void => {
+    setQuizChecked(false);
     setQuizAnswers((previous) => ({ ...previous, [questionIndex]: optionIndex }));
   };
 
@@ -661,14 +658,6 @@ export const QuestPage = (): ReactElement => {
     } catch {
       // keep local success state even if remote progress update fails
     }
-  };
-
-  const handleReset = (): void => {
-    setCode(defaultEditorCode);
-    setRunResult(null);
-    setRunError(null);
-    setLastRunLessonId(null);
-    setIsStdoutOpen(false);
   };
 
   useEffect(() => {
@@ -805,7 +794,7 @@ export const QuestPage = (): ReactElement => {
 
     if (analysisDiagnostics.length === 0) {
       return {
-        label: <span className="analysis-indicator__label">✓</span>,
+        label: <span className="analysis-indicator__label ui-check">✓</span>,
         className: "analysis-indicator analysis-indicator--ok",
         title: "Static type checker found no errors in this code.",
       };
@@ -954,18 +943,13 @@ export const QuestPage = (): ReactElement => {
       >
         <section className="panel panel--lesson">
           <div className="panel__header">
-            <h1 className="panel__title">{activeLesson.title}</h1>
-            <div className="panel__header-actions">
-              {isCodeEditorHidden ? (
-                <Button
-                  variant="ghost"
-                  type="button"
-                  className="btn--compact btn--text btn--header-control"
-                  onClick={() => setIsCodeEditorHidden(false)}
-                >
-                  show practice
-                </Button>
+            <div className="panel__title-group">
+              <h1 className="panel__title">{activeLesson.title}</h1>
+              {isLessonCompleted ? (
+                <span className="panel__title-check analysis-indicator__label ui-check">✓</span>
               ) : null}
+            </div>
+            <div className="panel__header-actions">
               <button
                 type="button"
                 className="lesson-toggle"
@@ -983,7 +967,6 @@ export const QuestPage = (): ReactElement => {
                   {">"}
                 </span>
                 <span className="lesson-toggle__label">{lessonLabel}</span>
-                {isLessonCompleted ? <span className="lesson-toggle__check">✓</span> : null}
               </button>
               {isCodeEditorHidden ? (
                 <Button
@@ -1023,7 +1006,7 @@ export const QuestPage = (): ReactElement => {
                   <span className="lesson-list__order">{lesson.order}</span>
                   <span className="lesson-list__title">{lesson.title}</span>
                   {completedSlugs.includes(lesson.slug) ? (
-                    <span className="lesson-list__check">✓</span>
+                    <span className="lesson-list__check analysis-indicator__label ui-check">✓</span>
                   ) : null}
                 </button>
               ))}
@@ -1352,6 +1335,11 @@ export const QuestPage = (): ReactElement => {
                                 checked={optionChecked}
                                 onChange={() => handleQuizAnswerSelect(questionIndex, optionIndex)}
                               />
+                              <span className="quiz-option__control" aria-hidden="true">
+                                {optionChecked ? (
+                                  <span className="analysis-indicator__label ui-check">✓</span>
+                                ) : null}
+                              </span>
                               <span>{option}</span>
                             </label>
                           );
@@ -1371,7 +1359,15 @@ export const QuestPage = (): ReactElement => {
               </div>
 
               <div className="panel__footer">
-                <div className={allQuizAnswersCorrect ? "status status--success" : quizChecked ? "status status--error" : "status"}>
+                <div
+                  className={
+                    quizChecked
+                      ? allQuizAnswersCorrect
+                        ? "status status--success"
+                        : "status status--error"
+                      : "status"
+                  }
+                >
                   <span className="status__dot"></span>
                   <span className="status__label">
                     {quizChecked

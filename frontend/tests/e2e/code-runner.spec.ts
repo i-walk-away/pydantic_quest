@@ -118,7 +118,9 @@ test("code runner shows type diagnostics and successful run flow", async ({ page
     'from pydantic import BaseModel\n\nclass User(BaseModel):\n    name: str\n    age = "18"\n'
   );
 
-  await expect(page.getByTestId("analysis-indicator")).toHaveText("▲", { timeout: 4000 });
+  await expect(page.getByTestId("analysis-indicator")).toHaveClass(/analysis-indicator--warning/, {
+    timeout: 4000,
+  });
   await expect(page.getByTestId("analysis-popover")).toHaveCount(0);
 
   await page.getByTestId("analysis-indicator").click();
