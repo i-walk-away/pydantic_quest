@@ -3,16 +3,17 @@ from pydantic import Field, field_validator
 from src.app.domain.lesson_order import normalize_lesson_order
 from src.app.domain.models.dto.extended_basemodel import ExtendedBaseModel
 from src.app.domain.models.dto.lesson.case import LessonCaseDTO
+from src.app.domain.models.dto.lesson.question import LessonQuestionDTO
 
 
 class CreateLessonDTO(ExtendedBaseModel):
     name: str
     order: str
-    no_code: bool = False
     slug: str
     body_markdown: str = Field(default="body")
     code_editor_default: str = Field(default="")
     cases: list[LessonCaseDTO] = Field(default_factory=list)
+    questions: list[LessonQuestionDTO] = Field(default_factory=list)
 
     @field_validator("order", mode="before")
     @classmethod
@@ -32,13 +33,6 @@ class CreateLessonDTO(ExtendedBaseModel):
     @field_validator("cases")
     @classmethod
     def validate_unique_case_names(cls, cases: list[LessonCaseDTO]) -> list[LessonCaseDTO]:
-        """
-        Validate lesson case names are unique.
-
-        :param cases: lesson cases
-
-        :return: validated lesson cases
-        """
         names = set()
         for case in cases:
             if case.name in names:

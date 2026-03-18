@@ -49,6 +49,7 @@ def _write_lesson_files(root: Path, slug: str, order: str) -> None:
         ),
         encoding="utf-8",
     )
+    (lesson_dir / "quiz.yaml").write_text("questions:\n", encoding="utf-8")
 
 
 async def test_sync_lessons_endpoint(

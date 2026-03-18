@@ -1,17 +1,12 @@
 lessons:
   - slug: introduction
     order: 1
-    no_code: true
 
   - slug: pydantic
     order: 1.1
-    no_code: true
 
   - slug: pydantic-vs-dataclasses
     order: 1.3
-    no_code: true
 
   - slug: lesson-template
     order: 2
-    no_code: false
-

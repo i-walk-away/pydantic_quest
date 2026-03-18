@@ -67,6 +67,25 @@ def test_create_lesson_accepts_hierarchical_order() -> None:
     assert dto.order == "2.1"
 
 
+def test_create_lesson_rejects_question_with_missing_options() -> None:
+    with pytest.raises(ValidationError):
+        CreateLessonDTO(
+            order="2.1",
+            slug="base-model",
+            name="BaseModel",
+            body_markdown="body",
+            code_editor_default="",
+            cases=[],
+            questions=[
+                {
+                    "prompt": "Is Python dynamically typed or statically typed?",
+                    "options": ["dynamically typed"],
+                    "correct_option": 0,
+                },
+            ],
+        )
+
+
 def test_github_email_requires_address_format() -> None:
     with pytest.raises(ValidationError):
         GithubEmailDTO(

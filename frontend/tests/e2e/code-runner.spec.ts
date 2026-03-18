@@ -17,6 +17,7 @@ const lessonPayload = [
         hidden: false,
       },
     ],
+    questions: [],
     sample_cases: [
       {
         name: "valid_user",
@@ -253,8 +254,8 @@ test("no-code lesson disables run button", async ({ page }) => {
           id: "lesson-2",
           slug: "theory-only",
           name: "Theory only lesson",
-          no_code: true,
           cases: [],
+          questions: [],
           sample_cases: [],
         },
       ]),
@@ -267,5 +268,48 @@ test("no-code lesson disables run button", async ({ page }) => {
   await expect(
     page.locator(".panel--lesson").getByRole("heading", { name: "Theory only lesson" }).first()
   ).toBeVisible();
+  await expect(page.getByRole("tab", { name: "Questions" })).toBeDisabled();
   await expect(page.getByTestId("run-button")).toBeDisabled();
+});
+
+test("quiz lesson shows questions and marks completion after correct answers", async ({ page }) => {
+  await page.route("**/api/v1/lessons/get_all", async (route) => {
+    await route.fulfill({
+      status: 200,
+      contentType: "application/json",
+      body: JSON.stringify([
+        {
+          ...lessonPayload[0],
+          id: "lesson-3",
+          slug: "quiz-only",
+          name: "Quiz lesson",
+          cases: [],
+          questions: [
+            {
+              prompt: "Is Python dynamically typed or statically typed?",
+              options: ["dynamically typed", "statically typed"],
+              correct_option: 0,
+            },
+          ],
+          sample_cases: [],
+        },
+      ]),
+    });
+  });
+  await mockAnalysis(page);
+  await page.route("**/api/v1/users/me/progress/*", async (route) => {
+    await route.fulfill({
+      status: 200,
+      contentType: "application/json",
+      body: JSON.stringify({ ok: true }),
+    });
+  });
+
+  await page.goto("/");
+
+  await expect(page.getByTestId("quiz-panel")).toBeVisible();
+  await page.getByLabel("dynamically typed").check();
+  await page.getByTestId("check-answers-button").click();
+
+  await expect(page.locator(".status__label")).toHaveText("all answers correct");
 });
