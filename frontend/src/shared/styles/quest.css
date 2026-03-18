@@ -1,8 +1,8 @@
 .quest-scene {
   height: 100vh;
   overflow: hidden;
-  padding-top: 8px;
-  gap: 8px;
+  padding-top: 6px;
+  gap: 6px;
 }
 
 .layout {
@@ -57,8 +57,8 @@
 }
 
 .quest-scene .panel {
-  padding: 16px;
-  gap: 12px;
+  padding: 10px;
+  gap: 7px;
 }
 
 .panel--lesson {
@@ -74,6 +74,9 @@
 .quest-scene .panel__header {
   align-items: center;
   flex-shrink: 0;
+  min-height: 0;
+  padding-bottom: 6px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.06);
 }
 
 .quest-scene .panel__header .btn {
@@ -82,7 +85,7 @@
 
 .quest-scene .panel__footer {
   border-top: 1px solid rgba(255, 255, 255, 0.08);
-  padding-top: 10px;
+  padding-top: 6px;
   flex-shrink: 0;
 }
 
@@ -99,34 +102,42 @@
 }
 
 .quest-scene .panel__title {
-  font-size: 1.4rem;
+  margin: 0;
 }
 
+.quest-scene .panel__header h1.panel__title,
 .quest-scene .panel__header h2.panel__title {
-  font-size: 1.25rem;
+  display: inline-flex;
+  align-items: center;
+  font-size: 0.72rem;
+  line-height: 1;
+  font-weight: 400;
+  text-transform: uppercase;
+  letter-spacing: 0.2em;
+  color: var(--text-muted);
 }
 
 .panel__header-actions {
   display: inline-flex;
   align-items: center;
   justify-content: flex-end;
-  gap: 10px;
+  gap: 8px;
   flex-wrap: wrap;
   min-width: 0;
 }
 
 .panel__meta {
-  font-size: 0.75rem;
+  font-size: 0.72rem;
   color: var(--text-muted);
   text-transform: uppercase;
   letter-spacing: 0.2em;
-  margin-right: 4px;
+  margin-right: 2px;
 }
 
 .panel__meta-group {
   display: inline-flex;
   align-items: center;
-  gap: 10px;
+  gap: 8px;
   position: relative;
 }
 
@@ -134,9 +145,9 @@
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  min-width: 28px;
-  height: 28px;
-  font-size: 1.4rem;
+  min-width: 24px;
+  height: 24px;
+  font-size: 1.2rem;
   line-height: 1;
   font-weight: 700;
   color: var(--text-muted);
@@ -227,11 +238,11 @@
 .lesson-body {
   display: flex;
   flex-direction: column;
-  gap: 16px;
+  gap: 12px;
   flex: 1;
   min-height: 0;
   overflow-y: auto;
-  padding-right: 8px;
+  padding-right: 6px;
 }
 
 .lesson-body .markdown {
@@ -263,9 +274,9 @@
 .lesson-list {
   display: flex;
   flex-direction: column;
-  gap: 8px;
+  gap: 5px;
   overflow-y: auto;
-  padding-right: 8px;
+  padding-right: 6px;
   flex: 1;
   min-height: 0;
 }
@@ -274,10 +285,10 @@
   --lesson-depth: 0;
   display: grid;
   grid-template-columns: max-content 1fr 18px;
-  gap: 10px;
+  gap: 8px;
   align-items: center;
-  min-height: 32px;
-  padding: 6px 10px 6px calc(8px + (var(--lesson-depth) * 24px));
+  min-height: 22px;
+  padding: 4px 8px 4px calc(6px + (var(--lesson-depth) * 22px));
   border-radius: 4px;
   background: transparent;
   color: var(--text-muted);
@@ -298,8 +309,8 @@
   content: "";
   position: absolute;
   left: 0;
-  top: 6px;
-  bottom: 6px;
+  top: 4px;
+  bottom: 4px;
   width: 2px;
   background: var(--md-typeset-a-color);
   border-radius: 2px;
@@ -310,7 +321,7 @@
 }
 
 .lesson-list__order {
-  font-size: 0.85rem;
+  font-size: 0.78rem;
   color: var(--md-typeset-a-color);
   text-align: right;
   font-family: "IBM Plex Mono", monospace;
@@ -319,18 +330,18 @@
 }
 
 .lesson-list__title {
-  font-size: 0.98rem;
+  font-size: 0.9rem;
 }
 
 .lesson-list__check {
   color: #6bd1a7;
-  font-size: 0.9rem;
+  font-size: 0.82rem;
   justify-self: end;
 }
 
 .lesson-samples {
-  margin-top: 16px;
-  padding: 12px;
+  margin-top: 12px;
+  padding: 10px;
   border: 1px solid rgba(255, 255, 255, 0.08);
   background: rgba(0, 0, 0, 0.28);
   display: flex;
@@ -429,6 +440,8 @@
 .quest-scene .btn--header-control {
   font-weight: 400;
   color: var(--text-muted);
+  font-size: 0.72rem;
+  padding: 0;
 }
 
 .quest-scene .btn--header-control::before {
@@ -438,8 +451,8 @@
 .quest-scene .btn--text::before {
   content: ">";
   color: var(--md-typeset-a-color);
-  margin-right: 6px;
-  font-size: 0.9rem;
+  margin-right: 4px;
+  font-size: 0.82rem;
   font-weight: 400;
   display: inline-block;
 }
