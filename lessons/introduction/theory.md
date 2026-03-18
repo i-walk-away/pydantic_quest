@@ -12,15 +12,16 @@ lesson you're interested in. Although i recommend you to complete them in order.
 
 ## Interface
 
-To your right is the code editor. You can hide it with the
+The panel to our right hosts the code editor and the quiz page. You can hide it with the
 
 > `>` HIDE
 
-button until you need it. It's backed up by an actual code execution engine and runs python 3.12.
+button until you need it. The editor is backed up by an actual code execution engine and runs python 3.12.
 You will use it to complete assignments for practical lessons. For theoretical lessons, like this one, code runner is
 disabled.
 
 Pressing `reset` returns the code editor to its original state, in case you mess up!
+Or resets the quiz if you're on the corresponding tab. 
 
 At the bottom of each lesson, there will be `test cases` list. Unfold it to see how your
 submitted code will be tested to ensure that you've completed the assignment correctly.
