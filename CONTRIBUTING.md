@@ -52,6 +52,9 @@ Valid examples:
 
   - slug: basemodel
     order: 2.1
+    
+  - slug: basemodel-settings
+    order: 2.1.1
 ```
 
 Rules:
@@ -128,5 +131,5 @@ If it is empty, the lesson simply has no quiz.
 Before opening a PR:
 
 1. verify `lesson.yaml`, `theory.md`, `starter.py`, `cases.yaml`, and `quiz.yaml` exist in your new lesson folder
-2. verify lesson slug is added to [lessons/index.yaml](lessons/index.yaml)
-3. confirm each visible case has clear `label` and useful `reason`
+2. verify lesson is added to [lessons/index.yaml](lessons/index.yaml)
+
