@@ -1,0 +1,20 @@
+questions:
+  - prompt: "Which part of the app receives raw, volatile data from the outside world?"
+    options:
+      - "the business logic layer"
+      - "the API layer"
+    correct_option: 1
+
+  - prompt: "In the gate analogy, what do the machines behind the gate represent?"
+    options:
+      - "the business logic layer"
+      - "the API layer"
+      - "the users sending requests"
+    correct_option: 0
+
+  - prompt: "What does the _contract_ between the two layers mean?"
+    options:
+      - "a promise that both layers must use the same validation library"
+      - "a rule saying business logic must always know how validation works"
+      - "the agreed form of the input and output between the layers"
+    correct_option: 2

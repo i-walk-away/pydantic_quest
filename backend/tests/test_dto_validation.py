@@ -1,7 +1,6 @@
 import pytest
 from pydantic import ValidationError
 
-from src.app.content.models import LessonsIndexFile
 from src.app.domain.models.dto.auth.auth import LoginCredentials
 from src.app.domain.models.dto.auth.github import GithubEmailDTO
 from src.app.domain.models.dto.execution.execution_request import ExecutionRequestDTO
@@ -67,6 +66,25 @@ def test_create_lesson_accepts_hierarchical_order() -> None:
     assert dto.order == "2.1"
 
 
+def test_create_lesson_rejects_question_with_missing_options() -> None:
+    with pytest.raises(ValidationError):
+        CreateLessonDTO(
+            order="2.1",
+            slug="base-model",
+            name="BaseModel",
+            body_markdown="body",
+            code_editor_default="",
+            cases=[],
+            questions=[
+                {
+                    "prompt": "Is Python dynamically typed or statically typed?",
+                    "options": ["dynamically typed"],
+                    "correct_option": 0,
+                },
+            ],
+        )
+
+
 def test_github_email_requires_address_format() -> None:
     with pytest.raises(ValidationError):
         GithubEmailDTO(
@@ -74,8 +92,3 @@ def test_github_email_requires_address_format() -> None:
             primary=True,
             verified=True,
         )
-
-
-def test_lessons_index_file_requires_items() -> None:
-    with pytest.raises(ValidationError):
-        LessonsIndexFile.model_validate(obj={"lessons": []})

@@ -1,0 +1,102 @@
+questions:
+# This file defines a small end-of-lesson quiz used to reinforce the material.
+#
+# It describes multiple-choice questions that the UI renders in the
+# `Questions` tab of the lesson.
+#
+# The learner selects answers and presses `check answers`.
+#
+# If all answers are correct:
+# - the lesson is marked as completed
+# - the learner can move on
+#
+# If at least one answer is wrong:
+# - the lesson stays incomplete
+# - the learner can try again immediately
+#
+# This file is always required for consistency, but it can be empty.
+# An empty quiz means that no `Questions` tab will be shown for the lesson.
+# It's good for a lesson to have a quiz, but not exactly neccessary.
+#
+#
+# Every question item has three fields:
+#
+# prompt:
+#   The question text shown to the learner. Write prompts in quotes.
+#   If the prompt is multi-line, use a block scalar instead. There will be an example.
+#
+#
+# options:
+#   A list of answer choices shown under the prompt. Write every option in quotes.
+#
+#   Requirements:
+#   - at least two options
+#   - each option must be non-empty
+#
+#
+#   Practical advice:
+#   - it's alright if you make wrong answers believable enough to test understanding
+#   - even if the question and the answer feel very obvious, they still reinforce
+#     the obtained knowledge. don't be afraid to make your quiz very easy
+#
+# correct_option:
+#   Index of the correct answer in `options` (begins with 0).
+#
+#   Example:
+#   options:
+#     - dynamically typed
+#     - statically typed
+#   correct_option: 0
+#
+#
+# Keep each question focused. Prefer three clear questions over one bloated,
+# over-explained question with too many answer choices.
+#
+# Some actual examples:
+
+  - prompt: "Is Python dynamically typed or statically typed?"
+    options:
+      - "dynamically typed"
+      - "statically typed"
+    correct_option: 0
+
+  # Behavior question.
+  #
+  # Useful after showing a short code snippet in the theory.
+  # This checks whether the learner understood what would actually happen.
+  - prompt: "What does Pydantic do by default if a required field is missing while creating a model?"
+    options:
+      - "raises ValidationError"
+      - "silently inserts None"
+      - "creates the model anyway and ignores the field"
+    correct_option: 0
+
+  # Practical design question.
+  #
+  # This kind of question is good for lessons about architecture and usage
+  # guidelines, not just syntax.
+  - prompt: "Where should volatile unsanitized user input usually be validated?"
+    options:
+      - "inside business logic functions"
+      - "near the point where the program receives it"
+      - "right before writing to the database"
+    correct_option: 1
+
+  # Multi-line prompt example.
+  #
+  # Use this style if the question includes a code snippet or a longer quote.
+  - prompt: |
+      Assume this code:
+
+      ```python
+      def calculate_age_next_year(age):
+          return age + 1
+
+      calculate_age_next_year("18")
+      ```
+
+      When exactly will it fail with an error?
+    options:
+      - "right when the function is defined"
+      - "only when Python actually tries to evaluate \"18\" + 1"
+    correct_option: 1

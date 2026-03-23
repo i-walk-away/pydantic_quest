@@ -1,0 +1,21 @@
+questions:
+  - prompt: "What is type coercion in Pydantic?"
+    options:
+      - "Pydantic trying to transform an incompatible but sensible value into the expected type"
+      - "Pydantic ignoring your type hints whenever validation would fail"
+      - "Pydantic converting every field value into a string before checking it"
+    correct_option: 0
+
+  - prompt: "Why does `Pirate(gold=100)` work if `gold` is annotated as `float`?"
+    options:
+      - "because `100` is compatible with `float`, so Pydantic turns it into `100.0`"
+      - "because `float` fields are never validated strictly enough to fail"
+      - "because integers and floats are the same type as far as Pydantic is concerned"
+    correct_option: 0
+
+  - prompt: "What correction does this lesson make to the earlier simplified explanation?"
+    options:
+      - "Pydantic is not strictly strict by default and often tries to transform values first"
+      - "Pydantic never raises `ValidationError` for wrong field types"
+      - "type coercion only works for booleans and never for numbers"
+    correct_option: 0

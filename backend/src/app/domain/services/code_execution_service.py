@@ -23,17 +23,6 @@ class CodeExecutionService:
             source_builder: ExecutionSourceBuilder,
             result_parser: ExecutionResultParser,
     ) -> None:
-        """
-        Initialize code execution service.
-
-        :param lesson_service: lesson service
-        :param code_runner: code runner
-        :param progress_service: lesson progress service
-        :param source_builder: source builder
-        :param result_parser: result parser
-
-        :return: None
-        """
         self.lesson_service = lesson_service
         self.code_runner = code_runner
         self.progress_service = progress_service
@@ -41,26 +30,10 @@ class CodeExecutionService:
         self.result_parser = result_parser
 
     async def execute(self, lesson_id: UUID, code: str, user_id: UUID | None = None) -> ExecutionResultDTO:
-        """
-        Execute lesson code against lesson cases.
-
-        This method intentionally orchestrates only high-level flow:
-        load lesson, run code, parse result, and update progress on success.
-
-        :param lesson_id: lesson id
-        :param code: user code
-        :param user_id: user id
-
-        :return: execution result
-        """
         lesson = await self._get_lesson(lesson_id=lesson_id)
+        self._validate_payload_sizes(code=code, cases=lesson.cases)
 
-        self._validate_payload_sizes(
-            code=code,
-            cases=lesson.cases,
-        )
-
-        if lesson.no_code:
+        if not lesson.cases:
             return ExecutionResultDTO(
                 status=ExecutionStatus.RUNTIME_ERROR,
                 cases=[],
@@ -69,70 +42,26 @@ class CodeExecutionService:
                 duration_ms=None,
             )
 
-        if not lesson.cases:
-            return ExecutionResultDTO(
-                status=ExecutionStatus.RUNTIME_ERROR,
-                cases=[],
-                stderr="Lesson cases are not configured.",
-                stdout=None,
-                duration_ms=None,
-            )
-
-        source_code = self.source_builder.build(
-            cases=lesson.cases,
-            code=code,
-        )
-
+        source_code = self.source_builder.build(cases=lesson.cases, code=code)
         if len(source_code) > settings.execution.max_source_chars:
             raise ExecutionPayloadTooLarge
 
         runner_result = await self.code_runner.execute(source_code=source_code)
-        result = self.result_parser.parse(
-            runner_result=runner_result,
-            lesson_cases=lesson.cases,
-        )
+        result = self.result_parser.parse(runner_result=runner_result, lesson_cases=lesson.cases)
 
         if result.status == ExecutionStatus.ACCEPTED and user_id is not None:
-            await self.progress_service.mark_completed(
-                user_id=user_id,
-                lesson_id=lesson_id,
-            )
+            await self.progress_service.mark_completed(user_id=user_id, lesson_id=lesson_id)
 
         return result
 
     async def _get_lesson(self, lesson_id: UUID) -> LessonDTO:
-        """
-        Resolve lesson data.
-
-        This helper exists to isolate lesson lookup from execution flow so the
-        public execute method stays focused on orchestration steps.
-
-        :param lesson_id: lesson id
-
-        :return: lesson dto
-        """
-        lesson = await self.lesson_service.get_by_id(id=lesson_id)
-
-        return lesson
+        return await self.lesson_service.get_by_id(id=lesson_id)
 
     @staticmethod
     def _validate_payload_sizes(code: str, cases: list[LessonCaseDTO]) -> None:
-        """
-        Validate input sizes.
-
-        Size limits are checked before remote execution to fail fast and protect
-        runner resources from oversized payloads.
-
-        :param code: user code
-        :param cases: lesson cases
-
-        :return: None
-        """
-
         if len(code) > settings.execution.max_user_code_chars:
             raise ExecutionPayloadTooLarge
 
         cases_json = json.dumps([case.model_dump() for case in cases])
-
         if len(cases_json) > settings.execution.max_eval_script_chars:
             raise ExecutionPayloadTooLarge

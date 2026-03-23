@@ -79,3 +79,7 @@ And before you test it: no, Pydantic only speaks english. `'Si'`, `'Oui'` and `'
 to a boolean. 
 
 // add link to all compatible types later
+
+## Assignment
+
+Open the `Questions` tab in the practice panel on the right and complete the quiz.

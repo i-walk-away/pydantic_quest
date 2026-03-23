@@ -1,0 +1,24 @@
+questions:
+
+  - prompt: |
+      Assume this code:
+
+      ```python
+      x: list[float] = ['2.914', '3.0']
+      x = "Definitely a float"
+      ```
+
+      What is true about it?
+    options:
+      - "Python refuses to run it because `x` was declared as a list of floats"
+      - "it is a valid Python program and Python will still run it"
+      - "the type hint forces `x` to stay a list until the program exits"
+    correct_option: 1
+
+
+  - prompt: "What is the main limitation of type hints in Python?"
+    options:
+      - "they are mainly useful to tools like type checkers and IDEs"
+      - "they only work inside function definitions, not in variables or classes"
+      - "they are not enforced at runtime"
+    correct_option: 2

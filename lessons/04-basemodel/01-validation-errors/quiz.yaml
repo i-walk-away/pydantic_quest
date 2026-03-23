@@ -1,0 +1,21 @@
+questions:
+  - prompt: "What is a `ValidationError` in this lesson?"
+    options:
+      - "an error raised when a model fails validation during instantiation"
+      - "an error raised only by custom field validators"
+      - "an error raised when Python cannot parse the model class definition"
+    correct_option: 0
+
+  - prompt: "What happens if you forget to provide a required field when creating a `BaseModel` subclass?"
+    options:
+      - "Pydantic silently fills it with `None`"
+      - "Pydantic raises `ValidationError`"
+      - "the model is still created, but that field becomes inaccessible"
+    correct_option: 1
+
+  - prompt: "What other built-in reason can make model creation fail with `ValidationError`?"
+    options:
+      - "giving a field a value that is not compatible with its type hint"
+      - "having more than three fields in the model"
+      - "importing `BaseModel` together with `dataclass` in the same file"
+    correct_option: 0

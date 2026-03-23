@@ -38,6 +38,13 @@ export const fetchUserProgress = async (): Promise<string[]> => {
   });
 };
 
+export const markLessonCompleted = async (lessonId: string): Promise<{ ok: boolean }> => {
+  return apiRequest<{ ok: boolean }>({
+    path: `/api/v1/users/me/progress/${lessonId}`,
+    method: "POST",
+  });
+};
+
 export const resetUserProgress = async (): Promise<{ deleted: number }> => {
   return apiRequest<{ deleted: number }>({
     path: "/api/v1/users/me/progress/reset",

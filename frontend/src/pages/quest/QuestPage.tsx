@@ -5,7 +5,7 @@ import logoUrl from "@shared/assets/logo.png";
 import { buildGithubLoginUrl, loginUser, signupUser } from "@shared/api/authApi";
 import { analyzeLessonCode, runLessonCode } from "@shared/api/executionApi";
 import { fetchLessons } from "@shared/api/lessonApi";
-import { fetchUserProgress } from "@shared/api/userApi";
+import { fetchUserProgress, markLessonCompleted } from "@shared/api/userApi";
 import { clearAuthToken, getAuthRole, getAuthUsername, setAuthToken } from "@shared/lib/auth";
 import { renderMarkdown } from "@shared/lib/markdown/renderMarkdown";
 import { useLatestRequest } from "@shared/lib/useLatestRequest";
@@ -19,8 +19,15 @@ import { LazyCodeEditor } from "@shared/ui/LazyCodeEditor";
 import { Input } from "@shared/ui/Input";
 
 type AuthMode = "login" | "signup";
+type PracticeTab = "code" | "questions";
 
 const lessonCodeStorageKey = "pq:lesson-code";
+const lessonQuizStorageKey = "pq:lesson-quiz";
+
+type SavedLessonQuizState = {
+  answers: Record<number, number>;
+  checked: boolean;
+};
 
 const loadSavedLessonCodeMap = (): Record<string, string> => {
   if (typeof window === "undefined") {
@@ -64,6 +71,62 @@ const clearSavedLessonCode = (lessonSlug: string): void => {
   window.localStorage.setItem(lessonCodeStorageKey, JSON.stringify(map));
 };
 
+const loadSavedLessonQuizMap = (): Record<string, SavedLessonQuizState> => {
+  if (typeof window === "undefined") {
+    return {};
+  }
+
+  try {
+    const raw = window.localStorage.getItem(lessonQuizStorageKey);
+    const parsed = raw ? JSON.parse(raw) : {};
+    return parsed && typeof parsed === "object" && !Array.isArray(parsed)
+      ? (parsed as Record<string, SavedLessonQuizState>)
+      : {};
+  } catch {
+    return {};
+  }
+};
+
+const getSavedLessonQuiz = (lessonSlug: string): SavedLessonQuizState | null => {
+  const map = loadSavedLessonQuizMap();
+  const value = map[lessonSlug];
+  if (!value || typeof value !== "object" || Array.isArray(value)) {
+    return null;
+  }
+
+  const answers = value.answers;
+  const checked = value.checked;
+
+  if (!answers || typeof answers !== "object" || Array.isArray(answers) || typeof checked !== "boolean") {
+    return null;
+  }
+
+  return {
+    answers: answers as Record<number, number>,
+    checked,
+  };
+};
+
+const saveLessonQuiz = (lessonSlug: string, nextState: SavedLessonQuizState): void => {
+  if (typeof window === "undefined") {
+    return;
+  }
+
+  const map = loadSavedLessonQuizMap();
+  map[lessonSlug] = nextState;
+  window.localStorage.setItem(lessonQuizStorageKey, JSON.stringify(map));
+};
+
+const clearSavedLessonQuiz = (lessonSlug: string): void => {
+  if (typeof window === "undefined") {
+    return;
+  }
+
+  const map = loadSavedLessonQuizMap();
+  delete map[lessonSlug];
+  window.localStorage.setItem(lessonQuizStorageKey, JSON.stringify(map));
+};
+
 export const QuestPage = (): ReactElement => {
   const { slug } = useParams();
   const location = useLocation();
@@ -93,6 +156,9 @@ export const QuestPage = (): ReactElement => {
   const [runError, setRunError] = useState<string | null>(null);
   const [isRunning, setIsRunning] = useState(false);
   const [isStdoutOpen, setIsStdoutOpen] = useState(false);
+  const [activePracticeTab, setActivePracticeTab] = useState<PracticeTab>("code");
+  const [quizAnswers, setQuizAnswers] = useState<Record<number, number>>({});
+  const [quizChecked, setQuizChecked] = useState(false);
   const [analysisDiagnostics, setAnalysisDiagnostics] = useState<CodeAnalysisDiagnostic[]>([]);
   const [analysisError, setAnalysisError] = useState<string | null>(null);
   const [isAnalyzing, setIsAnalyzing] = useState(false);
@@ -173,6 +239,7 @@ export const QuestPage = (): ReactElement => {
       updatedAt: null,
       order: "1",
       noCode: false,
+      questions: [],
     }),
     [fallbackCode, fallbackMarkdown]
   );
@@ -196,7 +263,8 @@ export const QuestPage = (): ReactElement => {
     [activeLesson.bodyMarkdown]
   );
   const lessonLabel = `lesson ${activeLesson.order}`;
-  const isNoCodeLesson = activeLesson.noCode;
+  const hasCodeTask = activeLesson.cases.length > 0;
+  const hasQuiz = activeLesson.questions.length > 0;
   const activeLessonIndex = lessons.findIndex((lesson) => lesson.id === activeLesson.id);
   const isAtFirstLesson = lessons.length > 0 && activeLessonIndex <= 0;
   const isAtLastLesson = lessons.length > 0 && activeLessonIndex >= lessons.length - 1;
@@ -329,6 +397,7 @@ export const QuestPage = (): ReactElement => {
 
   useEffect(() => {
     const savedCode = getSavedLessonCode(activeLesson.slug);
+    const savedQuiz = getSavedLessonQuiz(activeLesson.slug);
     setCode(savedCode ?? defaultEditorCode);
     setCodeLessonSlug(activeLesson.slug);
     setRunResult(null);
@@ -340,7 +409,14 @@ export const QuestPage = (): ReactElement => {
     setIsSampleCasesOpen(false);
     setLastRunLessonId(null);
     setIsStdoutOpen(false);
-  }, [defaultEditorCode, activeLesson.id]);
+    setQuizAnswers(savedQuiz?.answers ?? {});
+    setQuizChecked(savedQuiz?.checked ?? false);
+    if (activeLesson.cases.length > 0) {
+      setActivePracticeTab("code");
+    } else if (activeLesson.questions.length > 0) {
+      setActivePracticeTab("questions");
+    }
+  }, [defaultEditorCode, activeLesson.id, activeLesson.cases.length, activeLesson.questions.length]);
 
   useEffect(() => {
     if (!activeLesson.slug || codeLessonSlug !== activeLesson.slug) {
@@ -351,6 +427,14 @@ export const QuestPage = (): ReactElement => {
   }, [activeLesson.slug, code, codeLessonSlug]);
 
   useEffect(() => {
+    if (!hasCodeTask) {
+      setAnalysisDiagnostics([]);
+      setAnalysisError(null);
+      setIsAnalyzing(false);
+      abortAnalysisRequest();
+      return;
+    }
+
     const trimmedCode = code.trim();
 
     if (!trimmedCode) {
@@ -387,7 +471,7 @@ export const QuestPage = (): ReactElement => {
     return () => {
       window.clearTimeout(timer);
     };
-  }, [abortAnalysisRequest, code, runAnalysisRequest]);
+  }, [abortAnalysisRequest, code, hasCodeTask, runAnalysisRequest]);
 
   useEffect(() => {
     if (analysisDiagnostics.length > 0 || analysisError) {
@@ -574,6 +658,37 @@ export const QuestPage = (): ReactElement => {
     }
   };
 
+  const markActiveLessonCompleted = async (): Promise<void> => {
+    if (!activeLesson.slug) {
+      return;
+    }
+
+    setCompletedSlugs((previous) => {
+      if (previous.includes(activeLesson.slug)) {
+        return previous;
+      }
+
+      const next = [...previous, activeLesson.slug];
+      if (!currentUser && typeof window !== "undefined") {
+        window.localStorage.setItem("pq_completed_lessons", JSON.stringify(next));
+      }
+      return next;
+    });
+
+    if (currentUser) {
+      await markLessonCompleted(activeLesson.id);
+      setRemoteCompletedIds((prev) => {
+        if (!prev) {
+          return [activeLesson.id];
+        }
+        if (prev.includes(activeLesson.id)) {
+          return prev;
+        }
+        return [...prev, activeLesson.id];
+      });
+    }
+  };
+
   const handleReset = (): void => {
     clearSavedLessonCode(activeLesson.slug);
     setCode(defaultEditorCode);
@@ -584,37 +699,47 @@ export const QuestPage = (): ReactElement => {
     setIsStdoutOpen(false);
   };
 
-  useEffect(() => {
-    if (runResult?.status !== "accepted") {
+  const handleQuizAnswerSelect = (questionIndex: number, optionIndex: number): void => {
+    setQuizChecked(false);
+    setQuizAnswers((previous) => ({ ...previous, [questionIndex]: optionIndex }));
+  };
+
+  const handleCheckAnswers = async (): Promise<void> => {
+    setQuizChecked(true);
+
+    const allAnswered = activeLesson.questions.every((_, index) => index in quizAnswers);
+    const allCorrect = activeLesson.questions.every(
+      (question, index) => quizAnswers[index] === question.correct_option,
+    );
+
+    if (!allAnswered || !allCorrect) {
       return;
     }
-    if (!activeLesson.slug) {
+
+    saveLessonQuiz(activeLesson.slug, {
+      answers: quizAnswers,
+      checked: true,
+    });
+
+    try {
+      await markActiveLessonCompleted();
+    } catch {
+      // keep local success state even if remote progress update fails
+    }
+  };
+
+  useEffect(() => {
+    if (runResult?.status !== "accepted") {
       return;
     }
     if (!lastRunLessonId || lastRunLessonId !== activeLesson.id) {
       return;
     }
-    setCompletedSlugs((previous) => {
-      if (previous.includes(activeLesson.slug)) {
-        return previous;
-      }
-      const next = [...previous, activeLesson.slug];
-      if (!currentUser) {
-        window.localStorage.setItem("pq_completed_lessons", JSON.stringify(next));
-      } else {
-        setRemoteCompletedIds((prev) => {
-          if (!prev) {
-            return [activeLesson.id];
-          }
-          if (prev.includes(activeLesson.id)) {
-            return prev;
-          }
-          return [...prev, activeLesson.id];
-        });
-      }
-      return next;
+
+    void markActiveLessonCompleted().catch(() => {
+      // keep accepted run visible even if remote progress update fails
     });
-  }, [activeLesson.slug, runResult, currentUser, activeLesson.id, lastRunLessonId]);
+  }, [activeLesson.id, lastRunLessonId, runResult?.status]);
 
   useEffect(() => {
     setIsStdoutOpen(false);
@@ -689,7 +814,21 @@ export const QuestPage = (): ReactElement => {
     }
 
     return "Execution failed.";
-  }, [failedVisibleCases.length, passedVisibleCount, runError, runResult]);
+  }, [passedVisibleCount, runError, runResult]);
+
+  const quizCorrectCount = useMemo(() => {
+    return activeLesson.questions.filter(
+      (question, index) => quizAnswers[index] === question.correct_option,
+    ).length;
+  }, [activeLesson.questions, quizAnswers]);
+
+  const allQuizQuestionsAnswered = useMemo(() => {
+    return activeLesson.questions.every((_, index) => index in quizAnswers);
+  }, [activeLesson.questions, quizAnswers]);
+
+  const allQuizAnswersCorrect = useMemo(() => {
+    return activeLesson.questions.length > 0 && quizCorrectCount === activeLesson.questions.length;
+  }, [activeLesson.questions.length, quizCorrectCount]);
 
   const analysisIndicator = useMemo(() => {
     const warningIcon = (
@@ -723,7 +862,7 @@ export const QuestPage = (): ReactElement => {
 
     if (analysisDiagnostics.length === 0) {
       return {
-        label: <span className="analysis-indicator__label">✓</span>,
+        label: <span className="analysis-indicator__label ui-check">✓</span>,
         className: "analysis-indicator analysis-indicator--ok",
         title: "Static type checker found no errors in this code.",
       };
@@ -872,7 +1011,12 @@ export const QuestPage = (): ReactElement => {
       >
         <section className="panel panel--lesson">
           <div className="panel__header">
-            <h1 className="panel__title">{activeLesson.title}</h1>
+            <div className="panel__title-group">
+              <h1 className="panel__title">{activeLesson.title}</h1>
+              {isLessonCompleted ? (
+                <span className="panel__title-check analysis-indicator__label ui-check">✓</span>
+              ) : null}
+            </div>
             <div className="panel__header-actions">
               <button
                 type="button"
@@ -891,7 +1035,6 @@ export const QuestPage = (): ReactElement => {
                   {">"}
                 </span>
                 <span className="lesson-toggle__label">{lessonLabel}</span>
-                {isLessonCompleted ? <span className="lesson-toggle__check">✓</span> : null}
               </button>
               {isCodeEditorHidden ? (
                 <Button
@@ -931,7 +1074,7 @@ export const QuestPage = (): ReactElement => {
                   <span className="lesson-list__order">{lesson.order}</span>
                   <span className="lesson-list__title">{lesson.title}</span>
                   {completedSlugs.includes(lesson.slug) ? (
-                    <span className="lesson-list__check">✓</span>
+                    <span className="lesson-list__check analysis-indicator__label ui-check">✓</span>
                   ) : null}
                 </button>
               ))}
@@ -943,52 +1086,54 @@ export const QuestPage = (): ReactElement => {
               ) : (
                 <div className="lesson-body" ref={lessonBodyRef}>
                   <article className="markdown" dangerouslySetInnerHTML={{ __html: lessonHtml }} />
-                  <div
-                    className="lesson-samples"
-                    role="button"
-                    tabIndex={0}
-                    onClick={handleSampleCasesToggle}
-                    onKeyDown={(event) => {
-                      if (event.key === "Enter" || event.key === " ") {
-                        event.preventDefault();
-                        handleSampleCasesToggle();
-                      }
-                    }}
-                    aria-expanded={isSampleCasesOpen}
-                  >
-                    <Button
-                      variant="ghost"
-                      type="button"
-                      className="btn--compact btn--text"
-                      disabled={isLessonListOpen}
-                      data-testid="test-cases-toggle"
+                  {hasCodeTask ? (
+                    <div
+                      className="lesson-samples"
+                      role="button"
+                      tabIndex={0}
+                      onClick={handleSampleCasesToggle}
+                      onKeyDown={(event) => {
+                        if (event.key === "Enter" || event.key === " ") {
+                          event.preventDefault();
+                          handleSampleCasesToggle();
+                        }
+                      }}
+                      aria-expanded={isSampleCasesOpen}
                     >
-                      test cases
-                    </Button>
-                    {isSampleCasesOpen && (
-                      <div className="lesson-samples__body">
-                        <p className="lesson-samples__intro">
-                          These are example test cases you can use as guidance while writing the
-                          solution. Hidden checks also run when you press run.
-                        </p>
-                        {activeLesson.sampleCases.length === 0 ? (
-                          <div className="muted">No public test cases for this lesson yet.</div>
-                        ) : (
-                          <div className="lesson-samples__list">
-                            {activeLesson.sampleCases.map((sampleCase, index) => (
-                              <div key={sampleCase.name} className="lesson-samples__row">
-                                <span className="lesson-samples__index">{index + 1}</span>
-                                <div className="lesson-samples__content">
-                                  <span className="lesson-samples__label">{sampleCase.label}</span>
-                                  <span className="lesson-samples__hint">Try to make this pass.</span>
+                      <Button
+                        variant="ghost"
+                        type="button"
+                        className="btn--compact btn--text"
+                        disabled={isLessonListOpen}
+                        data-testid="test-cases-toggle"
+                      >
+                        test cases
+                      </Button>
+                      {isSampleCasesOpen ? (
+                        <div className="lesson-samples__body">
+                          <p className="lesson-samples__intro">
+                            These are example test cases you can use as guidance while writing the
+                            solution. Hidden checks also run when you press run.
+                          </p>
+                          {activeLesson.sampleCases.length === 0 ? (
+                            <div className="muted">No public test cases for this lesson yet.</div>
+                          ) : (
+                            <div className="lesson-samples__list">
+                              {activeLesson.sampleCases.map((sampleCase, index) => (
+                                <div key={sampleCase.name} className="lesson-samples__row">
+                                  <span className="lesson-samples__index">{index + 1}</span>
+                                  <div className="lesson-samples__content">
+                                    <span className="lesson-samples__label">{sampleCase.label}</span>
+                                    <span className="lesson-samples__hint">Try to make this pass.</span>
+                                  </div>
                                 </div>
-                              </div>
-                            ))}
-                          </div>
-                        )}
-                      </div>
-                    )}
-                  </div>
+                              ))}
+                            </div>
+                          )}
+                        </div>
+                      ) : null}
+                    </div>
+                  ) : null}
                 </div>
               )}
             </>
@@ -1028,53 +1173,75 @@ export const QuestPage = (): ReactElement => {
         {!isCodeEditorHidden ? (
           <section className="panel panel--code">
           <div className="panel__header">
-            <h2 className="panel__title">Code editor</h2>
+            <div className="panel__tabs" role="tablist" aria-label="Practice panel tabs">
+              <button
+                type="button"
+                role="tab"
+                aria-selected={activePracticeTab === "code"}
+                className={activePracticeTab === "code" ? "panel__tab is-active" : "panel__tab"}
+                onClick={() => setActivePracticeTab("code")}
+              >
+                Code editor
+              </button>
+              <button
+                type="button"
+                role="tab"
+                aria-selected={activePracticeTab === "questions"}
+                className={activePracticeTab === "questions" ? "panel__tab is-active" : "panel__tab"}
+                onClick={() => setActivePracticeTab("questions")}
+                disabled={!hasQuiz}
+              >
+                Questions
+              </button>
+            </div>
             <div className="panel__header-actions">
-              <div className="panel__meta-group" ref={analysisRef}>
-                <span className="panel__meta">python 3.12</span>
-                <button
-                  type="button"
-                  className={analysisIndicator.className}
-                  title={analysisIndicator.title}
-                  aria-label={analysisIndicator.title}
-                  data-testid="analysis-indicator"
-                  onClick={() => {
-                    if (analysisDiagnostics.length === 0 && !analysisError) {
-                      return;
-                    }
+              {activePracticeTab === "code" ? (
+                <div className="panel__meta-group" ref={analysisRef}>
+                  <span className="panel__meta">python 3.12</span>
+                  <button
+                    type="button"
+                    className={analysisIndicator.className}
+                    title={analysisIndicator.title}
+                    aria-label={analysisIndicator.title}
+                    data-testid="analysis-indicator"
+                    onClick={() => {
+                      if (analysisDiagnostics.length === 0 && !analysisError) {
+                        return;
+                      }
 
-                    setIsAnalysisOpen((prev) => !prev);
-                  }}
-                >
-                  {analysisIndicator.label}
-                </button>
-                {isAnalysisOpen && (analysisDiagnostics.length > 0 || analysisError) ? (
-                  <div className="analysis-popover" data-testid="analysis-popover">
-                    {analysisError ? (
-                      <div className="analysis-banner">{analysisError}</div>
-                    ) : null}
-                    {analysisDiagnostics.length > 0 ? (
-                      <div className="analysis-list" data-testid="analysis-list">
-                        {analysisDiagnostics.slice(0, 5).map((item, index) => (
-                          <div
-                            key={`${item.line}:${item.column}:${item.name ?? "diagnostic"}:${index}`}
-                            className={
-                              item.severity === "error"
-                                ? "analysis-item analysis-item--error"
-                                : "analysis-item"
-                            }
-                          >
-                            <span className="analysis-item__location">
-                              L{item.line}:C{item.column}
-                            </span>
-                            <span className="analysis-item__message">{item.message}</span>
-                          </div>
-                        ))}
-                      </div>
-                    ) : null}
-                  </div>
-                ) : null}
-              </div>
+                      setIsAnalysisOpen((prev) => !prev);
+                    }}
+                  >
+                    {analysisIndicator.label}
+                  </button>
+                  {isAnalysisOpen && (analysisDiagnostics.length > 0 || analysisError) ? (
+                    <div className="analysis-popover" data-testid="analysis-popover">
+                      {analysisError ? (
+                        <div className="analysis-banner">{analysisError}</div>
+                      ) : null}
+                      {analysisDiagnostics.length > 0 ? (
+                        <div className="analysis-list" data-testid="analysis-list">
+                          {analysisDiagnostics.slice(0, 5).map((item, index) => (
+                            <div
+                              key={`${item.line}:${item.column}:${item.name ?? "diagnostic"}:${index}`}
+                              className={
+                                item.severity === "error"
+                                  ? "analysis-item analysis-item--error"
+                                  : "analysis-item"
+                              }
+                            >
+                              <span className="analysis-item__location">
+                                L{item.line}:C{item.column}
+                              </span>
+                              <span className="analysis-item__message">{item.message}</span>
+                            </div>
+                          ))}
+                        </div>
+                      ) : null}
+                    </div>
+                  ) : null}
+                </div>
+              ) : null}
               <Button
                 variant="ghost"
                 type="button"
@@ -1086,18 +1253,20 @@ export const QuestPage = (): ReactElement => {
             </div>
           </div>
 
-          <div className="code-editor">
-            <LazyCodeEditor
-              value={code}
-              onChange={setCode}
-              diagnostics={analysisDiagnostics}
-              className="code-editor__surface"
-              ariaLabel="lesson code editor"
-            />
-          </div>
+          {activePracticeTab === "code" ? (
+            <>
+              <div className="code-editor">
+                <LazyCodeEditor
+                  value={code}
+                  onChange={setCode}
+                  diagnostics={analysisDiagnostics}
+                  className="code-editor__surface"
+                  ariaLabel="lesson code editor"
+                />
+              </div>
 
-          {(runResult || runError) ? (
-            <div className="execution-results" data-testid="execution-results">
+              {(runResult || runError) ? (
+                <div className="execution-results" data-testid="execution-results">
               {runError ? <div className="execution-error">{runError}</div> : null}
               {executionSummary && runResult?.status === "accepted" ? (
                 <div
@@ -1167,34 +1336,155 @@ export const QuestPage = (): ReactElement => {
                   {executionHint ?? "Check syntax errors in your code."}
                 </div>
               ) : null}
-            </div>
+                </div>
+              ) : null}
+
+              <div className="panel__footer">
+                <div className={runStatusClass}>
+                  <span className="status__dot"></span>
+                  <span className="status__label">{runStatusLabel}</span>
+                </div>
+                <Button
+                  variant="ghost"
+                  type="button"
+                  className="push-right btn--text btn--text-accent"
+                  onClick={handleReset}
+                >
+                  reset
+                </Button>
+                <Button
+                  variant="ghost"
+                  type="button"
+                  className="btn--text btn--text-accent"
+                  onClick={handleRun}
+                  disabled={isRunning || !hasCodeTask}
+                  data-testid="run-button"
+                  title={!hasCodeTask ? "This lesson does not have a coding task." : undefined}
+                >
+                  run
+                </Button>
+              </div>
+            </>
           ) : null}
 
-          <div className="panel__footer">
-            <div className={runStatusClass}>
-              <span className="status__dot"></span>
-              <span className="status__label">{runStatusLabel}</span>
-            </div>
-            <Button
-              variant="ghost"
-              type="button"
-              className="push-right btn--text btn--text-accent"
-              onClick={handleReset}
-            >
-              reset
-            </Button>
-            <Button
-              variant="ghost"
-              type="button"
-              className="btn--text btn--text-accent"
-              onClick={handleRun}
-              disabled={isRunning || isNoCodeLesson}
-              data-testid="run-button"
-              title={isNoCodeLesson ? "This lesson does not have a coding task." : undefined}
-            >
-              run
-            </Button>
-          </div>
+          {activePracticeTab === "questions" ? (
+            <>
+              <div className="quiz-panel" data-testid="quiz-panel">
+                {hasQuiz ? activeLesson.questions.map((question, questionIndex) => {
+                  const selectedOption = quizAnswers[questionIndex];
+                  const isCorrect = selectedOption === question.correct_option;
+                  const isWrong = quizChecked && selectedOption !== undefined && !isCorrect;
+                  const questionPromptHtml = renderMarkdown(question.prompt);
+
+                  return (
+                    <div key={`${activeLesson.slug}:${questionIndex}`} className="quiz-question">
+                      <div className="quiz-question__prompt">
+                        <span className="quiz-question__number">{questionIndex + 1}.</span>
+                        <div
+                          className="quiz-question__prompt-body markdown"
+                          dangerouslySetInnerHTML={{ __html: questionPromptHtml }}
+                        />
+                      </div>
+                      <div className="quiz-question__options">
+                        {question.options.map((option, optionIndex) => {
+                          const optionHtml = renderMarkdown(option);
+                          const optionChecked = selectedOption === optionIndex;
+                          const optionCorrect =
+                            quizChecked &&
+                            allQuizAnswersCorrect &&
+                            optionIndex === question.correct_option;
+                          const optionWrong = quizChecked && optionChecked && optionIndex !== question.correct_option;
+
+                          return (
+                            <label
+                              key={`${questionIndex}:${optionIndex}`}
+                              className={
+                                optionCorrect
+                                  ? "quiz-option is-correct"
+                                  : optionWrong
+                                    ? "quiz-option is-wrong"
+                                    : "quiz-option"
+                              }
+                            >
+                              <input
+                                type="radio"
+                                name={`quiz-${questionIndex}`}
+                                checked={optionChecked}
+                                onChange={() => handleQuizAnswerSelect(questionIndex, optionIndex)}
+                              />
+                              <span className="quiz-option__control" aria-hidden="true">
+                                {optionChecked ? (
+                                  <span className="analysis-indicator__label ui-check">✓</span>
+                                ) : null}
+                              </span>
+                              <span
+                                className="quiz-option__label markdown"
+                                dangerouslySetInnerHTML={{ __html: optionHtml }}
+                              />
+                            </label>
+                          );
+                        })}
+                      </div>
+                      {quizChecked && selectedOption === undefined ? (
+                        <div className="quiz-question__hint">Choose an answer.</div>
+                      ) : null}
+                      {quizChecked && isWrong ? (
+                        <div className="quiz-question__hint">That one is not correct.</div>
+                      ) : null}
+                    </div>
+                  );
+                }) : (
+                  <div className="muted">No quiz questions for this lesson yet.</div>
+                )}
+              </div>
+
+              <div className="panel__footer">
+                <div
+                  className={
+                    quizChecked
+                      ? allQuizAnswersCorrect
+                        ? "status status--success"
+                        : "status status--error"
+                      : "status"
+                  }
+                >
+                  <span className="status__dot"></span>
+                  <span className="status__label">
+                    {quizChecked
+                      ? allQuizAnswersCorrect
+                        ? "all answers correct"
+                        : `${quizCorrectCount}/${activeLesson.questions.length} correct`
+                      : hasQuiz
+                        ? "choose answers"
+                        : "no quiz"}
+                  </span>
+                </div>
+                <Button
+                  variant="ghost"
+                  type="button"
+                  className="btn--text btn--text-accent push-right"
+                  onClick={() => {
+                    clearSavedLessonQuiz(activeLesson.slug);
+                    setQuizAnswers({});
+                    setQuizChecked(false);
+                  }}
+                >
+                  reset
+                </Button>
+                <Button
+                  variant="ghost"
+                  type="button"
+                  className="btn--text btn--text-accent"
+                  onClick={handleCheckAnswers}
+                  disabled={!activeLesson.questions.length}
+                  data-testid="check-answers-button"
+                  title={!allQuizQuestionsAnswered ? "Answer all questions first." : undefined}
+                >
+                  check answers
+                </Button>
+              </div>
+            </>
+          ) : null}
           </section>
         ) : null}
       </main>

@@ -61,3 +61,7 @@ Though there is a slight difference - missing required fields are treated by Pyd
 _type errors_.
 
 Well, the first requirement was quite obvious, so let's take a closer look at the second one in the next lesson.
+
+## Assignment
+
+Open the `Questions` tab in the practice panel on the right and complete the quiz.

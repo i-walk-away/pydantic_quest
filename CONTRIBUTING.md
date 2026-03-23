@@ -2,82 +2,70 @@
 
 If you want to add a new lesson to pydantic quest, do this:
 
-1. Create a new folder in [lessons/](lessons/)
-2. Populate the folder with 4 neccessary files. You can copy them from
+1. Create a new folder inside [lessons/](lessons/)
+2. Populate the folder with 5 neccessary files. You can copy them from
    [lessons/lesson-template/](lessons/lesson-template/):
     * `lesson.yaml`
     * `theory.md`
     * `starter.py`
-    * `cases.yaml` -- *for theory-only lessons with no coding assignment, leave this file empty*
-3. Head to [lessons/index.yaml](lessons/index.yaml) and add the following:
+    * `cases.yaml`
+    * `quiz.yaml`
 
-```yaml
-  - slug: dash-separated-lesson-name
-    order: <order>
-    no_code: false   # or `true` if there is no assignment intended for the lesson
-```
+## Directory naming rules
 
-The `slug` must exactly match the lesson directory name in [lessons/](lessons/).
-For example, this:
+Lessons can have child lessons and their hierarchy is inferred from directory nesting.
 
-```yaml
-  - slug: field-validators
-    order: 1.1
-    no_code: false
-```
-
-must correspond to this directory:
+Every lesson directory must start with a numeric prefix:
 
 ```text
-lessons/field-validators/
+01-introduction/
+02-pydantic/
+03-pydantic-vs-dataclasses/
 ```
 
-The `order` field controls lesson position in the UI and now supports
-hierarchical numbering.
-Lesson `4.1` will be a child of lesson `4`. The UI will represent that.
+Nested lessons follow the exact same rule inside their parent lesson directory:
 
-Valid examples:
-
-```yaml
-  - slug: validators
-    order: 1
-    no_code: true
-
-  - slug: field-validators
-    order: 1.1
-    no_code: false
-
-  - slug: model-validators
-    order: 1.2
-    no_code: false
-
-  - slug: models
-    order: 2
-    no_code: true
-
-  - slug: basemodel
-    order: 2.1
-    no_code: false
+```text
+03-validators/
+02-validators/01-model-validators/
+02-validators/02-field-validators/
 ```
 
-Rules:
+## How slug and order are inferred
 
-- use positive numeric segments separated by dots
-- like this: `"1"`, `"1.1"`, `"2.3.4"`
-- every order value must be unique
-- set `no_code: true` for theory-only lessons with no coding task
+The `slug` is inferred from the directory name **without** the numeric prefix.
 
-Sorting is numeric by segment, so lessons appear like:
+Examples:
 
-- `1`
-- `1.1`
-- `1.2`
-- `2`
+```text
+02-pydantic                     -> slug: pydantic
+01-dynamic-types                -> slug: dynamic-types
+03-pydantic-vs-dataclasses      -> slug: pydantic-vs-dataclasses
+```
 
-If you're not sure where a lesson should go, just add it near the right section
-and i can reorder things myself later :)
+The `order` is inferred from all numeric prefixes in the full path from [lessons/](lessons/) to the lesson directory.
 
-## Explanation of the 4 neccessary files
+Examples:
+
+```text
+lessons/01-introduction/                                      -> order: 1
+lessons/02-pydantic/                                          -> order: 2
+lessons/02-pydantic/01-dynamic-types/                         -> order: 2.1
+lessons/02-pydantic/02-type-hints/                            -> order: 2.2
+lessons/03-pydantic-vs-dataclasses/02-leaked-dependency/      -> order: 3.2
+lessons/04-basemodel/02-type-coercion/                        -> order: 4.2
+```
+
+Practical rule:
+
+- lesson folders must be prefixed like `01-slug-name`
+- the lesson's `slug` is the part after the first dash
+- lessons can have child lessons and their hierarchy is inferred from directory nesting
+- order is inferred from numeric prefixes
+- sibling lessons should have unique numeric prefixes
+- real lesson folders should mirror the intended curriculum order in the project tree itself
+
+## Explanation of the 5 neccessary files
 
 ### 1. `lesson.yaml`
 
@@ -112,13 +100,27 @@ You can find
 a *lot* of information there about how it works and how exactly to design your own test cases.
 Please inform me if it is still not very clear.
 
-If the lesson is marked `no_code: true`, this file is still required for consistency,
-but it can be empty. The `run` button below the code editor will be disabled in the UI.
+This file is always required for consistency, but it can be empty.
+If `cases.yaml` is empty, the lesson has no coding assignment and the `run` button will not appear in the UI.
+
+### 5. `quiz.yaml`
+
+Quiz questions for your lesson. Refer to [`lessons/lesson-template/quiz.yaml`](lessons/lesson-template/quiz.yaml).
+If the file contains questions, the user will see a `Questions` tab in the practice panel.
+If it is empty, the lesson simply has no quiz.
+
+`cases.yaml` and `quiz.yaml` are fully independent:
+
+- a lesson can have only coding assignment
+- a lesson can have only quiz questions
+- a lesson can have both
+- a lesson can have neither
 
 # Contributor checklist
 
 Before opening a PR:
 
-1. verify `lesson.yaml`, `theory.md`, `starter.py`, and `cases.yaml` exist in your new lesson folder
-2. verify lesson slug is added to [lessons/index.yaml](lessons/index.yaml)
-3. confirm each visible case has clear `label` and useful `reason`
+1. verify `lesson.yaml`, `theory.md`, `starter.py`, `cases.yaml`, and `quiz.yaml` exist in your new lesson folder
+2. verify the lesson folder name is prefixed like `01-your-slug`
+3. verify lesson folders are placed in the correct parent folder so nesting matches the intended hierarchy
+4. verify sibling lessons are ordered correctly by their numeric prefixes
