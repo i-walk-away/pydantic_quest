@@ -1,12 +1,10 @@
 ## What is Pydantic
 
 Pydantic is the most widely used data validation library for Python.
-Around 8,000 packages on PyPI use Pydantic under the hood, including massively popular
-libraries like FastAPI, huggingface, and LangChain.
 
-What problems does it solve?
+In this lesson, we will try to reinvent it in order to learn what problems does it solve.
 
-## Why use Pydantic
+## Dynamics
 
 Python is a dynamically typed language. It means that the *type* of the objects (variables, functions)
 can change throughout the object's lifecycle:
@@ -93,7 +91,7 @@ x = "Rambo"
 
 This is a valid python program that will not refuse to run. Correct typing is NOT **enforced at runtime**.
 
-### Data validation
+## Data validation
 
 Imagine you have a website that calculates how old you will be when you're 1 year older. This may not be the most
 useful website, but it gives us something to work with.

@@ -32,7 +32,7 @@ class LessonsLoader:
 
         lessons = []
         for index_item in index_file.lessons:
-            lesson_dir = self.root_dir / index_item.slug
+            lesson_dir = self._resolve_lesson_dir(slug=index_item.slug)
             lesson_meta = self._load_meta(lesson_dir=lesson_dir)
             lesson_cases = self._load_cases(lesson_dir=lesson_dir)
             lesson_quiz = self._load_quiz(lesson_dir=lesson_dir)
@@ -53,6 +53,27 @@ class LessonsLoader:
 
         lessons.sort(key=lambda item: lesson_order_key(item.order))
         return lessons
+
+    def _resolve_lesson_dir(self, slug: str) -> Path:
+        direct_path = self.root_dir / slug
+        if direct_path.is_dir() and (direct_path / LESSON_META_FILENAME).exists():
+            return direct_path
+
+        candidates = [
+            path.parent
+            for path in self.root_dir.rglob(LESSON_META_FILENAME)
+            if path.parent.name == slug
+        ]
+
+        if not candidates:
+            raise FileNotFoundError(direct_path)
+
+        if len(candidates) > 1:
+            joined = ", ".join(str(path) for path in candidates)
+            message = f"multiple lesson directories match slug '{slug}': {joined}"
+            raise ValueError(message)
+
+        return candidates[0]
 
     def _load_meta(self, lesson_dir: Path) -> LessonMetaFile:
         payload = self._read_yaml(path=lesson_dir / LESSON_META_FILENAME)

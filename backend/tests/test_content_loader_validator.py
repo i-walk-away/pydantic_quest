@@ -319,3 +319,76 @@ def test_loader_allows_empty_quiz_mapping(tmp_path: Path) -> None:
 
     assert len(lessons) == 1
     assert lessons[0].questions == []
+
+
+def test_loader_finds_lesson_in_nested_directory(tmp_path: Path) -> None:
+    root_dir = tmp_path / "lessons"
+    root_dir.mkdir(parents=True)
+    nested_parent = root_dir / "pydantic"
+    nested_parent.mkdir(parents=True, exist_ok=True)
+    lesson_dir = nested_parent / "validation-errors"
+    lesson_dir.mkdir(parents=True, exist_ok=True)
+
+    (root_dir / "index.yaml").write_text(
+        "\n".join(
+            [
+                "lessons:",
+                "  - slug: validation-errors",
+                '    order: "1.1"',
+                "",
+            ],
+        ),
+        encoding="utf-8",
+    )
+    (lesson_dir / "lesson.yaml").write_text("title: Validation errors\n", encoding="utf-8")
+    (lesson_dir / "theory.md").write_text("# theory\n", encoding="utf-8")
+    (lesson_dir / "starter.py").write_text("print('starter')\n", encoding="utf-8")
+    (lesson_dir / "cases.yaml").write_text("cases:\n", encoding="utf-8")
+    (lesson_dir / "quiz.yaml").write_text("questions:\n", encoding="utf-8")
+
+    loader = LessonsLoader(
+        root_dir=root_dir,
+        validator=LessonsContentValidator(),
+    )
+
+    lessons = loader.load()
+
+    assert len(lessons) == 1
+    assert lessons[0].slug == "validation-errors"
+    assert lessons[0].source_dir == lesson_dir
+
+
+def test_loader_rejects_ambiguous_nested_directories(tmp_path: Path) -> None:
+    root_dir = tmp_path / "lessons"
+    root_dir.mkdir(parents=True)
+    (root_dir / "index.yaml").write_text(
+        "\n".join(
+            [
+                "lessons:",
+                "  - slug: validation-errors",
+                '    order: "1.1"',
+                "",
+            ],
+        ),
+        encoding="utf-8",
+    )
+
+    first_dir = root_dir / "pydantic" / "validation-errors"
+    second_dir = root_dir / "basemodel" / "validation-errors"
+    first_dir.mkdir(parents=True, exist_ok=True)
+    second_dir.mkdir(parents=True, exist_ok=True)
+
+    for lesson_dir in (first_dir, second_dir):
+        (lesson_dir / "lesson.yaml").write_text("title: Validation errors\n", encoding="utf-8")
+        (lesson_dir / "theory.md").write_text("# theory\n", encoding="utf-8")
+        (lesson_dir / "starter.py").write_text("print('starter')\n", encoding="utf-8")
+        (lesson_dir / "cases.yaml").write_text("cases:\n", encoding="utf-8")
+        (lesson_dir / "quiz.yaml").write_text("questions:\n", encoding="utf-8")
+
+    loader = LessonsLoader(
+        root_dir=root_dir,
+        validator=LessonsContentValidator(),
+    )
+
+    with pytest.raises(ValueError, match="multiple lesson directories match slug"):
+        loader.load()

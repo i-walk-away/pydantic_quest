@@ -2,14 +2,14 @@
 
 If you want to add a new lesson to pydantic quest, do this:
 
-1. Create a new folder in [lessons/](lessons/)
+1. Create a new folder inside [lessons/](lessons/)
 2. Populate the folder with 5 neccessary files. You can copy them from
    [lessons/lesson-template/](lessons/lesson-template/):
     * `lesson.yaml`
     * `theory.md`
     * `starter.py`
-    * `cases.yaml` -- *if the lesson has no coding assignment, leave this file empty*
-    * `quiz.yaml` -- *if the lesson has no quiz questions, leave this file empty*
+    * `cases.yaml`
+    * `quiz.yaml`
 3. Head to [lessons/index.yaml](lessons/index.yaml) and add the following:
 
 ```yaml
@@ -17,7 +17,9 @@ If you want to add a new lesson to pydantic quest, do this:
     order: <order>
 ```
 
-The `slug` must exactly match the lesson directory name in [lessons/](lessons/).
+The `slug` must exactly match the name of the lesson directory itself.
+The lesson directory may live directly in [lessons/](lessons/) or inside another lesson directory.
+
 For example, this:
 
 ```yaml
@@ -25,10 +27,38 @@ For example, this:
     order: 1.1
 ```
 
-must correspond to this directory:
+may correspond to either of these directories:
 
 ```text
 lessons/field-validators/
+lessons/validators/field-validators/
+```
+
+Both are valid. The lesson loader searches for lessons recursively inside [lessons/](lessons/).
+This means nested folders are allowed, and you can organize lesson files in a way that mirrors the
+hierarchy in `order`.
+
+Practical rule:
+
+- `slug` must match the final folder name of the lesson
+- the folder may be nested
+- the `order` hierarchy and the directory nesting should match, but they are not technically tied
+
+So if you have:
+
+```yaml
+  - slug: pydantic
+    order: 1.1
+
+  - slug: validation-errors
+    order: 1.1.1
+```
+
+you may store them like this:
+
+```text
+lessons/pydantic/
+lessons/pydantic/validation-errors/
 ```
 
 The `order` field controls lesson position in the UI and now supports
@@ -131,5 +161,6 @@ If it is empty, the lesson simply has no quiz.
 Before opening a PR:
 
 1. verify `lesson.yaml`, `theory.md`, `starter.py`, `cases.yaml`, and `quiz.yaml` exist in your new lesson folder
-2. verify lesson is added to [lessons/index.yaml](lessons/index.yaml)
-
+2. verify the lesson folder name matches the `slug`
+3. if the lesson is nested, verify it is still somewhere inside [lessons/](lessons/)
+4. verify lesson is added to [lessons/index.yaml](lessons/index.yaml)
