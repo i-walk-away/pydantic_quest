@@ -10,100 +10,60 @@ If you want to add a new lesson to pydantic quest, do this:
     * `starter.py`
     * `cases.yaml`
     * `quiz.yaml`
-3. Head to [lessons/index.yaml](lessons/index.yaml) and add the following:
 
-```yaml
-  - slug: dash-separated-lesson-name
-    order: <order>
-```
+## Directory naming rules
 
-The `slug` must exactly match the name of the lesson directory itself.
-The lesson directory may live directly in [lessons/](lessons/) or inside another lesson directory. 
+Lessons can have child lessons and their hierarchy is inferred from directory nesting.
 
-For example, this:
-
-```yaml
-  - slug: field-validators
-    order: 1.1
-```
-
-may correspond to either of these directories:
+Every lesson directory must start with a numeric prefix:
 
 ```text
-lessons/field-validators/
-lessons/validators/field-validators/
+01-introduction/
+02-pydantic/
+03-pydantic-vs-dataclasses/
 ```
 
-Both are valid. The lesson loader searches for lessons recursively inside [lessons/](lessons/).
-This means nested folders are allowed, and you can organize lesson files in a way that mirrors the
-hierarchy in `order`.
+Nested lessons follow the exact same rule inside their parent lesson directory:
+
+```text
+03-validators/
+02-validators/01-model-validators/
+02-validators/02-field-validators/
+```
+
+## How slug and order are inferred
+
+The `slug` is inferred from the directory name **without** the numeric prefix.
+
+Examples:
+
+```text
+02-pydantic                     -> slug: pydantic
+01-dynamic-types                -> slug: dynamic-types
+03-pydantic-vs-dataclasses      -> slug: pydantic-vs-dataclasses
+```
+
+The `order` is inferred from all numeric prefixes in the full path from [lessons/](lessons/) to the lesson directory.
+
+Examples:
+
+```text
+lessons/01-introduction/                                      -> order: 1
+lessons/02-pydantic/                                          -> order: 2
+lessons/02-pydantic/01-dynamic-types/                         -> order: 2.1
+lessons/02-pydantic/02-type-hints/                            -> order: 2.2
+lessons/03-pydantic-vs-dataclasses/02-leaked-dependency/      -> order: 3.2
+lessons/04-basemodel/02-type-coercion/                        -> order: 4.2
+```
 
 Practical rule:
 
-- `slug` must match the final folder name of the lesson
-- the folder may be nested
-- the `order` hierarchy and the directory nesting should match, but they are not technically tied
-
-So if you have:
-
-```yaml
-  - slug: pydantic
-    order: 1.1
-
-  - slug: validation-errors
-    order: 1.1.1
-```
-
-you may store them like this:
-
-```text
-lessons/pydantic/
-lessons/pydantic/validation-errors/
-```
-
-The `order` field controls lesson position in the UI and now supports
-hierarchical numbering.
-Lesson `4.1` will be a child of lesson `4`. The UI will represent that.
-
-Valid examples:
-
-```yaml
-  - slug: validators
-    order: 1
-
-  - slug: field-validators
-    order: 1.1
-
-  - slug: model-validators
-    order: 1.2
-
-  - slug: models
-    order: 2
-
-  - slug: basemodel
-    order: 2.1
-    
-  - slug: basemodel-settings
-    order: 2.1.1
-```
-
-Rules:
-
-- use positive numeric segments separated by dots
-- like this: `"1"`, `"1.1"`, `"2.3.4"`
-- every order value must be unique
-- `cases.yaml` must always exist, even if it is empty
-- `quiz.yaml` must always exist, even if it is empty
-
-Sorting is numeric by segment, so lessons appear like:
-
-- `1`
-- `1.1`
-- `1.2`
-- `2`
-
-If you're not sure where a lesson should go, just add it near the right section
-and i can reorder things myself later :)
+- lesson folders must be prefixed like `01-slug-name`
+- the lesson's `slug` is the part after the first dash
+- lessons can have child lessons and their hierarchy is inferred from directory nesting
+- order is inferred from numeric prefixes
+- sibling lessons should have unique numeric prefixes
+- real lesson folders should mirror the intended curriculum order in the project tree itself
 
 ## Explanation of the 5 neccessary files
 
@@ -161,5 +121,6 @@ If it is empty, the lesson simply has no quiz.
 Before opening a PR:
 
 1. verify `lesson.yaml`, `theory.md`, `starter.py`, `cases.yaml`, and `quiz.yaml` exist in your new lesson folder
-2. verify the lesson folder name matches the lesson's `slug` in `index.yaml`
-3. verify that all lessons are organized in a way that mirrors the hierarchy as per their `order` in `index.yaml`.
+2. verify the lesson folder name is prefixed like `01-your-slug`
+3. verify lesson folders are placed in the correct parent folder so nesting matches the intended hierarchy
+4. verify sibling lessons are ordered correctly by their numeric prefixes

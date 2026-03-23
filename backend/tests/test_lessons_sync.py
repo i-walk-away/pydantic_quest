@@ -11,24 +11,11 @@ from src.app.domain.services.lesson_sync_importer import LessonSyncImporter
 from src.app.domain.services.lesson_sync_service import LessonSyncService
 
 
-def _write_lesson_files(root: Path, slug: str, order: str) -> None:
-    lesson_dir = root / slug
+def _write_lesson_files(root: Path, relative_dir: str, *, title: str) -> Path:
+    lesson_dir = root / relative_dir
     lesson_dir.mkdir(parents=True, exist_ok=True)
-
-    (root / "index.yaml").write_text(
-        f"lessons:\n  - slug: {slug}\n    order: {order}\n",
-        encoding="utf-8",
-    )
-    (lesson_dir / "lesson.yaml").write_text(
-        "\n".join(
-            [
-                f"title: Lesson {order}",
-                "",
-            ],
-        ),
-        encoding="utf-8",
-    )
-    (lesson_dir / "theory.md").write_text(f"# Lesson {order}\n", encoding="utf-8")
+    (lesson_dir / "lesson.yaml").write_text(f"title: {title}\n", encoding="utf-8")
+    (lesson_dir / "theory.md").write_text(f"# {title}\n", encoding="utf-8")
     (lesson_dir / "starter.py").write_text("class User: pass\n", encoding="utf-8")
     (lesson_dir / "cases.yaml").write_text(
         "\n".join(
@@ -50,6 +37,7 @@ def _write_lesson_files(root: Path, slug: str, order: str) -> None:
         encoding="utf-8",
     )
     (lesson_dir / "quiz.yaml").write_text("questions:\n", encoding="utf-8")
+    return lesson_dir
 
 
 async def test_sync_lessons_endpoint(
@@ -96,7 +84,7 @@ async def test_sync_lessons_deletes_missing(
     root_dir = tmp_path / "lessons"
     root_dir.mkdir(parents=True)
 
-    _write_lesson_files(root=root_dir, slug="lesson-one", order="1")
+    first_dir = _write_lesson_files(root=root_dir, relative_dir="01-lesson-one", title="Lesson 1")
 
     repository = LessonRepository(session=db_session)
     loader = LessonsLoader(
@@ -113,7 +101,12 @@ async def test_sync_lessons_deletes_missing(
     first_result = await service.sync(delete_missing=True)
     assert first_result.created == 1
 
-    _write_lesson_files(root=root_dir, slug="lesson-two", order="1.1")
+    for path in first_dir.rglob('*'):
+        if path.is_file():
+            path.unlink()
+    first_dir.rmdir()
+    _write_lesson_files(root=root_dir, relative_dir="01-lesson-two", title="Lesson 2")
+
     second_result = await service.sync(delete_missing=True)
 
     assert second_result.created == 1
@@ -122,4 +115,4 @@ async def test_sync_lessons_deletes_missing(
     lessons = await repository.get_all()
     assert len(lessons) == 1
     assert lessons[0].slug == "lesson-two"
-    assert lessons[0].order == "1.1"
+    assert lessons[0].order == "1"

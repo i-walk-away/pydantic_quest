@@ -1,14 +1,9 @@
+import re
 from pathlib import Path
 
 import yaml
 
-from src.app.content.models import (
-    LessonCasesFile,
-    LessonMetaFile,
-    LessonQuizFile,
-    LessonsIndexFile,
-    LoadedLesson,
-)
+from src.app.content.models import LessonCasesFile, LessonMetaFile, LessonQuizFile, LoadedLesson
 from src.app.content.validator import LessonsContentValidator
 from src.app.domain.lesson_order import lesson_order_key
 
@@ -17,6 +12,8 @@ LESSON_THEORY_FILENAME = "theory.md"
 LESSON_STARTER_FILENAME = "starter.py"
 LESSON_CASES_FILENAME = "cases.yaml"
 LESSON_QUIZ_FILENAME = "quiz.yaml"
+LESSON_TEMPLATE_DIRNAME = "lesson-template"
+LESSON_DIR_PATTERN = re.compile(r"^(?P<prefix>\d+)-(?P<slug>[a-z0-9][a-z0-9-]*)$")
 
 
 class LessonsLoader:
@@ -25,14 +22,9 @@ class LessonsLoader:
         self.validator = validator
 
     def load(self) -> list[LoadedLesson]:
-        index_path = self.root_dir / "index.yaml"
-        index_payload = self._read_yaml(path=index_path)
-        index_file = LessonsIndexFile.model_validate(obj=index_payload)
-        self.validator.validate_index(index_file=index_file)
-
         lessons = []
-        for index_item in index_file.lessons:
-            lesson_dir = self._resolve_lesson_dir(slug=index_item.slug)
+        for lesson_dir in self._discover_lesson_dirs():
+            slug, order = self._infer_slug_and_order(lesson_dir=lesson_dir)
             lesson_meta = self._load_meta(lesson_dir=lesson_dir)
             lesson_cases = self._load_cases(lesson_dir=lesson_dir)
             lesson_quiz = self._load_quiz(lesson_dir=lesson_dir)
@@ -40,8 +32,8 @@ class LessonsLoader:
             starter_code = self._read_text(path=lesson_dir / LESSON_STARTER_FILENAME)
             lessons.append(
                 LoadedLesson(
-                    slug=index_item.slug,
-                    order=index_item.order,
+                    slug=slug,
+                    order=order,
                     name=lesson_meta.title,
                     body_markdown=theory,
                     code_editor_default=starter_code,
@@ -51,29 +43,43 @@ class LessonsLoader:
                 ),
             )
 
+        self.validator.validate_lessons(lessons=lessons)
         lessons.sort(key=lambda item: lesson_order_key(item.order))
         return lessons
 
-    def _resolve_lesson_dir(self, slug: str) -> Path:
-        direct_path = self.root_dir / slug
-        if direct_path.is_dir() and (direct_path / LESSON_META_FILENAME).exists():
-            return direct_path
+    def _discover_lesson_dirs(self) -> list[Path]:
+        lesson_dirs = []
+        for meta_path in self.root_dir.rglob(LESSON_META_FILENAME):
+            lesson_dir = meta_path.parent
+            if lesson_dir.name == LESSON_TEMPLATE_DIRNAME:
+                continue
+            self._infer_slug_and_order(lesson_dir=lesson_dir)
+            lesson_dirs.append(lesson_dir)
 
-        candidates = [
-            path.parent
-            for path in self.root_dir.rglob(LESSON_META_FILENAME)
-            if path.parent.name == slug
-        ]
+        return lesson_dirs
 
-        if not candidates:
-            raise FileNotFoundError(direct_path)
-
-        if len(candidates) > 1:
-            joined = ", ".join(str(path) for path in candidates)
-            message = f"multiple lesson directories match slug '{slug}': {joined}"
+    def _infer_slug_and_order(self, lesson_dir: Path) -> tuple[str, str]:
+        relative_parts = lesson_dir.relative_to(self.root_dir).parts
+        if not relative_parts:
+            message = f"lesson directory cannot be the root lessons directory: {lesson_dir}"
             raise ValueError(message)
 
-        return candidates[0]
+        order_segments: list[str] = []
+        slug = ""
+
+        for part in relative_parts:
+            match = LESSON_DIR_PATTERN.fullmatch(part)
+            if match is None:
+                message = (
+                    "lesson directory name must start with a numeric prefix like "
+                    f"'01-my-lesson': {lesson_dir}"
+                )
+                raise ValueError(message)
+
+            order_segments.append(str(int(match.group("prefix"))))
+            slug = match.group("slug")
+
+        return slug, ".".join(order_segments)
 
     def _load_meta(self, lesson_dir: Path) -> LessonMetaFile:
         payload = self._read_yaml(path=lesson_dir / LESSON_META_FILENAME)

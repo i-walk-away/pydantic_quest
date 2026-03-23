@@ -1,7 +1,6 @@
 import pytest
 from pydantic import ValidationError
 
-from src.app.content.models import LessonsIndexFile
 from src.app.domain.models.dto.auth.auth import LoginCredentials
 from src.app.domain.models.dto.auth.github import GithubEmailDTO
 from src.app.domain.models.dto.execution.execution_request import ExecutionRequestDTO
@@ -93,8 +92,3 @@ def test_github_email_requires_address_format() -> None:
             primary=True,
             verified=True,
         )
-
-
-def test_lessons_index_file_requires_items() -> None:
-    with pytest.raises(ValidationError):
-        LessonsIndexFile.model_validate(obj={"lessons": []})

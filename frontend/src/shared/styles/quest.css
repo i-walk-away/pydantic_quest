@@ -321,6 +321,25 @@
   min-height: auto;
   overflow: visible;
   padding-right: 0;
+  line-height: 1.63125;
+}
+
+.lesson-body .markdown p {
+  margin-top: 0;
+  margin-bottom: 17px;
+}
+
+.lesson-body .markdown p:last-child {
+  margin-bottom: 0;
+}
+
+.lesson-body .markdown pre {
+  margin-top: 0;
+  margin-bottom: 20px;
+}
+
+.lesson-body .markdown pre:last-child {
+  margin-bottom: 0;
 }
 
 .markdown {
@@ -852,8 +871,8 @@
   align-items: flex-start;
   gap: 8px;
   color: var(--text-strong);
-  font-size: 0.96rem;
-  line-height: 1.5;
+  font-size: 1rem;
+  line-height: 1.63125;
 }
 
 .quiz-question__number {
@@ -883,6 +902,7 @@
 }
 
 .quiz-option {
+  position: relative;
   display: flex;
   align-items: flex-start;
   gap: 9px;
@@ -891,10 +911,30 @@
   border: 1px solid rgba(255, 255, 255, 0.08);
   color: var(--text-muted);
   cursor: pointer;
+  font-size: 1rem;
+  line-height: 1.63125;
+}
+
+.quiz-option__label {
+  min-width: 0;
+  flex: 1;
+  padding-right: 0;
+  overflow: visible;
+}
+
+.quiz-option__label > :first-child {
+  margin-top: 0;
+}
+
+.quiz-option__label > :last-child {
+  margin-bottom: 0;
 }
 
 .quiz-option input {
   position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
   opacity: 0;
   pointer-events: none;
 }

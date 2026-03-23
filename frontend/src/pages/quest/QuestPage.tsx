@@ -22,6 +22,12 @@ type AuthMode = "login" | "signup";
 type PracticeTab = "code" | "questions";
 
 const lessonCodeStorageKey = "pq:lesson-code";
+const lessonQuizStorageKey = "pq:lesson-quiz";
+
+type SavedLessonQuizState = {
+  answers: Record<number, number>;
+  checked: boolean;
+};
 
 const loadSavedLessonCodeMap = (): Record<string, string> => {
   if (typeof window === "undefined") {
@@ -63,6 +69,62 @@ const clearSavedLessonCode = (lessonSlug: string): void => {
   const map = loadSavedLessonCodeMap();
   delete map[lessonSlug];
   window.localStorage.setItem(lessonCodeStorageKey, JSON.stringify(map));
+};
+
+const loadSavedLessonQuizMap = (): Record<string, SavedLessonQuizState> => {
+  if (typeof window === "undefined") {
+    return {};
+  }
+
+  try {
+    const raw = window.localStorage.getItem(lessonQuizStorageKey);
+    const parsed = raw ? JSON.parse(raw) : {};
+    return parsed && typeof parsed === "object" && !Array.isArray(parsed)
+      ? (parsed as Record<string, SavedLessonQuizState>)
+      : {};
+  } catch {
+    return {};
+  }
+};
+
+const getSavedLessonQuiz = (lessonSlug: string): SavedLessonQuizState | null => {
+  const map = loadSavedLessonQuizMap();
+  const value = map[lessonSlug];
+  if (!value || typeof value !== "object" || Array.isArray(value)) {
+    return null;
+  }
+
+  const answers = value.answers;
+  const checked = value.checked;
+
+  if (!answers || typeof answers !== "object" || Array.isArray(answers) || typeof checked !== "boolean") {
+    return null;
+  }
+
+  return {
+    answers: answers as Record<number, number>,
+    checked,
+  };
+};
+
+const saveLessonQuiz = (lessonSlug: string, nextState: SavedLessonQuizState): void => {
+  if (typeof window === "undefined") {
+    return;
+  }
+
+  const map = loadSavedLessonQuizMap();
+  map[lessonSlug] = nextState;
+  window.localStorage.setItem(lessonQuizStorageKey, JSON.stringify(map));
+};
+
+const clearSavedLessonQuiz = (lessonSlug: string): void => {
+  if (typeof window === "undefined") {
+    return;
+  }
+
+  const map = loadSavedLessonQuizMap();
+  delete map[lessonSlug];
+  window.localStorage.setItem(lessonQuizStorageKey, JSON.stringify(map));
 };
 
 export const QuestPage = (): ReactElement => {
@@ -335,6 +397,7 @@ export const QuestPage = (): ReactElement => {
 
   useEffect(() => {
     const savedCode = getSavedLessonCode(activeLesson.slug);
+    const savedQuiz = getSavedLessonQuiz(activeLesson.slug);
     setCode(savedCode ?? defaultEditorCode);
     setCodeLessonSlug(activeLesson.slug);
     setRunResult(null);
@@ -346,8 +409,8 @@ export const QuestPage = (): ReactElement => {
     setIsSampleCasesOpen(false);
     setLastRunLessonId(null);
     setIsStdoutOpen(false);
-    setQuizAnswers({});
-    setQuizChecked(false);
+    setQuizAnswers(savedQuiz?.answers ?? {});
+    setQuizChecked(savedQuiz?.checked ?? false);
     if (activeLesson.cases.length > 0) {
       setActivePracticeTab("code");
     } else if (activeLesson.questions.length > 0) {
@@ -652,6 +715,11 @@ export const QuestPage = (): ReactElement => {
     if (!allAnswered || !allCorrect) {
       return;
     }
+
+    saveLessonQuiz(activeLesson.slug, {
+      answers: quizAnswers,
+      checked: true,
+    });
 
     try {
       await markActiveLessonCompleted();
@@ -1319,8 +1387,12 @@ export const QuestPage = (): ReactElement => {
                       </div>
                       <div className="quiz-question__options">
                         {question.options.map((option, optionIndex) => {
+                          const optionHtml = renderMarkdown(option);
                           const optionChecked = selectedOption === optionIndex;
-                          const optionCorrect = quizChecked && optionIndex === question.correct_option;
+                          const optionCorrect =
+                            quizChecked &&
+                            allQuizAnswersCorrect &&
+                            optionIndex === question.correct_option;
                           const optionWrong = quizChecked && optionChecked && optionIndex !== question.correct_option;
 
                           return (
@@ -1345,7 +1417,10 @@ export const QuestPage = (): ReactElement => {
                                   <span className="analysis-indicator__label ui-check">✓</span>
                                 ) : null}
                               </span>
-                              <span>{option}</span>
+                              <span
+                                className="quiz-option__label markdown"
+                                dangerouslySetInnerHTML={{ __html: optionHtml }}
+                              />
                             </label>
                           );
                         })}
@@ -1389,6 +1464,7 @@ export const QuestPage = (): ReactElement => {
                   type="button"
                   className="btn--text btn--text-accent push-right"
                   onClick={() => {
+                    clearSavedLessonQuiz(activeLesson.slug);
                     setQuizAnswers({});
                     setQuizChecked(false);
                   }}

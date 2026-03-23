@@ -8,43 +8,6 @@ from src.app.domain.lesson_order import normalize_lesson_order
 from src.app.domain.models.dto.extended_basemodel import ExtendedBaseModel
 
 
-class LessonIndexItem(ExtendedBaseModel):
-    model_config = ConfigDict(extra="forbid")
-
-    slug: str
-    order: str
-
-    @field_validator("slug")
-    @classmethod
-    def validate_slug(cls, value: str) -> str:
-        normalized = value.strip()
-        if not normalized:
-            message = "slug must not be empty."
-            raise ValueError(message)
-
-        return normalized
-
-    @field_validator("order", mode="before")
-    @classmethod
-    def validate_order(cls, value: str | int | float) -> str:
-        return normalize_lesson_order(value=value)
-
-
-class LessonsIndexFile(ExtendedBaseModel):
-    model_config = ConfigDict(extra="forbid")
-
-    lessons: list[LessonIndexItem]
-
-    @field_validator("lessons")
-    @classmethod
-    def validate_lessons_not_empty(cls, value: list[LessonIndexItem]) -> list[LessonIndexItem]:
-        if not value:
-            message = "lessons index must contain at least one lesson."
-            raise ValueError(message)
-
-        return value
-
-
 class LessonMetaFile(ExtendedBaseModel):
     model_config = ConfigDict(extra="forbid")
 
