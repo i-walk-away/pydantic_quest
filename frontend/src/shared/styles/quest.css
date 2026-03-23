@@ -166,21 +166,38 @@
   -webkit-appearance: none;
   display: inline-flex;
   align-items: center;
+  position: relative;
   border: none;
   background: transparent;
   font-family: inherit;
-  color: var(--text-muted);
+  color: color-mix(in srgb, var(--text-muted) 64%, #000);
   font-size: 0.72rem;
   line-height: 1;
   font-weight: 400;
   text-transform: uppercase;
   letter-spacing: 0.2em;
-  padding: 0;
+  padding: 0 0 5px;
   cursor: pointer;
+  transition: color 120ms ease;
+}
+
+.panel__tab:hover:not(:disabled) {
+  color: color-mix(in srgb, var(--text-muted) 60%, var(--text-strong));
 }
 
 .panel__tab.is-active {
-  color: var(--text-strong);
+  color: var(--text-muted);
+}
+
+.panel__tab.is-active::after {
+  content: "";
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: -2px;
+  height: 0.5px;
+  border-radius: 999px;
+  background: var(--md-typeset-a-color);
 }
 
 .panel__tab:disabled {

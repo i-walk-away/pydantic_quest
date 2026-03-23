@@ -1,6 +1,1 @@
 questions:
-  - prompt: Is Python dynamically typed or statically typed?
-    options:
-      - dynamically typed
-      - statically typed
-    correct_option: 0

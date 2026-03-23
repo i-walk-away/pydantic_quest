@@ -45,3 +45,7 @@ The function did not reject the value and attempted to work with it, even though
 
 That is not very convenient. Python lets values move through the program very freely, and the errors may happen far away
 from where the bad data first entered the system.
+
+## Assignment
+
+Switch to the 'Questions' tab in the right panel and complete the quiz.
