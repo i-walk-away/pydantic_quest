@@ -1,0 +1,21 @@
+questions:
+  - prompt: "What extra step prevents the validation library from leaking deeper into the app?"
+    options:
+      - "moving all business logic into the Pydantic model itself"
+      - "building a plain dataclass out of the already validated data"
+      - "validating the same request with two libraries just to be safe"
+    correct_option: 1
+
+  - prompt: "Why are dataclasses a good fit after validation is already done?"
+    options:
+      - "because they perform stricter runtime validation than Pydantic"
+      - "because they can only be instantiated from validated Pydantic models"
+      - "because they are plain data containers and do not tie business code to a validation library"
+    correct_option: 2
+
+  - prompt: "What is the practical rule this lesson ends with?"
+    options:
+      - "use Pydantic for raw outer input, then map validated data into dataclasses"
+      - "use dataclasses for raw outer input, then convert everything into `BaseModel` later"
+      - "keep the validation library visible in every layer so the whole app stays consistent"
+    correct_option: 0

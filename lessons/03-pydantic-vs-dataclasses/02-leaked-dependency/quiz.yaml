@@ -1,0 +1,21 @@
+questions:
+  - prompt: "What is the tempting mistake in this lesson?"
+    options:
+      - "making the business logic work with DTOs that inherit from `BaseModel`"
+      - "validating incoming data before it reaches business logic"
+      - "using plain dataclasses to carry already validated data"
+    correct_option: 0
+
+  - prompt: "Why is this a leaked dependency?"
+    options:
+      - "because the API layer cannot import third-party libraries safely"
+      - "because Pydantic automatically rewrites your business functions at runtime"
+      - "because the validation library ends up becoming a dependency of the business logic too"
+    correct_option: 2
+
+  - prompt: "Why would switching to another validation library become painful in this setup?"
+    options:
+      - "because every layer would need to be rewritten in another language"
+      - "because no other validation library can produce DTOs with the same fields"
+      - "because the business logic expects Pydantic-specific models or behavior and has to be rewritten"
+    correct_option: 2

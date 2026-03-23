@@ -1,0 +1,22 @@
+questions:
+  - prompt: "What does `BaseModel` use to understand what types your fields should have?"
+    options:
+      - "your type hints"
+      - "magic"
+      - "the arguments you pass when creating the model for the first time"
+    correct_option: 0
+
+  - prompt: "What happens if you create `UserFormDTO(username=\"Alice\", age=\"Albania\")` with Pydantic?"
+    options:
+      - "the model is created, but `age` remains a string"
+      - "the error will only happen later, when some function tries to use `age`"
+      - "Pydantic raises `ValidationError`"
+    correct_option: 2
+
+
+  - prompt: "Why would you add a field validator to a Pydantic model?"
+    options:
+      - "to enforce extra rules like `age >= 0` or `len(username) >= 3`"
+      - "to tell Pydantic what the field type is supposed to be"
+      - "to make Pydantic validate types at runtime in the first place"
+    correct_option: 0
