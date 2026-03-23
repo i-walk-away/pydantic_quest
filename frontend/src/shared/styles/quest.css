@@ -920,6 +920,7 @@
   flex: 1;
   padding-right: 0;
   overflow: visible;
+  pointer-events: none;
 }
 
 .quiz-option__label > :first-child {
@@ -936,7 +937,8 @@
   width: 100%;
   height: 100%;
   opacity: 0;
-  pointer-events: none;
+  pointer-events: auto;
+  z-index: 1;
 }
 
 .quiz-option__control {
@@ -951,6 +953,7 @@
   justify-content: center;
   font-size: 1rem;
   line-height: 1;
+  pointer-events: none;
 }
 
 .quiz-option__control .ui-check {

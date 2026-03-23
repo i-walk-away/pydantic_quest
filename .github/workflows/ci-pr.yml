@@ -23,13 +23,13 @@ jobs:
       - approval
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
+
+      - name: Setup uv
+        uses: astral-sh/setup-uv@v7
 
       - name: Run ruff check
-        uses: astral-sh/ruff-action@v3
-        with:
-          src: "./backend"
-          args: "check --config pyproject.toml"
+        run: uvx ruff check --config pyproject.toml ./backend
 
   backend-tests:
     runs-on: ubuntu-latest
@@ -78,10 +78,10 @@ jobs:
       EXECUTION_RATE_LIMIT_MAX: 20
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
 
       - name: Setup uv
-        uses: astral-sh/setup-uv@v5
+        uses: astral-sh/setup-uv@v7
 
       - name: Install Python
         run: uv python install 3.12
@@ -98,10 +98,10 @@ jobs:
       - approval
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
 
       - name: Setup Node
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@v6
         with:
           node-version: 24
           cache: npm
