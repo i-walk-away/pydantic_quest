@@ -1306,11 +1306,16 @@ export const QuestPage = (): ReactElement => {
                   const selectedOption = quizAnswers[questionIndex];
                   const isCorrect = selectedOption === question.correct_option;
                   const isWrong = quizChecked && selectedOption !== undefined && !isCorrect;
+                  const questionPromptHtml = renderMarkdown(question.prompt);
 
                   return (
                     <div key={`${activeLesson.slug}:${questionIndex}`} className="quiz-question">
                       <div className="quiz-question__prompt">
-                        {questionIndex + 1}. {question.prompt}
+                        <span className="quiz-question__number">{questionIndex + 1}.</span>
+                        <div
+                          className="quiz-question__prompt-body markdown"
+                          dangerouslySetInnerHTML={{ __html: questionPromptHtml }}
+                        />
                       </div>
                       <div className="quiz-question__options">
                         {question.options.map((option, optionIndex) => {
