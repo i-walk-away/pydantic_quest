@@ -15,7 +15,7 @@ questions:
 
   - prompt: "What correction does this lesson make to the earlier simplified explanation?"
     options:
-      - "Pydantic is not strictly strict by default and often tries to transform values first"
       - "Pydantic never raises `ValidationError` for wrong field types"
       - "type coercion only works for booleans and never for numbers"
-    correct_option: 0
+      - "Pydantic is not strict by default and often tries to transform values first"
+    correct_option: 2
