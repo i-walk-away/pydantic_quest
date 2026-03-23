@@ -7,11 +7,11 @@ from src.app.domain.models.dto.lesson import CreateLessonDTO, LessonSyncDiffDTO,
 
 class LessonSyncDiffBuilder:
     def build(
-        self,
-        loaded_lessons: list[LoadedLesson],
-        existing_lessons: list[Lesson],
-        *,
-        delete_missing: bool,
+            self,
+            loaded_lessons: list[LoadedLesson],
+            existing_lessons: list[Lesson],
+            *,
+            delete_missing: bool,
     ) -> LessonSyncDiffDTO:
         existing_by_slug = {lesson.slug: lesson for lesson in existing_lessons}
         create_payloads: list[CreateLessonDTO] = []
@@ -51,10 +51,10 @@ class LessonSyncDiffBuilder:
     @staticmethod
     def _is_same_payload(existing: Lesson, payload: CreateLessonDTO) -> bool:
         return (
-            existing.order == payload.order
-            and existing.name == payload.name
-            and existing.body_markdown == payload.body_markdown
-            and existing.code_editor_default == payload.code_editor_default
-            and existing.cases == [case.model_dump() for case in payload.cases]
-            and existing.questions == [question.model_dump() for question in payload.questions]
+                existing.order == payload.order
+                and existing.name == payload.name
+                and existing.body_markdown == payload.body_markdown
+                and existing.code_editor_default == payload.code_editor_default
+                and existing.cases == [case.model_dump() for case in payload.cases]
+                and existing.questions == [question.model_dump() for question in payload.questions]
         )

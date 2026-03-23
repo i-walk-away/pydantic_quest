@@ -5,6 +5,24 @@ lessons:
   - slug: pydantic
     order: 1.1
 
+  - slug: dynamic-types
+    order: 1.1.1
+
+  - slug: type-hints
+    order: 1.1.2
+
+  - slug: data-validation
+    order: 1.1.3
+
+  - slug: validating-in-business
+    order: 1.1.4
+
+  - slug: validating-in-model
+    order: 1.1.5
+
+  - slug: pydantic-models
+    order: 1.1.6
+
   - slug: pydantic-vs-dataclasses
     order: 1.2
 

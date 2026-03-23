@@ -16,12 +16,12 @@ from src.cfg.cfg import settings
 
 class CodeExecutionService:
     def __init__(
-        self,
-        lesson_service: LessonService,
-        code_runner: CodeRunner,
-        progress_service: LessonProgressService,
-        source_builder: ExecutionSourceBuilder,
-        result_parser: ExecutionResultParser,
+            self,
+            lesson_service: LessonService,
+            code_runner: CodeRunner,
+            progress_service: LessonProgressService,
+            source_builder: ExecutionSourceBuilder,
+            result_parser: ExecutionResultParser,
     ) -> None:
         self.lesson_service = lesson_service
         self.code_runner = code_runner
