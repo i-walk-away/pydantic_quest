@@ -18,7 +18,7 @@ If you want to add a new lesson to pydantic quest, do this:
 ```
 
 The `slug` must exactly match the name of the lesson directory itself.
-The lesson directory may live directly in [lessons/](lessons/) or inside another lesson directory.
+The lesson directory may live directly in [lessons/](lessons/) or inside another lesson directory. 
 
 For example, this:
 
@@ -161,6 +161,5 @@ If it is empty, the lesson simply has no quiz.
 Before opening a PR:
 
 1. verify `lesson.yaml`, `theory.md`, `starter.py`, `cases.yaml`, and `quiz.yaml` exist in your new lesson folder
-2. verify the lesson folder name matches the `slug`
-3. if the lesson is nested, verify it is still somewhere inside [lessons/](lessons/)
-4. verify lesson is added to [lessons/index.yaml](lessons/index.yaml)
+2. verify the lesson folder name matches the lesson's `slug` in `index.yaml`
+3. verify that all lessons are organized in a way that mirrors the hierarchy as per their `order` in `index.yaml`.
