@@ -22,14 +22,17 @@ questions:
 # Every question item has three fields:
 #
 # prompt:
-#   The question text shown to the learner.
+#   The question text shown to the learner. Write prompts in quotes.
+#   If the prompt is multi-line, use a block scalar instead. There will be an example.
+#
 #
 # options:
-#   A list of answer choices shown under the prompt.
+#   A list of answer choices shown under the prompt. Write every option in quotes.
 #
 #   Requirements:
 #   - at least two options
 #   - each option must be non-empty
+#
 #
 #   Practical advice:
 #   - it's alright if you make wrong answers believable enough to test understanding
@@ -51,30 +54,49 @@ questions:
 #
 # Some actual examples:
 
-  - prompt: Is Python dynamically typed or statically typed?
+  - prompt: "Is Python dynamically typed or statically typed?"
     options:
-      - dynamically typed
-      - statically typed
+      - "dynamically typed"
+      - "statically typed"
     correct_option: 0
 
   # Behavior question.
   #
   # Useful after showing a short code snippet in the theory.
   # This checks whether the learner understood what would actually happen.
-  - prompt: What does Pydantic do by default if a required field is missing while creating a model?
+  - prompt: "What does Pydantic do by default if a required field is missing while creating a model?"
     options:
-      - raises ValidationError
-      - silently inserts None
-      - creates the model anyway and ignores the field
+      - "raises ValidationError"
+      - "silently inserts None"
+      - "creates the model anyway and ignores the field"
     correct_option: 0
 
   # Practical design question.
   #
   # This kind of question is good for lessons about architecture and usage
   # guidelines, not just syntax.
-  - prompt: Where should volatile unsanitized user input usually be validated?
+  - prompt: "Where should volatile unsanitized user input usually be validated?"
     options:
-      - inside business logic functions
-      - near the point where the program receives it
-      - right before writing to the database
+      - "inside business logic functions"
+      - "near the point where the program receives it"
+      - "right before writing to the database"
+    correct_option: 1
+
+  # Multi-line prompt example.
+  #
+  # Use this style if the question includes a code snippet or a longer quote.
+  - prompt: |
+      Assume this code:
+
+      ```python
+      def calculate_age_next_year(age):
+          return age + 1
+
+      calculate_age_next_year("18")
+      ```
+
+      When exactly will it fail with an error?
+    options:
+      - "right when the function is defined"
+      - "only when Python actually tries to evaluate \"18\" + 1"
     correct_option: 1

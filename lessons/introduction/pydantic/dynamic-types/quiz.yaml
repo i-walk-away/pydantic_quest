@@ -1,1 +1,16 @@
 questions:
+
+  - prompt: "Is Python dynamically typed or statically typed?"
+    options:
+      - "dynamically typed"
+      - "statically typed"
+      - "it depends on whether you use type hints"
+    correct_option: 0
+
+
+  - prompt: "Variables in Python: "
+    options:
+      - "do not have types themselves and instead _point_ to objects of different types"
+      - "_have_ a type like `int`, `str`, `bool`, but Python lets them change it freely"
+      - "are declared once and then can only point to objects of one type"
+    correct_option: 0

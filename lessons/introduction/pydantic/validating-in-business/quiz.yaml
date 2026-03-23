@@ -1,1 +1,20 @@
 questions:
+  - prompt: "What does the `isinstance()` check improve in the business logic example?"
+    options:
+      - "it guarantees that no invalid data can ever enter the function"
+      - "it prevents the function from reaching the expensive operation if the input is wrong"
+      - "it moves all validation logic out of the business logic layer"
+    correct_option: 1
+
+  - prompt: "Why does this approach not scale well?"
+    options:
+      - "because business functions stop being able to use DTOs"
+      - "because validation logic starts cluttering business functions"
+    correct_option: 1
+
+  - prompt: "What is the main conclusion of this lesson?"
+    options:
+      - "business logic should validate everything itself so model classes stay simple"
+      - "runtime errors are a good enough replacement for validation"
+      - "validating data inside the function is not the best place for it"
+    correct_option: 2
