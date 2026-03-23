@@ -67,7 +67,7 @@
 
 .panel--code {
   min-width: 0;
-  overflow-y: auto;
+  overflow: hidden;
   overflow-x: hidden;
 }
 
