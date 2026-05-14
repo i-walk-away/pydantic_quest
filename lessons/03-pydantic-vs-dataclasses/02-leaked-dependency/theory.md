@@ -36,10 +36,10 @@ The problem is not that this code immediately explodes. In fact, it may work per
 The real problem is _architectural_.
 
 Our function that calculates the age is part of the **business logic layer**. Its sole job is to just calculate the age.
-The only thing that matters to a function in the **business logic layer** is that the input data is valid, without having
+The only thing that matters to a function in the business logic layer is that the input data is valid, without having
 the slightest clue about _how_ that validation is enforced.
 
-The layer that **does** cate about the data validation is the **API layer**.
+The layer that **does** care about the data validation is the **API layer**.
 
 Which means that Pydantic is a dependency of the _API layer_. But we made our business logic function depend on a DTO
 which inherits from Pydantic's `BaseModel` class. That means Pydantic - the **API layer**'s dependency - has now become a
