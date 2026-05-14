@@ -26,9 +26,9 @@ Every lesson directory must start with a numeric prefix:
 Nested lessons follow the exact same rule inside their parent lesson directory:
 
 ```text
-03-validators/
-02-validators/01-model-validators/
-02-validators/02-field-validators/
+02-validators/
+    02-validators/01-model-validators/
+    02-validators/02-field-validators/
 ```
 
 ## How slug and order are inferred
