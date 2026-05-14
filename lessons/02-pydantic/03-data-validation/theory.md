@@ -11,7 +11,8 @@ Enter your username: ...
 Enter your age: ...
 ```
 
-For the sake of simplicity, assume that after the form is filled and sent, it enters our codebase as this object:
+For the sake of simplicity, assume that after the form is filled and sent, it immediately
+enters our codebase as this object:
 
 ```python
 filled_form = {
@@ -20,7 +21,7 @@ filled_form = {
 }
 ```
 
-Where the actual values are inputed by the user who fills the form.
+Where the actual values are inputed by the user who fills the form. 
 
 Then imagine that user's input for this specific form is mapped to a small object like this:
 
