@@ -18,12 +18,12 @@ class Pirate(BaseModel):
     crimes: list[str]
 ```
 
-You've set up the type constraints using type hints. If you try to instantiate a Pirate model with the wrong type of
+You've set up the type constraints using type hints. If you try to instantiate a `Pirate` model with the wrong type of
 `crimes`:
 
 ```python
 jack_sparrow = Pirate(name='Captain J.S.', gold=100.0, crimes='theft')
-# instantiate a Pirate with `crimes` being a string, not list ^^^^^^^
+# instantiated a Pirate with `crimes` being a string, not list ^^^^^
 ```
 
 the above will fail the data validation process, because the instantiated model will not meet the type constraints
