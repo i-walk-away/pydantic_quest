@@ -11,44 +11,73 @@ Enter your username: ...
 Enter your age: ...
 ```
 
-The user submits this data, your backend receives it, and then your code uses it.
-A simplified path looks like this:
+For the sake of simplicity, assume that after the form is filled and sent, it enters our codebase as this object:
 
-1. we receive `username` and `age` from the user
-2. that data used somewhere (`age + 1` is calculated)
-3. the result is returned to the user
+```python
+filled_form = {
+    "username": "Arbitrary username", 
+    "age": 10000
+}
+```
 
-Now imagine that user's input for this specific form is mapped to a small object like this:
+Where the actual values are inputed by the user who fills the form.
+
+Then imagine that user's input for this specific form is mapped to a small object like this:
 
 ```python
 @dataclass
 class UserFormDTO:
     username: str
     age: int
+    # for each existing field of our filled form, there is a corresponding field in the DTO 
 ```
 
-A DTO, or *Data Transfer Object*, is just a small object whose job is to carry structured data
-from one part of the program to another. Data submitted by the user gets gathered into a single UserFormDTO object, with
-its `username` and `age` values being whatever was submitted by the user.
+A DTO, or *Data Transfer Object*, is just a small object whose sole job is to carry structured data
+from one part of the program to another. Data submitted by the user gets gathered into a single `UserFormDTO` object, 
+with its `username` and `age` values copied from the raw request. 
 
-So when a user sends:
+This is just an input data container. We basically build a `UserFormDTO` out of the request data.  
+
+So when the user sends:
 
 ```python
-{"username": "Adolf", "age": 20}
+filled_form = {"username": "Adolf", "age": 20}
 ```
 
-we build a UserFormDTO object out of it, with `username`="Adolf" and `age`=20, and then pass it to the funcion that uses
-it to calculate age.
+we build a UserFormDTO object out of it, with `username="Adolf"` and `age=20`. A little illustration in case you
+struggle with understanding the whole picture at this point:
 
-Then the actual function may look like this:
+```python
+@dataclass
+class UserFormDTO:
+    username: str
+    age: int
+
+
+# user submitted data
+filled_form = {
+    "username": "Adolf", 
+    "age": 20
+} 
+
+# here it is mapped to a DTO object for further usage
+dto_object = UserFormDTO(
+    username=filled_form.get("username"),
+    age=filled_form.get("age")
+)
+```
+
+and then pass it to the funcion that uses it to calculate age, which looks like this:
 
 ```python
 def calculate_age(data: UserFormDTO) -> str:
-    response = f"{data.username} will be {data.age + 1} years old next year!"
+    calculated_age = data.age + 1
+    response = f"{data.username} will be {calculated_age} years old next year!"
+    
     return response
 ```
 
-We can now see a less simplified path of our data:
+Let's recap the path that our data takes:
 
 1. User sends `username` and `age`
 2. we build a `UserFormDTO` out of this data
@@ -56,7 +85,9 @@ We can now see a less simplified path of our data:
 4. The age is calculated
 5. the result is returned to the user
 
-However this system assumes two things are true:
+## The issue
+
+There is a problem though. This system assumes two things are true:
 
 - `username` is actually a string
 - `age` is actually an integer
@@ -64,24 +95,35 @@ However this system assumes two things are true:
 But what if the incoming data looks like this?
 
 ```python
-{"username": "Alice", "age": "Albania"}
+filled_form = {
+    "username": "Alice", 
+    "age": "Albania"  # invalid
+}
 ```
 
-The user was a little bit silly and sent us 'Albania' as their age. This is clearly not an integer. So the data was
+The user was a little bit silly and sent us 'Albania' as their age. This is clearly not an integer. The data was
 broken from the very beginning. When _exactly_ will our program fail?
 
-1. User sends `username: "Alice"` and `age: "Albania"` to our API -- ✓
-2. We build a UserFormDTO out of this data -- -- -- -- -- -- -- -- - ✓
-3. We call `calculate_age` and pass the DTO as an argument to it --- ✓
-4. The age is calculated <-------- X *runtime error upon trying to add 1 to a string*
+
+1. ✓ User sends `username: "Alice"` and `age: "Albania"` to our API
+2. ✓ We build a UserFormDTO out of this data
+3. ✓ We call `calculate_age` and pass the DTO as an argument to it 
+4. X The age is calculated -- -- *runtime error upon trying to add 1 to a string*
 5. ...
 
+
 The broken data made quite a long jorney through our program before something exploded. It shouldn't have even
-**reached** the actual function that uses it and instead should've been rejected immediately on step 2, becuase the data
+**reached** the actual function that uses it, and instead should've been rejected immediately on step 2, becuase the data
 was broken:
 
-1. User sends `username: "Alice"` and `age: "Albania"` to our API -- ✓
-2. We build a `UserFormDTO` out of this data <----- *Validation error: couldn't assign `"Albania"` to `UserFormDTO.age`,
-   because `UserFormDTO` expects age to be an integer and user sent string instead*
 
-Statically typed language like Java would fail with a runtime error on step 2. But Python allows that.
+1. ✓ User sends `username: "Alice"` and `age: "Albania"` to our API 
+2. X We build a `UserFormDTO` out of this data -- -- *Validation error: couldn't assign `"Albania"` to `UserFormDTO.age`,
+   because `UserFormDTO` expects age to be an integer and the user had sent a string instead*
+
+
+Statically typed language like Java would fail with a runtime error on step 2. Python, however, allowed that.
+
+## Assignment
+
+Complete the quiz.

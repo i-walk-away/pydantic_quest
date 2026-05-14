@@ -160,6 +160,9 @@ cases:
 
       # Set ok to a boolean. The platform reads this variable to determine
       # whether the case passed.
+      # Once again, we do NOT have to manually test that the user has defined all the fields -
+      # because if not all required fields are defined,
+      # this line of code below never gets to execute and "ok" is set to False automatically.
       ok = profile.username == "alice" and profile.age == 24 and profile.tags == ["some_string"]
 
       # "reason" should explain the actual contract that was broken.

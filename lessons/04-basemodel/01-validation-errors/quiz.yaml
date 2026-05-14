@@ -1,5 +1,5 @@
 questions:
-  - prompt: "What is a `ValidationError` in this lesson?"
+  - prompt: "What is a `ValidationError`?"
     options:
       - "an error raised when a model fails validation during instantiation"
       - "an error raised only by custom field validators"
@@ -13,9 +13,8 @@ questions:
       - "the model is still created, but that field becomes inaccessible"
     correct_option: 1
 
-  - prompt: "What other built-in reason can make model creation fail with `ValidationError`?"
+  - prompt: "What can make model creation fail with `ValidationError`?"
     options:
-      - "giving a field a value that is not compatible with its type hint"
-      - "having more than three fields in the model"
       - "importing `BaseModel` together with `dataclass` in the same file"
-    correct_option: 0
+      - "giving a field a value that is not compatible with its type hint"
+    correct_option: 1
