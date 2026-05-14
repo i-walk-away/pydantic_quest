@@ -20,17 +20,19 @@ You might recall the path that this data takes through our application:
 
 Now let's zoom in on what is actually happening here.
 
-One part of our code receives raw, volatile data from the outside world. That data may be wrong, incomplete, malformed,
-or just silly.
+One part of our application receives raw, volatile data from the outside world. 
+That data may be wrong, incomplete, malformed, or just silly. There is no limit for the creativity of the human mind.
 
-Another part of our code does the actual work (calculates `age + 1`)
+Another part of our code uses this volatile data to do the actual work with it (calculate `age + 1`)
 
 Smart people from the software architecture field had came up with names for these two parts:
 
-- the part that receives input from the outside world is often called the **API layer** or **presentation layer**
+- the user-facing part that receives input from the outside world is often called the **API layer** or 
+**presentation layer**
 - the part that does the actual work is often called the **business logic layer**
 
-An analogy will make the separation of concerns easier to understand.
+These two shall be isolated from each other. An analogy will make the separation of concerns easier to understand:
+//note to self: implement text folding formatting and hide the following text into a foldable text block 
 
 Imagine a wooden gate. There is a guard standing in front of it - **Sir API Layer**. Behind the gate, there is a big room
 full of machines that do different things. There is an age calculating machine, username changing machine and a whole lot
@@ -48,7 +50,7 @@ They have their own respective responsibilities. For example, as we established 
 is better handled *before* it reaches the actual machines - in the **API layer**.
 
 In an ideal world, these two layers are so isolated from each other that, as long as the _contract_ between them remains
-unchanged, one layer can be _heavily_ rewritten without forcing ANY changes in the other. Here, _contract_ means the
+unchanged, one layer can be _heavily_ rewritten without forcing ANY changes in the other one. Here, _contract_ means the
 agreed shape of the input and output between the two layers: what fields the input DTOs have, and what data is returned.
 
 ## Assignment

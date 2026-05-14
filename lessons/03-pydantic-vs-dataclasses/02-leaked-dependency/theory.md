@@ -31,7 +31,7 @@ Why is it a mistake then?
 
 ## Consequences
 
-The problem is not that this code immediately explodes. In fact, it may work perfectly well for quite a while.
+The problem is not that this code immediately explodes. In fact, it may work perfectly well for quite a while!
 
 The real problem is _architectural_.
 

@@ -21,7 +21,7 @@ filled_form = {
 }
 ```
 
-Where the actual values are inputed by the user who fills the form. 
+Where the actual values are inputed by the user who fills the form.
 
 Then imagine that user's input for this specific form is mapped to a small object like this:
 
