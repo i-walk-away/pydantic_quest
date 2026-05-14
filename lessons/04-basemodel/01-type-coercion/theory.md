@@ -49,10 +49,10 @@ print(killa.is_armed)  # True  <--  transformed to a bool
 
 ### Discovery
 
-Here is a funny one! When i was writing the lesson about BaseModels, i wanted to show how it fails with a
+Here is a funny one! When i was writing the lesson about `BaseModel`s, i wanted to show how it fails with a
 validation error if you try to instantiate a subclass with the wrong field types. Here was my example code:
 
-```py
+```python
 from pydantic import BaseModel
 
 
@@ -70,7 +70,8 @@ I thought it would be a hilarious way to get a validation error, by passing just
 But when i tried to actually run this code... It didn't fail!
 
 ```python
-print(big_smoke)  # crime_count=200 is_original=True
+print(big_smoke)  
+# crime_count=200 is_original=True
 ```
 
 Pydantic literally transforms `"Yes"` to `True` and `"No"` to `False` for you :)
