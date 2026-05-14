@@ -11,7 +11,8 @@ Enter your username: ...
 Enter your age: ...
 ```
 
-For the sake of simplicity, assume that after the form is filled and sent, it enters our codebase as this object:
+For the sake of simplicity, assume that after the form is filled and sent, it immediately
+enters our codebase as this object:
 
 ```python
 filled_form = {

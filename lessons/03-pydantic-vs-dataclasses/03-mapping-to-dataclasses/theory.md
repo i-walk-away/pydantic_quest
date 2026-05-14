@@ -13,8 +13,7 @@ There is a simple way to prevent that by adding an additional step:
 3. Once the data is confirmed to be valid, we build a _dataclass_ out of it
 4. We pass that plain dataclass to the actual business functions
 
-That way, the function that does the real work does not care how the data was validated. It only cares that the data is
-already valid.
+That way, the business logic function does not care how the data was validated.  
 
 For example, we might validate with Pydantic first:
 
@@ -68,8 +67,8 @@ That makes it a good choice for the parts of your code that should stay simple a
 When should you use Pydantic models and when should you use dataclasses?
 
 1. Use Pydantic when you are dealing with raw, unsanitized data from the outside world
-2. Once that data is validated, map it into a pure dataclass
-3. Let the rest of your code work with the dataclass instead of depending on the validation library
+2. Once that data is validated, map it to a pure dataclass
+3. Let your business logic work with the dataclasses instead of depending on a specific validation library
 
 That way, your validation library stays where it belongs, and your actual business functions stay completely isolated
 from the implementation details of the **API layer**.
