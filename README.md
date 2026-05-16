@@ -8,7 +8,7 @@ friendly, while still being useful to those already familiar with the library.
 
 # What is wrong with the official documentation?
 
-Absolutely nothing, this courae is just another way to learn the library, that might fit better with different people's
+Absolutely nothing, this course is just another way to learn the library, that might fit better with different people's
 learning styles.
 
 Pydantic's docs are great at showing you how to do things and what functionality exists in the API, but they leave the
