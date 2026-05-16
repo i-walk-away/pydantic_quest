@@ -15,23 +15,19 @@ from pydantic import BaseModel
 
 
 class Pirate(BaseModel):
-    gold: float                     #  <--  we expect a float value of `gold`
+    gold: float                     #  <--  we expect `gold` to reference a float value
 
 
-sparrow = Pirate(gold=100)          # an integer, not a float! 
-print(sparrow.gold)                 # 100.0  <--  transformed to a float for us
-
-blackbeard = Pirate(gold='5000.0')
-print(blackbeard.gold)              # 5000.0  <--  string numbers are transformed too
+blackbeard = Pirate(gold='5000.0')  # a string, not a float! 
+print(blackbeard.gold)              # 100.0  <--  pydantic has transformed it to a float for us     
 ```
 
-Pydantic knows that we expect a float here. And if the input data makes sense, even though its *type* is invalid, it
-lends us a hand and converts this data to the expected type instead of rasing an exception.
+Pydantic knows that we expect a float here. And if the input data makes sense, even though its *type* is invalid,
+pydantic lends us a hand and converts this data to the expected type instead of rasing an exception.
 
 This is _type coercion_.
 
-Strings that consist of numeric characters are _compatible_ with `int` and `float` type hints. Integets and floats are
-_compatible_ with each other's type hints.
+Strings that consist of numeric characters are _compatible_ with `int` and `float` types for type coercion.
 
 A less obvious example:
 
@@ -49,8 +45,8 @@ print(killa.is_armed)  # True  <--  transformed to a bool
 
 ### Discovery
 
-Here is a funny one! When i was writing the lesson about `BaseModel`s, i wanted to show how it fails with a
-validation error if you try to instantiate a subclass with the wrong field types. Here was my example code:
+Here is a funny one! When i was writing the lesson about the `BaseModel`, i wanted to show how it fails with a
+validation error if you try to instantiate a model with the wrong field types. Here was my example code:
 
 ```python
 from pydantic import BaseModel
@@ -62,7 +58,7 @@ class Gangster(BaseModel):
 
 
 big_smoke = Gangster(crime_count=200, is_original='Yes')  
-# i assumed there would be a validation error     ^^^^^
+# note how this is definitely not a bool          ^^^^^
 ```
 
 I thought it would be a hilarious way to get a validation error, by passing just "Yes" instead of a boolean.
@@ -70,6 +66,7 @@ I thought it would be a hilarious way to get a validation error, by passing just
 But when i tried to actually run this code... It didn't fail!
 
 ```python
+big_smoke = Gangster(crime_count=200, is_original='Yes')  
 print(big_smoke)  
 # crime_count=200 is_original=True
 ```
